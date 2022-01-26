@@ -1,5 +1,7 @@
 import "./App.css";
-//import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar";
+import Drawer from "./components/Drawer";
+
 import React from "react";
 import Button from "@mui/material/Button";
 import Box from '@mui/material/Box';
@@ -30,6 +32,8 @@ function App() {
   const handleClose = () => setOpen(false);
     return (
     <div className="container vh-100">
+      <Navbar />
+      <Drawer />
        <div>
       <Button onClick={handleOpen}>Open modal</Button>
       <Modal
