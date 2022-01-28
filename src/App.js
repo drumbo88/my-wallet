@@ -33,7 +33,6 @@ function App() {
     return (
     <div className="container vh-100">
       <Navbar />
-      <Drawer />
        <div>
       <Button onClick={handleOpen}>Open modal</Button>
       <Modal
