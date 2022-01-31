@@ -155,11 +155,7 @@ export default function Navbar() {
         <p>Messages</p>
       </MenuItem>
       <MenuItem>
-        <IconButton
-          size="large"
-          aria-label="show 17 new notifications"
-          color="inherit"
-        >
+        <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
           <Badge badgeContent={17} color="error">
             <NotificationsIcon />
           </Badge>
@@ -256,22 +252,19 @@ export default function Navbar() {
               </Badge>
             </IconButton>
             <IconButton
-              size="large"
+              size="large" color="inherit"
               aria-label="show 17 new notifications"
-              color="inherit"
             >
               <Badge badgeContent={17} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
             <IconButton
-              size="large"
-              edge="end"
+              size="large" edge="end" color="inherit"
               aria-label="account of current user"
               aria-controls={menuId}
               aria-haspopup="true"
               onClick={handleProfileMenuOpen}
-              color="inherit"
             >
               <AccountCircle />
             </IconButton>
@@ -292,11 +285,7 @@ export default function Navbar() {
       </AppBar>
       {renderMobileMenu}
       {renderMenu}
-      <Drawer
-        anchor={drawer.from}
-        open={drawer.opened}
-        onClose={toggleDrawer(false)}
-      >
+      <Drawer anchor={drawer.from} open={drawer.opened} onClose={toggleDrawer(false)}>
         {list(drawer.from)}
       </Drawer>
     </Box>
