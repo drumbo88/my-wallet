@@ -29,6 +29,8 @@ export default function TemporaryDrawer() {
   const menuList = [
     'Carga ingreso', 
     'Carga gasto', 
+    'Ver cuentas', 
+    'Ver productos', 
     /*{ 
       groupName: 'Activos', 
       groupList = ['Monedas', 'Criptomonedas', 'Productos']
