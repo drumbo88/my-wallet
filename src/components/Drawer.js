@@ -31,10 +31,6 @@ export default function TemporaryDrawer() {
     'Carga gasto', 
     'Ver cuentas', 
     'Ver productos', 
-    /*{ 
-      groupName: 'Activos', 
-      groupList = ['Monedas', 'Criptomonedas', 'Productos']
-    },*/
     'Activos',
     'Indicadores',
   ];
