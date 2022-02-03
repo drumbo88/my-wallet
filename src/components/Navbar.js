@@ -227,12 +227,7 @@ export default function Navbar() {
           >
             <MenuIcon onClick={toggleDrawer(true)} />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
+          <Typography variant="h6" noWrap component="div" sx={{ display: { xs: 'none', sm: 'block' } }}>
             MUI
           </Typography>
           <Search>

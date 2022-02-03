@@ -65,7 +65,7 @@ function App() {
       </Fab>
       <Fab disabled aria-label="like">
         <FavoriteIcon />
-      </Fab>
+      </Fab> 
     </div>
   );
 }
