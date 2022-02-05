@@ -164,11 +164,10 @@ export default function Navbar() {
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
-          size="large"
+          size="large" color="inherit"
           aria-label="account of current user"
           aria-controls="primary-search-account-menu"
           aria-haspopup="true"
-          color="inherit"
         >
           <AccountCircle />
         </IconButton>
