@@ -68,8 +68,7 @@ export default function TemporaryDrawer() {
         <React.Fragment key={anchor}>
           <Button variant="contained" onMouseOver={toggleDrawer(anchor, true)}>{anchor}</Button>
           <Drawer
-            anchor={anchor}
-            open={state[anchor]}
+            anchor={anchor} open={state[anchor]}
             onClose={toggleDrawer(anchor, false)}
           >
             {list(anchor)}
