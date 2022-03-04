@@ -31,7 +31,7 @@ function App() {
   const handleClose = () => setOpen(false);
   return (
     <div className="container vh-100">
-      <Navbar />
+      <Navbar /> 
        <div>
       <Button onClick={handleOpen}>Open modal</Button>
       <Modal
