@@ -1,5 +1,8 @@
+import { FormControl, InputAdornment, InputLabel, OutlinedInput, Typography } from '@mui/material';
 import React from 'react'
 import DenseTable from '../components/DenseTable';
+import FormDialog from '../components/FormDialog';
+import MyAutocomplete from '../components/MyAutocomplete';
 
 function createData(name, calories, fat, carbs, protein) {
     return { name, calories, fat, carbs, protein };
@@ -23,6 +26,20 @@ const columns = [
 const IncomesPage = () => {
   return (
     <div>
+      <Typography variant="h4" marginBottom={1}>Ingresos</Typography>
+      <FormDialog title="Cargar ingreso">
+        <FormControl fullWidth sx={{ m: 1 }}>
+          <InputLabel htmlFor="amount">Monto</InputLabel>
+          <OutlinedInput 
+            startAdornment={<InputAdornment position="start">$</InputAdornment>}
+            fullWidth id="amount" label="Monto" />
+        </FormControl>
+        <FormControl fullWidth sx={{ m: 1 }}>
+          {/*<InputLabel htmlFor="income">Item</InputLabel>*/}
+          <MyAutocomplete variant="outlined"
+            fullWidth id="income" label="Item" options={['hola', 'prueba', 'otro']} />
+        </FormControl>
+      </FormDialog>
       <DenseTable rows={rows} columns={columns} />
     </div>
   )
