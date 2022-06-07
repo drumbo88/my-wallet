@@ -12,7 +12,7 @@ function RoutesRoot() {
   return (
     <Routes>
         <Route path="" element={<HomePage />} />
-        <Route path="incomes" element={<IncomesPage />} />
+        <Route path="incomes/*" element={<IncomesPage />} />
         <Route path="messages" element={<MessagesPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />

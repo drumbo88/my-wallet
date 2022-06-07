@@ -13,8 +13,8 @@ export default function DenseTable({rows, columns}) {
       <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
         <TableHead>
           <TableRow>
-            { columns.map((col)=> (
-              <TableCell align={col.align}>{col.text ? col.text : col}</TableCell>
+            { columns.map((col, colIndex)=> (
+              <TableCell key={colIndex} align={col.align ?? 'inherit'}>{col.text ?? col}</TableCell>
             ))}
           </TableRow>
         </TableHead>
@@ -25,9 +25,9 @@ export default function DenseTable({rows, columns}) {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               { columns.map((col, colIndex) => (
-                <TableCell align={col.align ? col.align : ''} component={colIndex ? '' : 'th'} scope={colIndex ? '' : 'row'}>
+                <TableCell key={colIndex} align={col.align ?? 'inherit'} component={colIndex ? '' : 'th'} scope={colIndex ? '' : 'row'}>
                   {row[col.prop]}
-                </TableCell>  
+                </TableCell>
               ))}
             </TableRow>
           ))}
