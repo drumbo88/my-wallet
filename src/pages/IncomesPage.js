@@ -1,32 +1,23 @@
-import { Button, FormControl, InputAdornment, InputLabel, OutlinedInput, Typography } from '@mui/material';
+import { Button, InputAdornment, InputLabel, OutlinedInput, Typography } from '@mui/material';
 import React from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
-import DenseTable from '../components/DenseTable';
+import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import FormDialog from '../components/FormDialog';
 import MyDatePicker from '../components/MyDatePicker';
 import MyCurrencySelect from '../components/MyCurrencySelect';
 import MyAutocomplete from '../components/MyAutocomplete';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 
-function createData(name, calories, fat, carbs, protein) {
-    return { name, calories, fat, carbs, protein };
+let ID = 0
+function createData(name, calories, fat, carbs, proteins) {
+    const id = ++ID
+    return { id, name, calories, fat, carbs, proteins };
 }
-  
-const rows = [
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
-const columns = [
-    { text: 'Dessert (100g serving)', prop: 'name' },
-    { text: 'Calories', align: 'right', prop: 'calories' },
-    { text: 'Fat (g)', align: null, prop: 'fat' },
-    { text: 'Carbs (g)', align: 'right', prop: 'carbs' },
-    { text: 'Proteins (g)', align: 'right', prop: 'protein' },
-]
 
-const addIncomeForm = [
+
+const incomeForm = [
   {
     control: <MyDatePicker />
   },
@@ -65,25 +56,107 @@ const addIncomeForm = [
 const IncomesPage = () => {
 
   const navigate = useNavigate()
-  const useOpenIncomeAdd = () => navigate('add')
-  const useCloseIncomeAdd = () => navigate('')
+  const openIncomeForm = (id) => navigate('form/'+(id ?? ''))
+  const closeIncomeForm = () => navigate('')
+
+  const rows = [
+    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Gingerbread', 356, 16.0, 49, 3.9),
+    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Gingerbread', 356, 16.0, 49, 3.9),
+    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Gingerbread', 356, 16.0, 49, 3.9),
+    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Gingerbread', 356, 16.0, 49, 3.9),
+  ];
+  const columns = /*[
+    { text: 'Dessert (100g serving)', prop: 'name' },
+    { text: 'Calories', align: 'right', prop: 'calories' },
+    { text: 'Fat (g)', align: null, prop: 'fat' },
+    { text: 'Carbs (g)', align: 'right', prop: 'carbs' },
+    { text: 'Proteins (g)', align: 'right', prop: 'protein' },
+  ]*/
+  [{ 
+    field: 'id', 
+    headerName: 'ID', 
+    width: 50
+  },{
+    field: 'name',
+    headerName: 'Dessert (100g serving)',
+    flex: 1
+  },{
+    field: 'calories',
+    headerName: 'Calories',
+    type: 'number',
+    flex: 1
+  },{
+    field: 'fat',
+    headerName: 'Fat (g)',
+    type: 'number',
+    flex: 1
+  },{
+    field: 'carbs',
+    headerName: 'Carbs (g)',
+    type: 'number',
+    flex: 1
+  },{
+    field: 'proteins',
+    headerName: 'Proteins (g)',
+    type: 'number',
+    flex: 1
+  },{
+    field: 'actions',
+    type: 'actions',
+    getActions: (params) => [
+      <GridActionsCellItem icon={<EditIcon />} onClick={()=>openIncomeForm(params.id)} label="Edit" />,
+      <GridActionsCellItem icon={<FileCopyIcon />} label="Print" />,
+      <GridActionsCellItem icon={<DeleteIcon />} label="Delete" showInMenu />,
+    ]
+  }]
 
   return (
     <div>
       <Typography variant="h4" marginBottom={1}>Ingresos</Typography>
-      <Button variant="contained" sx={{ marginBottom: 1 }} onClick={useOpenIncomeAdd}>
+      <Button variant="contained" sx={{ marginBottom: 1 }} onClick={()=>openIncomeForm()}>
         Cargar ingreso
       </Button>
-      <Routes><Route path="add" element={<FormDialog title="Cargar ingreso" handleClose={useCloseIncomeAdd}>
-        {addIncomeForm.map((item, index) => {
-          const style = item.style || {}
-          return (
-          <FormControl fullWidth={style.width ? null : true} sx={{ my: 1, ...style }} key={index}>
-            {item.control}
-          </FormControl>
-        )})}
-      </FormDialog>} /></Routes>
-      <DenseTable rows={rows} columns={columns} />
+      <Routes>
+        <Route path="form">
+          <Route path=":id" element={<FormDialog title="Modificar ingreso" controls={incomeForm} handleClose={closeIncomeForm} />} />
+          <Route path="" element={<FormDialog title="Cargar ingreso" controls={incomeForm} handleClose={closeIncomeForm} />} />
+        </Route>
+      </Routes>
+      <div style={{ width: '100%' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={8}
+          rowsPerPageOptions={[8]}
+          density="compact"
+          autoHeight
+        />
+      </div>
+      {/*<DenseTable rows={rows} columns={columns} />*/}
     </div>
   )
 }
