@@ -1,4 +1,4 @@
-import { Button, InputAdornment, InputLabel, OutlinedInput, Typography } from '@mui/material';
+import { Button, InputLabel, OutlinedInput, Typography } from '@mui/material';
 import React from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
@@ -9,13 +9,6 @@ import MyAutocomplete from '../components/MyAutocomplete';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-
-let ID = 0
-function createData(name, calories, fat, carbs, proteins) {
-    const id = ++ID
-    return { id, name, calories, fat, carbs, proteins };
-}
-
 
 const incomeForm = [
   {
@@ -30,19 +23,23 @@ const incomeForm = [
     control: <>
       <InputLabel htmlFor="amount">Monto</InputLabel>
       <OutlinedInput 
-        startAdornment={<InputAdornment position="start">$</InputAdornment>}
+        //startAdornment={<InputAdornment position="start">$</InputAdornment>}
         fullWidth id="amount" label="Monto" />
     </>
   },
   {
-    style: { width: '64%', marginRight: '1%' },
     control: <MyAutocomplete variant="outlined" 
-        id="income" label="Item" options={['Sueldo', 'Préstamo', 'Bonificación']} />
+        id="income" label="Concepto" options={['Sueldo', 'Préstamo', 'Bonificación']} />
   },
   {
-    style: { width: '35%' },
+    style: { width: '49%', marginRight: '1%' },
     control: <MyAutocomplete variant="outlined" 
-        id="origin" label="Origen" options={['Foncap']} />
+        id="from" label="Origen" options={['Foncap','Otro']} />
+  },
+  {
+    style: { width: '50%' },
+    control: <MyAutocomplete variant="outlined" 
+        id="to" label="Destino" options={['BBVA C/A']} />
   },
   {
     control: <>
@@ -58,6 +55,12 @@ const IncomesPage = () => {
   const navigate = useNavigate()
   const openIncomeForm = (id) => navigate('form/'+(id ?? ''))
   const closeIncomeForm = () => navigate('')
+
+  let ID = 0
+  function createData(name, calories, fat, carbs, proteins) {
+      const id = ++ID
+      return { id, name, calories, fat, carbs, proteins };
+  }
 
   const rows = [
     createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
@@ -136,8 +139,10 @@ const IncomesPage = () => {
 
   return (
     <div>
-      <Typography variant="h4" marginBottom={1}>Ingresos</Typography>
-      <Button variant="contained" sx={{ marginBottom: 1 }} onClick={()=>openIncomeForm()}>
+      <Typography variant="h4" marginBottom={1}>
+        Ingresos
+      </Typography>
+      <Button variant="contained" sx={{ marginY: 2 }} onClick={()=>openIncomeForm()}>
         Cargar ingreso
       </Button>
       <Routes>
