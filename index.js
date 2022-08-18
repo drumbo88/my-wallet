@@ -29,7 +29,7 @@ app.use(cors()) // <- antes de las rutas
 
 // ----- Routes -----
 app.use('/api', require('./routes/root.routes'))
-app.use('/api/incomes', require('./routes/incomes.routes'))
+app.use('/api/transaction', require('./routes/transaction.routes'))
 
 // Error de ruta
 app.use('/', (req, res, next) => {
@@ -56,14 +56,13 @@ app.use((error, req, res, next) => {
 //app.use(express.static(path.join(__dirname, 'public')))
 
 // ########## Starting the server ##########
-const { dbInit, connStirng } = require('./database')
+const { dbInit, connString } = require('./database')
 
 const server = (NODE_ENV == 'test') 
     ? null 
     : app.listen(PORT, () => {
-        if (connStirng) {
+        if (connString) {
             dbInit()
-                .then(db => console.log(db))
                 .catch(err => console.error(err))
         }
         console.log(`Server online on port ${PORT}`)    

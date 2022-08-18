@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose;
 
-const currencySchema = new Schema({
-    _id: { type: String, alias: 'symbol', required: true, unique: true },
+const schema = new Schema({
+    symbol: { type: String, required: true, unique: true },
     name: { type: String, required: true, unique: true },
     value: { type: Number, required: true },
     api: { type: String },
@@ -10,9 +10,14 @@ const currencySchema = new Schema({
     countries: [String],
 })
 
-const Currency = mongoose.model('Currency', currencySchema)
+schema.statics.seeds = () => [
+    { symbol: 'ARS', name: 'Peso Argentino', value: 1/130, countries: ['ARG'] },
+    { symbol: 'USD', name: 'Dólar Estadounidense', value: 1, countries: ['USA'] },
+    { symbol: 'BTC', name: 'Bitcoin', value: 23000, type: 'CRYPTO' },
+]
+schema.statics.seed = mongoose.seed
 
-currencySchema.statics.create = async (data) => {
+schema.statics.create = async (data) => {
     try {
         return await this.create(data)
     }
@@ -20,7 +25,7 @@ currencySchema.statics.create = async (data) => {
         throw new Error(error)
     }
 }
-currencySchema.static.findAndUpdate = async (filter, data) => {
+schema.static.findAndUpdate = async (filter, data) => {
     try {
         if (typeof(filter)!="Object") 
             filter = { _id: filter }
@@ -30,4 +35,5 @@ currencySchema.static.findAndUpdate = async (filter, data) => {
         throw new Error(error)
     }
 }
-module.exports = Currency
+
+module.exports = mongoose.model('Currency', schema)

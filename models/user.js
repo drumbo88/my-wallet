@@ -5,9 +5,9 @@ module.exports = mongoose.model('User', new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
-    entities: [Schema.types.ObjectId],
+    entities: [Schema.Types.ObjectId],
     transactionConcepts: [{
-        entityId: Schema.types.ObjectId,
+        entityId: Schema.Types.ObjectId,
         concept: { type: String, unique: true }
     }]
 }))

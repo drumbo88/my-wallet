@@ -5,6 +5,7 @@ exports.list = (req, res) => {
     Transaction.find({}).then((transactions) => {
         return res.json({transactions, message: 'Transactions listed'})
     })
+    .catch(error => res.status(409).json({ message: error }))
 }
 exports.create = (req, res) => {
     Transaction.create({
