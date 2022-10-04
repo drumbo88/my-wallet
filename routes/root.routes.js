@@ -1,10 +1,10 @@
-const express = require('express')
+import express from 'express'
 const router = express.Router()
-const { logInUser } = require('../controllers/login.controller')
+import { logInUser } from '../controllers/login.controller.js'
 
 router.get('/', (req, res) => {
     res.json({ message: 'API Working' })
 })
 router.post('/login', logInUser)
 
-module.exports = router
+export default router

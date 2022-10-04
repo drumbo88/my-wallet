@@ -1,35 +1,37 @@
-const express = require('express')
-const path = require('path')
+import express from 'express'
 const app = express()
 
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const dotenv = require('dotenv')
+import bodyParser from 'body-parser'
+import cors from 'cors'
+
+import routesRoot from './routes/root.routes.js'
+import routesPerson from './routes/person.routes.js'
+import routesCurrency from './routes/currency.routes.js'
+import routesCountry from './routes/country.routes.js'
+import routesTransaction from './routes/transaction.routes.js'
+
+import * as config from './config.js'
+import { dbInit } from './database.js'
 
 // ----- Settings -----
-dotenv.config() // Copies .env to process.env
-
-const {
-    // PORT = 5000,
-    NODE_ENV = "develpoment",
-    POST_MAX_SIZE = "30mb",
-} = process.env
-
-const PORT = NODE_ENV == "test" 
-    ? (process.env.API_PORT_TEST || 5001)
-    : (process.env.API_PORT || 5000)
+const PORT = config.NODE_ENV == "test"
+    ? (config.API_PORT_TEST || 5001)
+    : (config.API_PORT || 5000)
 //const POST_MAX_SIZE = process.env.POST_MAX_SIZE || "30mb"
 
 // ----- Middlewares -----
-app.use(bodyParser.json({limit: POST_MAX_SIZE, extended: true}))
-app.use(bodyParser.urlencoded({limit: POST_MAX_SIZE, extended: true}))
+app.use(bodyParser.json({limit: config.POST_MAX_SIZE, extended: true}))
+app.use(bodyParser.urlencoded({limit: config.POST_MAX_SIZE, extended: true}))
 
 app.use(express.json())
-app.use(cors()) // <- antes de las rutas 
+app.use(cors()) // <- antes de las rutas
 
 // ----- Routes -----
-app.use('/api', require('./routes/root.routes'))
-app.use('/api/transaction', require('./routes/transaction.routes'))
+app.use('/api', routesRoot)
+app.use('/api/person', routesPerson)
+app.use('/api/currency', routesCurrency)
+app.use('/api/country', routesCountry)
+app.use('/api/transaction', routesTransaction)
 
 // Error de ruta
 app.use('/', (req, res, next) => {
@@ -56,16 +58,14 @@ app.use((error, req, res, next) => {
 //app.use(express.static(path.join(__dirname, 'public')))
 
 // ########## Starting the server ##########
-const { dbInit, connString } = require('./database')
-
-const server = (NODE_ENV == 'test') 
-    ? null 
-    : app.listen(PORT, () => {
-        if (connString) {
+const server = (config.NODE_ENV == 'test')
+    ? null
+    : app.listen(config.API_PORT, () => {
+        if (config.DB_CONNECTION_STRING) {
             dbInit()
                 .catch(err => console.error(err))
         }
-        console.log(`Server online on port ${PORT}`)    
+        console.log(`Server online on port ${config.API_PORT}`)
     })
 
-module.exports = { app, server }
+export { app, server }

@@ -1,0 +1,20 @@
+import mongoose from 'mongoose'
+const { Schema } = mongoose;
+
+const schema = new Schema({
+    name: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+})
+schema.statics.seeds = () => [
+    { name: 'Conversión' },
+    { name: 'Sueldo' },
+    { name: 'Comida' },
+    { name: 'Servicio' },
+    { name: 'Sube' },
+]
+
+schema.statics.seed = mongoose.seed
+
+const model = mongoose.models.TransactionConcept || mongoose.model('TransactionConcept', schema)
+
+export { model, schema }

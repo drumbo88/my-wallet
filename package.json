@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "cross-env NODE_ENV=production && node index.js",
-    "dev": "cross-env NODE_ENV=development && nodemon index.js",
+    "dev": "cross-env NODE_ENV=development && nodemon --ignore app index.js",
     "seed": "cross-env NODE_ENV=development && node seed.js",
+    "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node seed.js",
     "webpack": "webpack --mode development --watch",
     "test": "cross-env NODE_ENV=test && cross-env NODE_OPTIONS=--experimental-vm-modules && npx jest --noStackTrace",
     "test:watch": "npm run test -- --watch"
@@ -23,6 +25,7 @@
   },
   "homepage": "https://github.com/drumbo88/my-wallet#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
@@ -33,6 +36,17 @@
     "path": "^0.12.7"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "@babel/core": "^7.18.5",
+    "@babel/node": "^7.18.10",
+    "@babel/preset-env": "^7.18.2",
+    "@babel/preset-react": "^7.17.12",
+    "babel-loader": "^8.2.5",
+    "jest": "^28.1.2",
+    "nodemon": "^2.0.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "supertest": "^6.2.4",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0"
   }
 }

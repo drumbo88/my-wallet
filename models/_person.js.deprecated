@@ -1,0 +1,102 @@
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+const { Schema } = mongoose;
+
+import { model as EntityModel, schema as entitySchema } from "./entity.js";
+import { model as CompanyModel } from "./company.js";
+import { model as AccountModel } from "./account.js";
+import { model as UserModel } from "./user.js";
+
+const schema = new Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  birthdate: { type: Date },
+  taxId: { type: String },
+  gender: { type: String, enum: ["male", "female", "other"], required: true },
+  entity: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
+});
+
+/*
+  Persona ... + accounts
+    Account
+*/
+schema.statics.seeds = () => [
+  {
+    firstName: "Darío",
+    lastName: "Rumbo",
+    birthdate: "1988-06-19",
+    taxId: "20337466711",
+    gender: "male",
+    user: {
+      name: "drumbo88",
+      email: "dario.rumbo@gmail.com",
+      password: bcrypt.hashSync("12345"),
+    },
+    accounts: [
+      {
+        address: "9287394128571952934521",
+        alias: "drumbo88bf",
+        adminEntity: { taxId: "30500003193" }, // findOne
+        currency: "ARS",
+        detail: "Mi caja de ahorro",
+      },
+      {
+        address: "0xA6A4D7B8F180B16C27B017FF93B5AB6264532981",
+        alias: "drumbo88bnc",
+        adminEntity: {
+          name: 'Binance',
+          type: 'CryptoExchange',
+        },
+        currency: "BTC",
+        detail: "Mi cuenta Binance",
+      },
+    ],
+  },
+];
+
+schema.statics.seed = mongoose.seed;
+
+schema.statics.seeder = async (data) => {
+  const { firstName, lastName, birthdate, taxId, gender } = data;
+  const obj = new model({
+    firstName,
+    lastName,
+    birthdate,
+    taxId,
+    gender,
+  });
+
+  const entity = new EntityModel({ type: "Person", child: obj });
+
+  if (typeof data.accounts == "undefined") {
+    data.accounts = [];
+  }
+  for (const dataAccount of data.accounts) {
+    const adminEntity = await CompanyModel.findOne(dataAccount.adminEntity);
+
+    const account = await AccountModel.create({
+      ...dataAccount,
+      adminEntity: adminEntity.entity._id,
+      userEntity: entity._id,
+    });
+
+    entity.accounts.push(account);
+  }
+
+  await entity.save();
+  if (typeof data.user != "undefined") {
+    const user = await UserModel.create({
+      ...data.user,
+      entity: entity._id,
+    })
+    entity.user = user._id
+  }
+  await entity.save();
+  obj.entity = entity;
+  await obj.save();
+  console.log(`${obj.firstName} ${obj.lastName} entity ID: ${entity._id}`)
+};
+
+const model = mongoose.model("Person", schema);
+
+export { model, schema };

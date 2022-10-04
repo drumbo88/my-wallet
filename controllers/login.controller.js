@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken')
+import jwt from 'jsonwebtoken'
 
 // Import Models
-const User = require('../models/user')
+//import User from '../models/user.js'
 
-exports.logInUser = (req, res) => {
+export const logInUser = (req, res) => {
     const envMode = req.app.get('env').trim()
     switch (envMode) {
         case 'production': case 'development': case 'test':

@@ -7,12 +7,19 @@ import ConfigPage from "../pages/ConfigPage";
 import NotificationsPage from "../pages/NotificationsPage";
 import MessagesPage from "../pages/MessagesPage";
 import IncomesPage from '../pages/IncomesPage';
+import CurrenciesPage from '../pages/CurrenciesPage';
+import CountriesPage from '../pages/CountriesPage';
+import TransactionsPage from '../pages/TransactionsPage';
 
 function RoutesRoot() {
   return (
     <Routes>
         <Route path="" element={<HomePage />} />
         <Route path="incomes/*" element={<IncomesPage />} />
+        <Route path="currencies/*" element={<CurrenciesPage />} />
+        <Route path="countries/*" element={<CountriesPage />} />
+        <Route path="transactions/*" element={<TransactionsPage />} />
+        <Route path="person/:id/transactions/*" element={<TransactionsPage />} />
         <Route path="messages" element={<MessagesPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 const { Schema } = mongoose;
 
 const schema = new Schema({
@@ -15,7 +15,6 @@ schema.statics.seeds = () => [
     { symbol: 'USD', name: 'Dólar Estadounidense', value: 1, countries: ['USA'] },
     { symbol: 'BTC', name: 'Bitcoin', value: 23000, type: 'CRYPTO' },
 ]
-schema.statics.seed = mongoose.seed
 
 schema.statics.create = async (data) => {
     try {
@@ -27,7 +26,7 @@ schema.statics.create = async (data) => {
 }
 schema.static.findAndUpdate = async (filter, data) => {
     try {
-        if (typeof(filter)!="Object") 
+        if (typeof(filter)!="Object")
             filter = { _id: filter }
         return await this.findOneAndUpdate(id, data)
     }
@@ -35,5 +34,8 @@ schema.static.findAndUpdate = async (filter, data) => {
         throw new Error(error)
     }
 }
+schema.statics.seed = mongoose.seed
 
-module.exports = mongoose.model('Currency', schema)
+const model = mongoose.model('Currency', schema)
+
+export { model, schema }

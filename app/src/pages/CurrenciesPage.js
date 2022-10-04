@@ -4,43 +4,44 @@ import React, { useEffect, useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import FormDialog from '../components/FormDialog';
-import MyDatePicker from '../components/MyDatePicker';
-import MyCurrencySelect from '../components/MyCurrencySelect';
 import MyAutocomplete from '../components/MyAutocomplete';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 
-const incomeForm = [
+const currencyForm = [
   {
-    control: <MyDatePicker />
-  },
-  {
-    style: { width: '14%', marginRight: '1%' },
-    control: <MyCurrencySelect />
-  },
-  {
-    style: { width: '85%' },
+    style: { width: '19%', marginRight: '1%' },
     control: <>
-      <InputLabel htmlFor="amount">Monto</InputLabel>
+      <InputLabel htmlFor="symbol">Símbolo</InputLabel>
       <OutlinedInput
-        //startAdornment={<InputAdornment position="start">$</InputAdornment>}
-        fullWidth id="amount" label="Monto" />
-    </>
+        fullWidth id="symbol" label="Símbolo" />
+    </>,
   },
   {
-    control: <MyAutocomplete variant="outlined"
-        id="income" label="Concepto" options={['Sueldo', 'Préstamo', 'Bonificación']} />
+    style: { width: '80%' },
+    control: <>
+      <InputLabel htmlFor="nombre">Nombre</InputLabel>
+      <OutlinedInput
+        fullWidth id="nombre" label="Nombre" />
+    </>
   },
   {
     style: { width: '49%', marginRight: '1%' },
     control: <MyAutocomplete variant="outlined"
-        id="from" label="Origen" options={['Foncap','Otro']} />
+        id="from" label="Tipo" options={['FIAT','CRYPTO']} />
   },
   {
     style: { width: '50%' },
     control: <MyAutocomplete variant="outlined"
-        id="to" label="Destino" options={['BBVA C/A']} />
+        id="to" label="País" options={['ARS Argentina', 'USA United States']} />
+  },
+  {
+    control: <>
+      <InputLabel htmlFor="api">API</InputLabel>
+      <OutlinedInput
+        fullWidth id="api" label="API" />
+    </>,
   },
   {
     control: <>
@@ -51,7 +52,7 @@ const incomeForm = [
   }
 ]
 
-const IncomesPage = () => {
+const CurrenciesPage = () => {
 
   const [data, setData] = useState([])
 
@@ -64,34 +65,19 @@ const IncomesPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await axios.get('http://localhost:3001/api/income');
-      setData(res.data.incomes)
+      const res = await axios.get('http://localhost:3001/api/currency');
+      setData(res.data.currencies)
     }
     fetchData().catch(err => console.error(err))
   }, [])
-/*
-    symbol: { type: String, required: true, unique: true },
-    name: { type: String, required: true, unique: true },
-    value: { type: Number, required: true },
-    api: { type: String },
-    type: { type: String, enum: ['FIAT', 'CRYPTO'], default: 'FIAT', required: true },
-    countries: [String],
-*/
-  const columns = /*[
-    { text: 'Dessert (100g serving)', prop: 'name' },
-    { text: 'Calories', align: 'right', prop: 'calories' },
-    { text: 'Fat (g)', align: null, prop: 'fat' },
-    { text: 'Carbs (g)', align: 'right', prop: 'carbs' },
-    { text: 'Proteins (g)', align: 'right', prop: 'protein' },
-  ]*/
-  [{
+  const columns = [{
     field: 'symbol',
     headerName: 'Símbolo',
-    width: 50,
+    width: 100
   },{
     field: 'name',
     headerName: 'Nombre',
-    width: 150,
+    flex: 1
   },{
     field: 'value',
     headerName: 'Valor',
@@ -102,7 +88,12 @@ const IncomesPage = () => {
     headerName: 'Tipo',
     flex: 1
   },{
+    field: 'countries',
+    headerName: 'Países',
+    flex: 1
+  },{
     field: 'actions',
+    headerName: 'Acciones',
     type: 'actions',
     getActions: (params) => [
       <GridActionsCellItem icon={<EditIcon />} onClick={()=>openIncomeForm(params.row.symbol)} label="Edit" />,
@@ -114,15 +105,15 @@ const IncomesPage = () => {
   return (
     <div>
       <Typography variant="h4" marginBottom={1}>
-        Ingresos
+        Monedas
       </Typography>
       <Button variant="contained" sx={{ marginY: 2 }} onClick={()=>openIncomeForm()}>
-        Cargar ingreso
+        Cargar moneda
       </Button>
       <Routes>
         <Route path="form">
-          <Route path=":id" element={<FormDialog title="Modificar ingreso" controls={incomeForm} handleClose={closeIncomeForm} />} />
-          <Route path="" element={<FormDialog title="Cargar ingreso" controls={incomeForm} handleClose={closeIncomeForm} />} />
+          <Route path=":id" element={<FormDialog title="Modificar moneda" controls={currencyForm} handleClose={closeIncomeForm} />} />
+          <Route path="" element={<FormDialog title="Cargar moneda" controls={currencyForm} handleClose={closeIncomeForm} />} />
         </Route>
       </Routes>
       <div style={{ width: '100%' }}>
@@ -141,4 +132,4 @@ const IncomesPage = () => {
   )
 }
 
-export default IncomesPage
+export default CurrenciesPage

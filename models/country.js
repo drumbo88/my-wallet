@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 const { Schema } = mongoose;
 
 const schema = new Schema({
@@ -8,9 +8,12 @@ const schema = new Schema({
 })
 
 schema.statics.seeds = () => [
-    { code: 'ARG', name: 'Argentina', countries: ['ARS'] },
-    { code: 'USA', name: 'Estados Unidos', countries: ['USD'] },
+    { code: 'ARG', name: 'Argentina', currencies: ['ARS'] },
+    { code: 'USA', name: 'Estados Unidos', currencies: ['USD'] },
 ]
+
 schema.statics.seed = mongoose.seed
 
-module.exports = mongoose.model('Country', schema)
+const model = mongoose.model('Country', schema)
+
+export { model, schema }
