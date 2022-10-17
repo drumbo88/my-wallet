@@ -1,5 +1,5 @@
-import { app } from '../index.js'
-import mongoose from 'mongoose'
+import { app } from '../index'
+import * as database from '../database'
 import supertest from 'supertest'
 
 const server = app.listen()
@@ -7,14 +7,14 @@ const api = supertest.agent(server)
 
 describe('Authorization', () => {
 
-    test('Should send status code 200 and token on valid authentication', async () => {
+    test('UserLogin (/api/login): Should send status code 200 and token on valid authentication', async () => {
         const { body, type, statusCode } = await api.post('/api/login').send()
         expect(Object.keys(body)).toEqual(expect.arrayContaining(['message','token']))
         expect(body.message).toContain("Auth successful")
         expect(statusCode).toBe(200)
     })
 
-    test('Should send status code 403 from protected API route with no valid token', async () => {
+    test('ProtectedRoute: Should send status code 403 if no valid auth token', async () => {
         const { text, statusCode } = await api.get('/api/country').send()
 
         expect(text).toContain("Auth failed")
@@ -23,6 +23,6 @@ describe('Authorization', () => {
 })
 
 afterAll(() => {
-    mongoose.connection.close()
+    database.close()
     server.close()
 })

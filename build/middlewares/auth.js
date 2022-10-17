@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const config_1 = require("../config");
 // Authentication check Middleware
 exports.default = (req, res, next) => {
     try {
@@ -13,7 +14,7 @@ exports.default = (req, res, next) => {
         if (!token)
             throw new Error("You need to be logged in.");
         // Verify recieved token
-        req.userData = jsonwebtoken_1.default.verify(token, process.env.JWT_KEY);
+        req.userData = jsonwebtoken_1.default.verify(token, config_1.JWT_KEY);
         next();
     }
     catch (error) {

@@ -1,11 +1,11 @@
 import express from 'express';
-import checkAuth from '../middlewares/auth.js'
+import checkAuth from '../middlewares/auth'
 
 const router = express.Router();
 
 // Import controllers
-//import * as cPerson from '../controllers/person.controller.js'
-import * as cTransaction from '../controllers/transaction.controller.js'
+//import * as cPerson from '../controllers/person.controller'
+import * as cTransaction from '../controllers/transaction.controller'
 const cPerson = {}
 
 // Routes definitions

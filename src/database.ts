@@ -1,58 +1,63 @@
-import mongoose from 'mongoose'
-import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING } from './config.js'
+import { NODE_ENV, DB_DNS, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING } from './config'
+import { BaseEntity, DataSource, EntityTarget, ObjectLiteral, Repository } from "typeorm"
+import { EntityAbstract } from './entity/EntityInterface'
+import { Currency } from './entity/Currency'
 
-mongoose.seed = async function () {
-    const seeds = this.seeds()
-    if (seeds?.length && !await this.estimatedDocumentCount()) {
-        console.log(`Seeding ${seeds.length} of ${this.modelName}...`)
-        if (this.seeder) {
-            for (const seed of seeds)
-                await this.seeder(seed)
-            /*const seederPromises = []
-            for (const seed of seeds)
-                seederPromises.push(this.seeder(seed))
-            await Promise.all(seederPromises)*/
+export const AppDataSource = new DataSource({
+    type: "mongodb",
+    host: DB_DNS,
+    port: DB_PORT,
+    //username: DB_USER,
+    //password: DB_PASSWORD,
+    database: DB_NAME,
+    entities: [__dirname + "/entity/*.js"],
+})
+
+export const seed = async (entity: any, seeds: Object[]): Promise<EntityAbstract[]> => {
+    const tableName = entity.prototype.constructor.name
+    if (seeds.length && !await entity.count())
+    {
+        console.log(`Seeding ${seeds.length} of ${tableName}...`)
+
+        const seederPromises: Promise<EntityAbstract>[] = []
+        for (const seed of seeds) {
+            seederPromises.push((await entity.init(seed)).save());
         }
-        else {
-            await this.insertMany(seeds)
-        }
+        return await Promise.all(seederPromises)
     }
-    else console.log(`No need to seed ${this.modelName}.`)
+    else {
+        console.log(`No need to seed ${tableName}.`)
+        return []
+    }
 }
-mongoose.reset = async function () {
-    console.log('Reseting the database...')
-    const db = this.connection.db;
+export const reset = async function () {
+    console.log('Dropping the database...')
 
-    // Get all collections
-    const collections = await db.listCollections().toArray();
-
-    // Create an array of collection names and drop each collection
-    await Promise.all(collections
-      .map((collection) => {
-        const collectionName = collection.name
-        return db.dropCollection(collectionName)
-      })
-    ).then(() => {
+    AppDataSource.dropDatabase().then(() => {
         console.log('All collections were dropped!')
     }).catch(err => {
         console.error(err)
     })
 }
 
-console.log({NODE_ENV,DB_RESET})
-export const dbInit = async () => {
-    // Las opciones useNewUrlParser, useUnifiedTopology y useFindAndModify nos ahorrarán advertencias en consola (ni idea pa qué son).
+//console.log({NODE_ENV,DB_RESET})
+export const connect = async (): Promise<DataSource> => {
     console.log('Connecting to the database...')
     return new Promise((resolve, reject) => {
-        const connectOptions = { useNewUrlParser: true, useUnifiedTopology: true, serverSelectionTimeoutMS : DB_CONNECTION_TIMEOUT }
-        mongoose.connect(DB_CONNECTION_STRING, connectOptions)
-        .then(
-            async db => {
-                console.log(`DB connected using ${DB_CONNECTION_STRING}`);
-                resolve(db)
-            },
-            error => reject(`Couldn't connect to DB: ${error.message}`)
-        )
+        AppDataSource.initialize()
+        .then(db => {
+            console.log("DS initialized!")
+            resolve(db)
+        })
+        .catch((error) => {
+            reject(`Couldn't initialize DS: ${error.stack}`)
+        })
     })
+}
+export const close = async (): Promise<void> => {
+    console.log('Disconnecting database...')
 
+    AppDataSource.destroy()
+        .then(() => console.log("DS disconnected!"))
+        .catch((error) => console.error(`Couldn't disconnect DS: ${error.stack}`))
 }

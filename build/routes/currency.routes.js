@@ -29,7 +29,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
 // Import controllers
-const cCurrency = __importStar(require("../controllers/currency.controller.js"));
+const cCurrency = __importStar(require("../controllers/currency.controller"));
 // Routes definitions
 router.route('/')
     .get(cCurrency.list)

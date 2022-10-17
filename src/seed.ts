@@ -1,27 +1,30 @@
-import mongoose from 'mongoose'
-import { dbInit } from './database.js'
-import { DB_RESET } from './config.js'
+import 'reflect-metadata'
+import * as database from './database'
+import { DB_RESET } from './config'
 
 const models = [
-    'country',
-    'currency',
-    'company',
-    'person',
-    'transactionConcept',
-    'transaction',
+    'Currency',
+    'Country',
+    'Company',
+    'Person',
+    /*'Operation',*/
 ]
 
-dbInit()
-.then(async db => {
-    if (DB_RESET) {
-        await mongoose.reset()
-    }
-    for (const modelName of models) {
-        const { model } = await import(`./models/${modelName}.js`)
-        await model.seed()
-    }
-    db.connections[0].client.close()
-        .catch(err => console.error(err))
-        .finally(() => console.log("\x1b[32mSeeding completed!\x1b[0m"))
-})
-.catch(err => console.error(err))
+database.connect()
+    .then(async ds => {
+        if (DB_RESET) {
+            await database.reset()
+        }
+        for (const modelName of models) {
+            const entity = await import(`./entity/${modelName}`) //as EntityAbstract
+            const seeds = entity[modelName].seeds || []
+            if (seeds.length) {
+                await Promise.all(await database.seed(entity[modelName], seeds))
+                //await database.seed(ds.getRepository(entity[modelName]), seeds)
+            }
+        }
+        ds.destroy()
+            .catch(err => console.error(err))
+            .finally(() => console.log("\x1b[32mSeeding completed!\x1b[0m"))
+    })
+    .catch(err => console.error(err))

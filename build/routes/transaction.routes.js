@@ -27,17 +27,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const auth_js_1 = __importDefault(require("../middlewares/auth.js"));
+const auth_1 = __importDefault(require("../middlewares/auth"));
 const router = express_1.default.Router();
 // Import controllers
-const cTransaction = __importStar(require("../controllers/transaction.controller.js"));
+const cTransaction = __importStar(require("../controllers/transaction.controller"));
 // Routes definitions
 router.route('/:from?')
     .get(cTransaction.list)
-    .post(auth_js_1.default, cTransaction.create);
+    .post(auth_1.default, cTransaction.create);
 router.route('/:id')
-    .get(auth_js_1.default, cTransaction.read)
-    .put(auth_js_1.default, cTransaction.update)
-    .delete(auth_js_1.default, cTransaction.remove);
+    .get(auth_1.default, cTransaction.read)
+    .put(auth_1.default, cTransaction.update)
+    .delete(auth_1.default, cTransaction.remove);
 // Export
 exports.default = router;

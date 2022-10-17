@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken'
+import { JWT_KEY, SESSION_TIME } from '../config'
 
 // Import Models
-//import User from '../models/user.js'
+//import User from '../models/user'
 
 export const logInUser = (req, res) => {
     const envMode = req.app.get('env').trim()
@@ -11,8 +12,8 @@ export const logInUser = (req, res) => {
                 message: "Auth successful",
                 token: jwt.sign(
                     { envMode },
-                    process.env.JWT_KEY,
-                    { expiresIn: process.env.SESSION_TIME }
+                    JWT_KEY,
+                    { expiresIn: SESSION_TIME }
                 )
             })
         default:

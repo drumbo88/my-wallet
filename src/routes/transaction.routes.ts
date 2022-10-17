@@ -1,10 +1,10 @@
 import express from 'express';
-import checkAuth from '../middlewares/auth.js'
+import checkAuth from '../middlewares/auth'
 
 const router = express.Router();
 
 // Import controllers
-import * as cTransaction from '../controllers/transaction.controller.js'
+import * as cTransaction from '../controllers/transaction.controller'
 
 // Routes definitions
 router.route('/:from?')

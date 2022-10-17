@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { JWT_KEY } from '../config';
 
 // Authentication check Middleware
 export default (req, res, next) => {
@@ -10,7 +11,7 @@ export default (req, res, next) => {
             throw new Error("You need to be logged in.")
 
         // Verify recieved token
-        req.userData = jwt.verify(token, process.env.JWT_KEY)
+        req.userData = jwt.verify(token, JWT_KEY)
         next()
     }
     catch (error: any) {

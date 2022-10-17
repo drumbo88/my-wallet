@@ -31,31 +31,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importDefault(require("mongoose"));
-const database_js_1 = require("./database.js");
-const config_js_1 = require("./config.js");
+require("reflect-metadata");
+const database = __importStar(require("./database"));
+const config_1 = require("./config");
 const models = [
-    'country',
-    'currency',
-    'company',
-    'person',
-    'transactionConcept',
-    'transaction',
+    'Currency',
+    'Country',
+    'Company',
+    'Person',
+    /*'Operation',*/
 ];
-(0, database_js_1.dbInit)()
-    .then((db) => __awaiter(void 0, void 0, void 0, function* () {
-    if (config_js_1.DB_RESET) {
-        yield mongoose_1.default.reset();
+database.connect()
+    .then((ds) => __awaiter(void 0, void 0, void 0, function* () {
+    if (config_1.DB_RESET) {
+        yield database.reset();
     }
     for (const modelName of models) {
-        const { model } = yield Promise.resolve().then(() => __importStar(require(`./models/${modelName}.js`)));
-        yield model.seed();
+        const entity = yield Promise.resolve().then(() => __importStar(require(`./entity/${modelName}`))); //as EntityAbstract
+        const seeds = entity[modelName].seeds || [];
+        if (seeds.length) {
+            yield Promise.all(yield database.seed(entity[modelName], seeds));
+            //await database.seed(ds.getRepository(entity[modelName]), seeds)
+        }
     }
-    db.connections[0].client.close()
+    ds.destroy()
         .catch(err => console.error(err))
         .finally(() => console.log("\x1b[32mSeeding completed!\x1b[0m"));
 }))

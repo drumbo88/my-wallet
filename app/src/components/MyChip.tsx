@@ -40,4 +40,5 @@ const Chip = (props: any) => {
     variant: PropTypes.oneOf(['regular, outlined']),
 };*/
 
+
 export default Chip;

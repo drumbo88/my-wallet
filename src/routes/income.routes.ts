@@ -1,5 +1,5 @@
 import express from 'express'
-import checkAuth from '../middlewares/auth.js'
+import checkAuth from '../middlewares/auth'
 
 const router = express.Router();
 

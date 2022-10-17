@@ -27,13 +27,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const auth_js_1 = __importDefault(require("../middlewares/auth.js"));
+const auth_1 = __importDefault(require("../middlewares/auth"));
 const router = express_1.default.Router();
 // Import controllers
-const cCountry = __importStar(require("../controllers/country.controller.js"));
+const cCountry = __importStar(require("../controllers/country.controller"));
 // Routes definitions
 router.route('/')
-    .get(auth_js_1.default, cCountry.list)
+    .get(auth_1.default, cCountry.list)
     .post(cCountry.create);
 router.route('/:id')
     .get(cCountry.read)

@@ -1,6 +1,6 @@
-import { app } from '../index.js'
+import { app } from '../index'
 
-import mongoose from 'mongoose'
+import * as database from '../database'
 import supertest from 'supertest'
 
 const server = app.listen()
@@ -8,7 +8,7 @@ const api = supertest.agent(server)
 
 describe('Init API and App', () => {
 
-    test('Should send API Working message at GET /', async () => {
+    test('GET /: Should send API Working message', async () => {
         await api.get('/api').expect((res) => {
             expect(res.body.message).toContain("API Working")
             expect(res.statusCode).toBe(200)
@@ -26,6 +26,6 @@ describe('Init API and App', () => {
 })
 
 afterAll(() => {
-    mongoose.connection.close()
+    database.close()
     server.close()
 })

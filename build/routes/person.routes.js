@@ -29,8 +29,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
 // Import controllers
-//import * as cPerson from '../controllers/person.controller.js'
-const cTransaction = __importStar(require("../controllers/transaction.controller.js"));
+//import * as cPerson from '../controllers/person.controller'
+const cTransaction = __importStar(require("../controllers/transaction.controller"));
 const cPerson = {};
 // Routes definitions
 /*router.route('/')

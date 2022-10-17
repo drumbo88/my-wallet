@@ -32,13 +32,13 @@ const app = (0, express_1.default)();
 exports.app = app;
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
-const root_routes_js_1 = __importDefault(require("./routes/root.routes.js"));
-const person_routes_js_1 = __importDefault(require("./routes/person.routes.js"));
-const currency_routes_js_1 = __importDefault(require("./routes/currency.routes.js"));
-const country_routes_js_1 = __importDefault(require("./routes/country.routes.js"));
-const transaction_routes_js_1 = __importDefault(require("./routes/transaction.routes.js"));
-const config = __importStar(require("./config.js"));
-const database_js_1 = require("./database.js");
+const root_routes_1 = __importDefault(require("./routes/root.routes"));
+const person_routes_1 = __importDefault(require("./routes/person.routes"));
+const currency_routes_1 = __importDefault(require("./routes/currency.routes"));
+const country_routes_1 = __importDefault(require("./routes/country.routes"));
+const transaction_routes_1 = __importDefault(require("./routes/transaction.routes"));
+const config = __importStar(require("./config"));
+const database_1 = require("./database");
 // ----- Settings -----
 const PORT = config.NODE_ENV == "test"
     ? (config.API_PORT_TEST || 5001)
@@ -50,11 +50,11 @@ app.use(body_parser_1.default.urlencoded({ limit: config.POST_MAX_SIZE, extended
 app.use(express_1.default.json());
 app.use((0, cors_1.default)()); // <- antes de las rutas
 // ----- Routes -----
-app.use('/api', root_routes_js_1.default);
-app.use('/api/person', person_routes_js_1.default);
-app.use('/api/currency', currency_routes_js_1.default);
-app.use('/api/country', country_routes_js_1.default);
-app.use('/api/transaction', transaction_routes_js_1.default);
+app.use('/api', root_routes_1.default);
+app.use('/api/person', person_routes_1.default);
+app.use('/api/currency', currency_routes_1.default);
+app.use('/api/country', country_routes_1.default);
+app.use('/api/transaction', transaction_routes_1.default);
 // Error de ruta
 app.use('/', (req, res, next) => {
     //const error = new Error('Route not found')
@@ -81,7 +81,7 @@ const server = (config.NODE_ENV == 'test')
     ? null
     : app.listen(config.API_PORT, () => {
         if (config.DB_CONNECTION_STRING) {
-            (0, database_js_1.dbInit)()
+            (0, database_1.connect)()
                 .catch(err => console.error(err));
         }
         console.log(`Server online on port ${config.API_PORT}`);

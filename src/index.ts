@@ -4,14 +4,14 @@ const app = express()
 import bodyParser from 'body-parser'
 import cors from 'cors'
 
-import routesRoot from './routes/root.routes.js'
-import routesPerson from './routes/person.routes.js'
-import routesCurrency from './routes/currency.routes.js'
-import routesCountry from './routes/country.routes.js'
-import routesTransaction from './routes/transaction.routes.js'
+import routesRoot from './routes/root.routes'
+import routesPerson from './routes/person.routes'
+import routesCurrency from './routes/currency.routes'
+import routesCountry from './routes/country.routes'
+import routesTransaction from './routes/transaction.routes'
 
-import * as config from './config.js'
-import { dbInit } from './database.js'
+import * as config from './config'
+import { connect } from './database'
 
 // ----- Settings -----
 const PORT = config.NODE_ENV == "test"
@@ -62,7 +62,7 @@ const server = (config.NODE_ENV == 'test')
     ? null
     : app.listen(config.API_PORT, () => {
         if (config.DB_CONNECTION_STRING) {
-            dbInit()
+            connect()
                 .catch(err => console.error(err))
         }
         console.log(`Server online on port ${config.API_PORT}`)

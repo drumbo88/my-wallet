@@ -12,10 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_js_1 = require("../index.js");
+const index_1 = require("../index");
 const mongoose_1 = __importDefault(require("mongoose"));
 const supertest_1 = __importDefault(require("supertest"));
-const server = index_js_1.app.listen();
+const server = index_1.app.listen();
 const api = supertest_1.default.agent(server);
 describe('Init API and App', () => {
     test('Should send API Working message at GET /', () => __awaiter(void 0, void 0, void 0, function* () {
