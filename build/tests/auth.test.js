@@ -12,25 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../index");
-const mongoose_1 = __importDefault(require("mongoose"));
-const supertest_1 = __importDefault(require("supertest"));
-const server = index_1.app.listen();
-const api = supertest_1.default.agent(server);
+const supertestAgent_1 = __importDefault(require("./supertestAgent"));
 describe('Authorization', () => {
-    test('Should send status code 200 and token on valid authentication', () => __awaiter(void 0, void 0, void 0, function* () {
-        const { body, type, statusCode } = yield api.post('/api/login').send();
+    test('UserLogin (/api/login): Should send status code 200 and token on valid authentication', () => __awaiter(void 0, void 0, void 0, function* () {
+        const { body, type, statusCode } = yield supertestAgent_1.default.post('/api/login').send();
         expect(Object.keys(body)).toEqual(expect.arrayContaining(['message', 'token']));
         expect(body.message).toContain("Auth successful");
         expect(statusCode).toBe(200);
     }));
-    test('Should send status code 403 from protected API route with no valid token', () => __awaiter(void 0, void 0, void 0, function* () {
-        const { text, statusCode } = yield api.get('/api/country').send();
+    test('ProtectedRoute: Should send status code 403 if no valid auth token', () => __awaiter(void 0, void 0, void 0, function* () {
+        const { text, statusCode } = yield supertestAgent_1.default.get('/api/country').send();
         expect(text).toContain("Auth failed");
         expect(statusCode).toBe(401);
     }));
-});
-afterAll(() => {
-    mongoose_1.default.connection.close();
-    server.close();
 });

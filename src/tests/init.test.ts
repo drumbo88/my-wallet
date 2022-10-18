@@ -1,10 +1,4 @@
-import { app } from '../index'
-
-import * as database from '../database'
-import supertest from 'supertest'
-
-const server = app.listen()
-const api = supertest.agent(server)
+import api from './supertestAgent'
 
 describe('Init API and App', () => {
 
@@ -23,9 +17,4 @@ describe('Init API and App', () => {
             expect(res.type).toMatch(/text\/html/)
         })
     })*/
-})
-
-afterAll(() => {
-    database.close()
-    server.close()
 })

@@ -1,12 +1,12 @@
-import { app } from '../index'
+import server from '../server'
 import supertest from 'supertest'
-import mongoose from 'mongoose'
+import * as database from '../database'
 
-let api = null, server = null
+let api = null
 
 describe('init::app', async () => {
     console.log('INIT_TEST')
-    let server = await app.listen(4000) //await startServer()
+    //let server = await app.listen(4000) //await startServer()
     let request = await supertest.agent(server);
     console.log('###---')
 
@@ -23,9 +23,7 @@ describe('init::app', async () => {
     })
 
     afterAll(() => {
-        mongoose.connection.close()
-        server.close()
-        console.log('END_APP')
+        server.close(() => database.close())
     })
 
 })

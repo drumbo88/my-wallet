@@ -12,20 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const supertestAgent_1 = __importDefault(require("./supertestAgent"));
-describe('Init API and App', () => {
-    test('GET /: Should send API Working message', () => __awaiter(void 0, void 0, void 0, function* () {
-        yield supertestAgent_1.default.get('/api').expect((res) => {
-            expect(res.body.message).toContain("API Working");
-            expect(res.statusCode).toBe(200);
-            expect(res.type).toMatch(/application\/json/);
-        });
-    }));
-    /*test('Should send ReactApp with 200 status code at GET /api ', async () => {
-        await api.get('/').expect((res) => {
-            expect(res.text).toContain("<div id=\"app\"")
-            expect(res.statusCode).toBe(200)
-            expect(res.type).toMatch(/text\/html/)
-        })
-    })*/
+const server_1 = __importDefault(require("../server"));
+const testServer_1 = require("./testServer");
+exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
+    server_1.default.close(testServer_1.testServer);
 });

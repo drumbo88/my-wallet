@@ -9,7 +9,7 @@
     "seed": "cross-env NODE_ENV=development && node build/seed.js",
     "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node build/seed.js",
     "webpack": "webpack --mode development --watch",
-    "test": "cross-env NODE_ENV=test && cross-env NODE_OPTIONS=--experimental-vm-modules && npx jest --noStackTrace --verbose",
+    "test": "cross-env NODE_ENV=test && cross-env NODE_OPTIONS=--experimental-vm-modules && npx jest --noStackTrace --verbose --detectOpenHandles",
     "test:watch": "npm run test -- --watch"
   },
   "repository": {

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connect = exports.reset = exports.seed = exports.AppDataSource = void 0;
+exports.close = exports.connect = exports.reset = exports.seed = exports.AppDataSource = void 0;
 const config_1 = require("./config");
 const typeorm_1 = require("typeorm");
 exports.AppDataSource = new typeorm_1.DataSource({
@@ -20,6 +20,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     //password: DB_PASSWORD,
     database: config_1.DB_NAME,
     entities: [__dirname + "/entity/*.js"],
+    useUnifiedTopology: true,
 });
 const seed = (entity, seeds) => __awaiter(void 0, void 0, void 0, function* () {
     const tableName = entity.prototype.constructor.name;
@@ -50,11 +51,11 @@ const reset = function () {
 exports.reset = reset;
 //console.log({NODE_ENV,DB_RESET})
 const connect = () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('Connecting to the database...');
+    //console.log('Connecting to the database...')
     return new Promise((resolve, reject) => {
         exports.AppDataSource.initialize()
             .then(db => {
-            console.log("DS initialized!");
+            //console.log("DS initialized!")
             resolve(db);
         })
             .catch((error) => {
@@ -63,3 +64,10 @@ const connect = () => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 exports.connect = connect;
+const close = () => __awaiter(void 0, void 0, void 0, function* () {
+    //console.log('Disconnecting database...')
+    exports.AppDataSource.destroy()
+        .then(() => false /*console.log("DS disconnected!")*/)
+        .catch((error) => false /*console.error(`Couldn't disconnect DS: ${error.stack}`)*/);
+});
+exports.close = close;

@@ -1,9 +1,4 @@
-import { app } from '../index'
-import * as database from '../database'
-import supertest from 'supertest'
-
-const server = app.listen()
-const api = supertest.agent(server)
+import api from './supertestAgent'
 
 describe('Authorization', () => {
 
@@ -20,9 +15,4 @@ describe('Authorization', () => {
         expect(text).toContain("Auth failed")
         expect(statusCode).toBe(401)
     })
-})
-
-afterAll(() => {
-    database.close()
-    server.close()
 })

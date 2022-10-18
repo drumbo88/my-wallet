@@ -1,6 +1,4 @@
 "use strict";
-// ----- Static files -----
-//app.use(express.static(path.join(__dirname, 'public')))
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -28,13 +26,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const app_1 = __importDefault(require("./app"));
-const config = __importStar(require("./config"));
-const server_1 = __importDefault(require("./server"));
-// ----- Settings -----
-const PORT = config.NODE_ENV == "test"
-    ? (config.API_PORT_TEST || 5001)
-    : (config.API_PORT || 5000);
-// ########## Starting the server ##########
-server_1.default.init(app_1.default, config);
-exports.default = server_1.default;
+exports.testServer = void 0;
+const app_1 = __importDefault(require("../app"));
+const server_1 = __importDefault(require("../server"));
+const config = __importStar(require("../config"));
+exports.testServer = server_1.default.init(app_1.default, config);
