@@ -49,8 +49,10 @@ export class OperationItem {
       return obj
     }
 
+    /*
+     * Elements to seed database
+     */
+    static seeds = [
+
+    ]
 }
-
-export const seeds = [
-
-]

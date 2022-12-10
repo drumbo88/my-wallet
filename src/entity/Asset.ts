@@ -36,8 +36,13 @@ export class Asset {
             return ds.getRepository(this).findOneOrFail(filter)
         }
     }
+
+    /*
+     * Elements to seed database
+     */
+    static seeds = [
+
+    ]
+
 }
 
-export const seeds = [
-
-]

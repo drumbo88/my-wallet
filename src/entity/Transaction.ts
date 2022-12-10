@@ -101,53 +101,55 @@ export class Transaction {
     }
   }
 
+  /*
+   * Elements to seed database
+   */
+  static seeds = [
+    {
+      currency: "ARS",
+      amount: "1000",
+      concept: { name: "Comida" },
+      detail: "Brozziano",
+    },
+    {
+      currency: "ARS",
+      amount: 400,
+      concept: { name: "Sube" }, // CARGAR UNA PREPAGA NO ES UN GASTO. USARLA SI
+    },
+    {
+      currency: "ARS",
+      amount: 150000,
+      concept: { name: "Sueldo" },
+      fromAccount: { entity: { taxId: "30692317714" } },
+      toAccount: { entity: { taxId: "20337466711" } },
+      detail: "Mes Agosto 2022",
+    },
+    {
+      currency: "ARS",
+      amount: 2500,
+      concept: { name: "Servicios" },
+      detail: "Luz",
+    },
+    {
+      currency: "ARS",
+      amount: 150000,
+      toCurrency: "BUSD",
+      exchangeRate: 280,
+      concept: { name: "Conversión" },
+      fromAccount: { entity: { taxId: "20337466711" } },
+      toAccount: { entity: {
+        name: 'Binance',
+        type: 'CryptoExchange',
+      } },
+      detail: "ARS a BUSD",
+    },
+    {
+      currency: "ARS",
+      amount: 400,
+      concept: { name: "Sube" },
+    },  ]
 }
 
-export const seeds = [
-  {
-    currency: "ARS",
-    amount: "1000",
-    concept: { name: "Comida" },
-    detail: "Brozziano",
-  },
-  {
-    currency: "ARS",
-    amount: 400,
-    concept: { name: "Sube" }, // CARGAR UNA PREPAGA NO ES UN GASTO. USARLA SI
-  },
-  {
-    currency: "ARS",
-    amount: 150000,
-    concept: { name: "Sueldo" },
-    fromAccount: { entity: { taxId: "30692317714" } },
-    toAccount: { entity: { taxId: "20337466711" } },
-    detail: "Mes Agosto 2022",
-  },
-  {
-    currency: "ARS",
-    amount: 2500,
-    concept: { name: "Servicios" },
-    detail: "Luz",
-  },
-  {
-    currency: "ARS",
-    amount: 150000,
-    toCurrency: "BUSD",
-    exchangeRate: 280,
-    concept: { name: "Conversión" },
-    fromAccount: { entity: { taxId: "20337466711" } },
-    toAccount: { entity: {
-      name: 'Binance',
-      type: 'CryptoExchange',
-    } },
-    detail: "ARS a BUSD",
-  },
-  {
-    currency: "ARS",
-    amount: 400,
-    concept: { name: "Sube" },
-  },
-];
 /*
 const schema = new Schema({
   datetime: { type: Date, required: true, default: Date.now },

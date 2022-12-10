@@ -1,4 +1,4 @@
-import { Entity, OneToOne, Column } from 'typeorm'
+import { Column } from 'typeorm'
 import { PaymentCard } from './PaymentCard'
 import { AppDataSource as ds } from '../database'
 
@@ -7,8 +7,7 @@ export class PaymentCardCredit {
     @Column()
     period: string
 
-    @OneToOne(type => PaymentCard)
-    paymentCard: PaymentCard
+    private paymentCard: PaymentCard
 
     constructor(data: any = {}) {
         const { period } = data
@@ -17,18 +16,15 @@ export class PaymentCardCredit {
 
     static async init(data) {
         const {
-            fullname, expirationDate, status, balance,
+            period,
+            /*number, fullname, expirationDate, status, balance,
             ownerPersonEntity, servicePersonEntity, administratorPersonEntity,
-            cardDebit, cardCredit, cardPrepaid,
-            ...thisData
+            cardDebit, cardCredit, cardPrepaid,*/
+            ...paymentCardData
         } = data
-        const obj = new this(thisData)
+        const obj = new this({ period })
 
-        obj.paymentCard = await PaymentCard.init({
-            fullname, expirationDate, status, balance,
-            ownerPersonEntity, servicePersonEntity, administratorPersonEntity,
-            cardDebit, cardCredit: obj, cardPrepaid
-        })
+        obj.paymentCard = await PaymentCard.init(paymentCardData)
 
         return obj
     }
@@ -50,4 +46,11 @@ export class PaymentCardCredit {
             return personEntity.cardCredit
         }
     }
+
+    /*
+     * Elements to seed database
+     */
+    static seeds = [
+
+    ]
 }

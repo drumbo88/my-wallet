@@ -1,8 +1,6 @@
-import { Entity, OneToOne, Column, IsNull } from 'typeorm'
+import { IsNull } from 'typeorm'
 import { PersonEntity } from './PersonEntity'
 import { AppDataSource as ds } from '../database'
-import { User } from './User'
-import { EntityAbstract } from './EntityInterface'
 
 enum PersonGenders {
     MALE = 1,
@@ -11,21 +9,12 @@ enum PersonGenders {
 }
 
 export class Person {
-
-    // ToRemove: @Column({ nullable: true })
     firstName: string | null
-
-    // ToRemove: @Column({ nullable: true })
     lastName: string | null
-
-    // ToRemove: @Column({ nullable: true })
     birthdate: Date | null
-
-    // ToRemove: @Column({ enum: PersonGenders })
     gender: PersonGenders
 
-    // ToRemove: @OneToOne(type => PersonEntity)
-    personEntity: PersonEntity
+    private personEntity: PersonEntity
 
     constructor(data: any = {}) {
         const { firstName, lastName, birthdate, gender } = data
@@ -35,21 +24,26 @@ export class Person {
         this.gender = gender
     }
     static async init(data) {
-        const {
-            taxId, user,
-            ...thisData
-        } = data
+        const { taxId, user, accountsOwned, accountsAdministrated, ...thisData } = data
         const obj = new this(thisData)
 
-        obj.personEntity = await PersonEntity.init({ taxId, user })
+        obj.personEntity = await PersonEntity.init({ taxId, user, accountsOwned, accountsAdministrated })
+
+        return obj
+    }
+    static async initAndSave(data) {
+        const { ...thisData } = data
+        const obj = await (await this.init(thisData)).save()
 
         return obj
     }
     async save() {
+        const { personEntity, ...person } = this
         const repoPersonEntity = ds.getRepository(PersonEntity)
+
         return await repoPersonEntity.save({
-            ...this.personEntity,
-            person: this,
+            ...personEntity,
+            person,
         })
     }
 
@@ -74,12 +68,15 @@ export class Person {
             lastName: "Rumbo",
             birthdate: "1988-06-19",
             taxId: "20337466711",
-            gender: "male",
+            gender: PersonGenders.MALE,
             user: {
               name: "drumbo88",
               emailPrimary: "dario.rumbo@gmail.com",
               password: '12345'
             },
+            accountsOwned: [
+                { alias: 'drumbo88bf' }
+            ]
         }
     ]
 }

@@ -45,4 +45,10 @@ export class PaymentCardDebit {
         }
     }
 
+    /*
+     * Elements to seed database
+     */
+    static seeds = [
+
+    ]
 }

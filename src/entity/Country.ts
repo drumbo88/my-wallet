@@ -40,6 +40,12 @@ export class Country extends EntityAbstract {
         }
         return obj
     }
+    static async initAndSave(data) {
+        const { ...thisData } = data
+        const obj = await (await this.init(thisData)).save()
+
+        return obj
+    }
     async save() {
         const repoCountry = ds.getRepository(this.constructor)
         return await repoCountry.save(this)
@@ -53,6 +59,10 @@ export class Country extends EntityAbstract {
             return await ds.getRepository(this).findOneOrFail(filter)
         }
     }
+
+    /*
+     * Elements to seed database
+     */
     static seeds = [
         { code: 'ARG', name: 'Argentina', currencies: ['ARS'] },
         { code: 'USA', name: 'Estados Unidos', currencies: ['USD'] },

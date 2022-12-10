@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, BaseEntity, IsNull, Repository } from 'typeorm'
+import { Entity, Column, OneToOne, BaseEntity, IsNull, Repository, ObjectID } from 'typeorm'
 import { AppDataSource as ds } from '../database'
 import { PersonEntity } from './PersonEntity'
 
@@ -12,20 +12,12 @@ enum CompanyTypes {
 
 export class Company {
 
-    // ToRemove: @Column()
     name: string
-
-    // ToRemove: @Column()
     shortName: string
-
-    // ToRemove: @Column({ nullable: true })
     alias: string | null
-
-    // ToRemove: @Column({ enum: CompanyTypes })
     type: CompanyTypes
 
-    // ToRemove: @OneToOne(type => PersonEntity)
-    personEntity: PersonEntity
+    private personEntity: PersonEntity
 
     constructor(data: any = {}) {
         const { name, shortName, alias, type } = data
@@ -35,23 +27,31 @@ export class Company {
         this.type = type
     }
     static async init(data: any) {
-        const { taxId, user, ...thisData } = data
+        const { taxId, user, accountsOwned, accountsAdministrated, personEntityId, ...thisData } = data
         const obj = new this(thisData)
 
-        //obj.personEntity = await PersonEntity.getOne({ taxId, user })
-        obj.personEntity = await PersonEntity.init({ taxId, user })
+        obj.personEntity = personEntityId
+            ? await PersonEntity.getOne(personEntityId)
+            : await PersonEntity.init({ taxId, user, accountsOwned, accountsAdministrated })
 
         return obj
     }
 
+    static async initAndSave(data) {
+        const { accountsOwned, accountsAdministrated, ...thisData } = data
+        const obj = await (await this.init(thisData)).save()
+
+        return obj
+    }
     /**
      * Saves Company as PersonEntity entity
      */
     async save(): Promise<PersonEntity> {
+        const { personEntity, ...company } = this
         const repoPersonEntity = ds.getRepository(PersonEntity)
         return await repoPersonEntity.save({
-            ...this.personEntity,
-            company: this,
+            ...personEntity,
+            company,
         })
     }
 

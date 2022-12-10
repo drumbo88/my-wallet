@@ -64,6 +64,12 @@ export class Currency extends EntityAbstract {
         return obj
     }
 
+    static async initAndSave(data) {
+        const { ...thisData } = data
+        const obj = await (await this.init(thisData)).save()
+
+        return obj
+    }
     async save() {
         const repoCurrency = ds.getRepository(this.constructor)
         return await repoCurrency.save(this)
@@ -78,6 +84,9 @@ export class Currency extends EntityAbstract {
         }
     }
 
+    /*
+     * Elements to seed database
+     */
     static seeds = [
         { code: 'ARS', symbol: '$', name: 'Peso Argentino', value: 1/150 },
         { code: 'USD', symbol: '$', name: 'Dólar Estadounidense', value: 1 },

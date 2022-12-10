@@ -11,17 +11,13 @@ export class PaymentCardPrepaid {
     }
     static async init(data) {
         const {
-            fullname, expirationDate, status, balance,
-            ownerPersonEntity, servicePersonEntity, administratorPersonEntity,
-            cardDebit, cardCredit, cardPrepaid,
+            //cardDebit, cardCredit, cardPrepaid,
             ...thisData
         } = data
         const obj = new this(thisData)
 
         obj.paymentCard = await PaymentCard.init({
-            fullname, expirationDate, status, balance,
-            ownerPersonEntity, servicePersonEntity, administratorPersonEntity,
-            cardDebit, cardCredit, cardPrepaid: obj
+            //cardDebit, cardCredit, cardPrepaid: obj
         })
 
         return obj
@@ -44,4 +40,11 @@ export class PaymentCardPrepaid {
             return personEntity.cardPrepaid
         }
     }
+
+    /*
+     * Elements to seed database
+     */
+    static seeds = [
+
+    ]
 }

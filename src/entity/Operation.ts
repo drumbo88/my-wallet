@@ -18,6 +18,9 @@ enum OperationStatus {
   CANCELLED
 }
 
+/**********************************************************
+ * ManyToMany Class.
+ */
 export class ObjectItemAssignation {
 
   @ManyToOne(type => OperationItem, { eager: true })
@@ -27,11 +30,24 @@ export class ObjectItemAssignation {
   quantity: number
 
   constructor(data: any = {}) {
-    this.item = data.item
     this.quantity = data.quantity
   }
 
+  static async init(data): Promise<ObjectItemAssignation> {
+    const { item, ...thisData } = data
+    const obj = new this(thisData)
+
+    if (!(item instanceof OperationItem))
+      data.item = await OperationItem.init(data.item)
+    obj.item = data.item
+
+    return obj
+  }
 }
+
+/**********************************************************
+ * ManyToMany Class.
+ */
 export class TransactionAssignation {
 
   @ManyToOne(type => Transaction, { eager: true })
@@ -41,12 +57,25 @@ export class TransactionAssignation {
   amount: number
 
   constructor(data: any = {}) {
-    this.transaction = data.transaction
     this.amount = data.amount
   }
 
+  static async init(data): Promise<TransactionAssignation> {
+    const { transaction, ...thisData } = data
+    const obj = new this(thisData)
+
+    if (!(transaction instanceof OperationItem))
+      data.transaction = await OperationItem.init(transaction)
+    obj.transaction = data.transaction
+
+    return obj
+  }
 }
 
+/*/**********************************************************
+ * Buy/Sell operation. It generates debts that demands payments (transactions) to be paid off.
+ * Items/concepts are compose the operation.
+ */
 @Entity()
 export class Operation {
 
@@ -59,10 +88,10 @@ export class Operation {
     @Column({ enum: OperationTypes })
     type: OperationTypes
 
-    @ManyToOne(type => PersonEntity, { eager: true })
+    @ManyToOne(() => PersonEntity, { eager: true })
     fromPersonEntity: PersonEntity
 
-    @ManyToOne(type => PersonEntity, { eager: true })
+    @ManyToOne(() => PersonEntity, { eager: true })
     toPersonEntity: PersonEntity
 
     @Column({ default: '' })
@@ -78,16 +107,19 @@ export class Operation {
     status: OperationStatus
 
     constructor(data: any = {}) {
-      // this.id = ObjectID.createFromTime(new Date().getUTCSeconds())
       const { datetime, type, detail, status } = data
 
       this.datetime = datetime
       this.type = type
       this.detail = detail
 
-      this.status = status || null
+      this.status = status || OperationStatus.CREATED
   }
-  static async init(data) {
+
+  /*
+   * Create instance of this class
+   */
+  static async init(data): Promise<Operation> {
       const { fromPersonEntity, toPersonEntity, items, transactions, ...thisData } = data
       const obj = new this(thisData)
       obj.items = []
@@ -114,11 +146,24 @@ export class Operation {
       return obj
   }
 
-  async save() {
+  /*
+   * Save instance in database
+   */
+  async save(): Promise<Operation> {
     const repoOperation = ds.getRepository(this.constructor)
+
+    for (const i of this.items) {
+      if (!(Number(i.item.asset) ^ Number(i.item.concept)))
+        throw new Error("Need to define concept or asset for OperationItem")
+    }
+
     return await repoOperation.save(this)
   }
-  static getOne(data) {
+
+  /*
+   * Get one instance from database
+   */
+  static getOne(data): Promise<Operation> | Operation {
       if (data instanceof this) {
           return data
       }
@@ -127,6 +172,26 @@ export class Operation {
           return ds.getRepository(this).findOneOrFail(filter)
       }
   }
+
+  /*
+   * Elements to seed database
+   */
+  static seeds = [
+    {
+      datetime: '2022-10-10',
+      type: OperationTypes.TRADE, // 1 o más transacciones unidireccionales (salvo devolución) (Compra: envio pago (->) | Venta: recibo pago (<-))
+      fromPersonEntity: { taxId: '20337466711' },
+      toPersonEntity: { taxId: '20337466711' },
+      amount: 5000, currency: 'ARS',
+      detail: 'Compra de bien o servicio',
+      items: [
+        { item: { }, quantity: 10, price: 500 },
+      ],
+      transactions: [
+        { datetime: null, fromAccount: { alias: 'drumbo88bf' }, toAccount: { address: 'CBU123123123123' }, currency: null, amount: 5000 }
+      ],
+    },
+  ]
 };
 
 /*

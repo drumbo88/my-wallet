@@ -4,6 +4,7 @@ import { PaymentCardDebit } from './PaymentCardDebit'
 import { PaymentCardPrepaid } from './PaymentCardPrepaid'
 import { PaymentCardCredit } from './PaymentCardCredit'
 import { AppDataSource as ds } from '../database'
+import { EntityAbstract } from './EntityInterface'
 
 enum PaymentCardStatus {
     INACTIVE,
@@ -13,7 +14,7 @@ enum PaymentCardStatus {
 type PaymentCardTypes = PaymentCardDebit | PaymentCardPrepaid | PaymentCardCredit
 
 @Entity()
-export class PaymentCard {
+export class PaymentCard extends EntityAbstract {
 
     @ObjectIdColumn()
     id: ObjectID
@@ -52,20 +53,17 @@ export class PaymentCard {
     cardCredit: PaymentCardCredit | null
 
     constructor(data: any = {}) {
-        // this.id = ObjectID.createFromTime(new Date().getUTCSeconds())
+        super()
+
         const {
             fullname, expirationDate, status, balance,
-            ownerPersonEntity, servicePersonEntity, administratorPersonEntity,
             cardDebit, cardCredit, cardPrepaid
         } = data
+
         this.fullname = fullname
         this.expirationDate = expirationDate
-        this.status = status
+        this.status = status || PaymentCardStatus.ACTIVE
         this.balance = balance
-
-        this.ownerPersonEntity = ownerPersonEntity
-        this.servicePersonEntity = servicePersonEntity
-        this.administratorPersonEntity = administratorPersonEntity
 
         this.cardDebit = cardDebit
         this.cardCredit = cardCredit
@@ -73,7 +71,23 @@ export class PaymentCard {
     }
 
     static async init(data) {
-        return new this(data)
+        const {
+            ownerPersonEntity, servicePersonEntity, administratorPersonEntity,
+            ...thisData
+        } = data
+
+        const obj = new this(thisData)
+        if (ownerPersonEntity) {
+            obj.ownerPersonEntity = await PersonEntity.getOne(ownerPersonEntity)
+        }
+        if (servicePersonEntity) {
+            obj.servicePersonEntity = await PersonEntity.getOne(servicePersonEntity)
+        }
+        if (administratorPersonEntity) {
+            obj.administratorPersonEntity = await PersonEntity.getOne(administratorPersonEntity)
+        }
+
+        return obj
     }
 
     static getOne(data) {

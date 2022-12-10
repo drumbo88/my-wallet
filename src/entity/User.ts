@@ -26,9 +26,6 @@ export class User {
     @Column({ enum: UserStatus, default: UserStatus.ACTIVE })
     status: UserStatus
 
-    @OneToOne(type => PersonEntity)
-    personEntity: PersonEntity
-
     constructor(data: any = {}) {
 
         const { name, emailPrimary, emailSecondary, password, status } = data
@@ -41,10 +38,9 @@ export class User {
         this.status = status || UserStatus.ACTIVE
     }
     static async init(data) {
-        const { personEntity, ...thisData } = data
-        const obj = new this(thisData)
+        const { ...thisData } = data
 
-        obj.personEntity = personEntity //await PersonEntity.init(personEntity)
+        const obj = new this(thisData)
 
         return obj
     }
@@ -54,7 +50,10 @@ export class User {
             return data
         }
         else {
-            const personEntity = await ds.getRepository(PersonEntity).findOneOrFail(data)
+            const filter = { where: { user: (typeof data == 'string')
+                ? { name: data } : { name: data.name }
+            } }
+            const personEntity = await ds.getRepository(PersonEntity).findOneOrFail(filter)
             return personEntity.user
         }
     }

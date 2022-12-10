@@ -36,8 +36,11 @@ export class OperationConcept {
             return await ds.getRepository(this).findOneOrFail(filter)
         }
     }
-  }
 
-export const seeds = [
+    /*
+     * Elements to seed database
+     */
+    static seeds = [
 
-]
+    ]
+}

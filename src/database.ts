@@ -1,7 +1,7 @@
 import { NODE_ENV, DB_DNS, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING } from './config'
-import { BaseEntity, DataSource, EntityTarget, ObjectLiteral, Repository } from "typeorm"
+import { DataSource } from "typeorm"
 import { EntityAbstract } from './entity/EntityInterface'
-import { Currency } from './entity/Currency'
+import { join } from 'path'
 
 export const AppDataSource = new DataSource({
     type: "mongodb",
@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
     //username: DB_USER,
     //password: DB_PASSWORD,
     database: DB_NAME,
-    entities: [__dirname + "/entity/*.js"],
+    entities: [join(__dirname, "**", "entity", "**", "*.js")],
     useUnifiedTopology: true,
 })
 
@@ -22,7 +22,7 @@ export const seed = async (entity: any, seeds: Object[]): Promise<EntityAbstract
 
         const seederPromises: Promise<EntityAbstract>[] = []
         for (const seed of seeds) {
-            seederPromises.push((await entity.init(seed)).save());
+            seederPromises.push(await entity.initAndSave(seed));
         }
         return await Promise.all(seederPromises)
     }
@@ -43,11 +43,11 @@ export const reset = async function () {
 
 //console.log({NODE_ENV,DB_RESET})
 export const connect = async (): Promise<DataSource> => {
-    //console.log('Connecting to the database...')
+    console.log('Connecting to the database...')
     return new Promise((resolve, reject) => {
         AppDataSource.initialize()
         .then(db => {
-            //console.log("DS initialized!")
+            console.log("DS initialized!")
             resolve(db)
         })
         .catch((error) => {
@@ -56,9 +56,9 @@ export const connect = async (): Promise<DataSource> => {
     })
 }
 export const close = async (): Promise<void> => {
-    //console.log('Disconnecting database...')
+    console.log('Disconnecting database...')
 
     AppDataSource.destroy()
-        .then(() => false/*console.log("DS disconnected!")*/)
-        .catch((error) => false/*console.error(`Couldn't disconnect DS: ${error.stack}`)*/)
+        .then(() => console.log("DS disconnected!"))
+        .catch((error) => console.error(`Couldn't disconnect DS: ${error.stack}`))
 }
