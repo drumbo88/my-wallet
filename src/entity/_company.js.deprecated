@@ -1,0 +1,73 @@
+import mongoose from 'mongoose'
+const { Schema } = mongoose;
+
+import { model as EntityModel } from "./entity.ts"
+import { model as AccountModel } from "./account.ts"
+
+const schema = new Schema({
+  name: { type: String, required: true },
+  alias: { type: String },
+  taxId: { type: String, unique: true },
+  entity: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
+  type: { type: String, enum: ['Company', 'Wallet', 'Bank', 'CryptoExchange', 'CryptoWallet', 'DigitalWallet'], default: 'Company' },
+});
+
+schema.statics.seeds = () => [
+  {
+    name: 'BBVA Francés',
+    taxId: '30500003193',
+    type: 'Bank',
+  },
+  {
+    name: 'Foncap SA',
+    taxId: '30692317714',
+    accounts: [{
+      adminEntity: { taxId: '30500003193' },
+    }]
+  },
+  {
+    name: 'Binance',
+    type: 'CryptoExchange',
+  },
+];
+schema.statics.seed = mongoose.seed
+
+schema.statics.seeder = async (data) => {
+  const {
+    name,
+    type = 'Company',
+    alias,
+    taxId,
+  } = data
+
+  if (type == 'Person') {
+    throw new Error(`Invalid company type '${type}'`)
+  }
+
+  const obj = new model({ name, alias, taxId, type })
+
+  const entity = await EntityModel.create({ type: 'Company', child: obj })
+
+  if (typeof data.accounts == "undefined") {
+    data.accounts = [];
+  }
+  for (const dataAccount of data.accounts) {
+    const adminEntity = await model.findOne(dataAccount.adminEntity);
+
+    const account = await AccountModel.create({
+      ...dataAccount,
+      adminEntity: adminEntity.entity._id,
+      userEntity: entity._id,
+    });
+
+    entity.accounts.push(account);
+  }
+
+  await entity.save();
+  obj.entity = entity
+  await obj.save();
+}
+
+const model = mongoose.model("Company", schema);
+
+export { model, schema }
