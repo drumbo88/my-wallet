@@ -1,41 +1,39 @@
 import mongoose from 'mongoose'
 const { Schema } = mongoose;
 
-const schema = new Schema({
-    symbol: { type: String, required: true, unique: true },
+export enum CurrencyType {
+    FIAT = 'FIAT',
+    CRYPTO = 'CRYPTO',
+}
+
+export interface ICurrency {
+    code: String,
+    symbol: String,
+    name: String,
+    value: Number,
+    api?: String,
+    type: CurrencyType,
+}
+
+const schema = new Schema<ICurrency>({
+    code: { type: String, required: true, unique: true },
+    symbol: { type: String, default: '$' },
     name: { type: String, required: true, unique: true },
     value: { type: Number, required: true },
     api: { type: String },
-    type: { type: String, enum: ['FIAT', 'CRYPTO'], default: 'FIAT', required: true },
-    countries: [String],
+    type: { type: String, enum: CurrencyType, default: CurrencyType.FIAT, required: true },
+    //countries: [{ type: String, ref: 'Country', foreignField: 'code' }],
 })
 
-schema.statics.seeds = () => [
-    { symbol: 'ARS', name: 'Peso Argentino', value: 1/130, countries: ['ARG'] },
-    { symbol: 'USD', name: 'Dólar Estadounidense', value: 1, countries: ['USA'] },
-    { symbol: 'BTC', name: 'Bitcoin', value: 23000, type: 'CRYPTO' },
+const seeds = [
+    { symbol: '$', code: 'ARS', name: 'Peso Argentino', value: 1/130 },
+    { symbol: '$', code: 'USD', name: 'Dólar Estadounidense', value: 1 },
+    { symbol: '$', code: 'BRL', name: 'Real Brasileño', value: 1/35.5 },
+    { symbol: '$', code: 'BTC', name: 'Bitcoin', value: 19000, type: CurrencyType.CRYPTO },
 ]
+// schema.statics.seed = function (seeds) {
+// }
 
-schema.statics.create = async (data) => {
-    try {
-        return await this.create(data)
-    }
-    catch (error) {
-        throw new Error(error)
-    }
-}
-schema.static.findAndUpdate = async (filter, data) => {
-    try {
-        if (typeof(filter)!="Object")
-            filter = { _id: filter }
-        return await this.findOneAndUpdate(id, data)
-    }
-    catch (error) {
-        throw new Error(error)
-    }
-}
-schema.statics.seed = mongoose.seed
+const Currency = mongoose.model<ICurrency>('Currency', schema)
 
-const model = mongoose.model('Currency', schema)
-
-export { model, schema }
+export { schema, Currency, seeds }

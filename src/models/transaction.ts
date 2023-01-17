@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { PaymentCardRef } from "./PaymentCard";
+import { PersonEntityRefSchema } from "./PersonEntity";
 const { Schema } = mongoose;
 
 const schema = new Schema({
@@ -11,26 +13,26 @@ const schema = new Schema({
   type: { type: String, enum: ["cash", "deposit", "transfer", "card"], ref: 'Currency', required: true },
 
   from: { // NULL for cash/deposit
-    entityId: { type: Schema.Types.ObjectId, ref: "Entity" },
+    entity: { type: PersonEntityRefSchema },
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+wallet )
-    cardId: { type: Schema.Types.ObjectId, ref: "Card" },
-    usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
+    card: { type: PaymentCardRef },
+    usingEntity: { type: PersonEntityRefSchema }, // Digital wallets
   },
 
   to: { // null=cash
-    entityId: { type: Schema.Types.ObjectId, ref: "Entity" },
+    entity: { type: PersonEntityRefSchema },
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+wallet )
-    cardId: { type: Schema.Types.ObjectId, ref: "Card" },
-    usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
+    card: { type: PaymentCardRef },
+    usingEntity: { type: PersonEntityRefSchema }, // Digital wallets
   },
   detail: { type: String },
 });
 
-schema.statics.seeds = () => [
+const seeds = [
   {
     currency: "ARS",
     amount: "1000",
@@ -77,7 +79,7 @@ schema.statics.seeds = () => [
 ];
 
 schema.statics.seeder = async (data) => {
-  const { date, currency, amount, detail } = data;
+  /*const { date, currency, amount, detail } = data;
   let concept = await TransactionConceptModel.findOne(data.concept);
 
   const me = await PersonModel.findOne({ taxId: "20337466711" }).populate("entity").populate("entity.accounts");
@@ -123,14 +125,14 @@ schema.statics.seeder = async (data) => {
 
   const obj = new model(transactionData);
 
-  await obj.save();
+  await obj.save();*/
 };
 
-schema.statics.seed = mongoose.seed;
+//schema.statics.seed = mongoose.seed;
 
-const model = mongoose.model("Transaction", schema);
+const Transaction = mongoose.model("Transaction", schema);
 
-export { model, schema };
+export { Transaction, schema, seeds };
 
 /*
 {

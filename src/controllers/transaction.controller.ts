@@ -1,6 +1,6 @@
 // Import Models
 import mongoose from 'mongoose'
-import { model as Transaction } from '../models/transaction.js'
+/*import { model as Transaction } from '../models/transaction.js'
 import { model as Account } from '../models/account.js'
 
 export const list = async (req, res) => {
@@ -74,3 +74,4 @@ export const remove = (req, res) => {
         return res.json({message: `Transaction deleted #${doc._id}`})
     })
 }
+*/

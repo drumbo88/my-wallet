@@ -1,5 +1,5 @@
 // Import Models
-import { model as Country } from '../models/country.js'
+import { Country } from '../models/Country.js'
 
 export const list = (req, res) => {
     Country.find({}).then((countries) => {
@@ -37,11 +37,15 @@ export const update = (req, res) => {
         concept, source, destiny,
         detail
     })
-    .then(doc => res.json({message: `Country saved #${doc._id}`}))
+    .then(doc => {
+        if (doc)
+            res.json({message: `Country saved #${doc._id}`})
+    })
     .catch(error => res.status(409).json({ message: error }))
 }
 export const remove = (req, res) => {
-    Country.findByIdAndDelete(req.params.id).then((doc) => {
-        return res.json({message: `Country deleted #${doc._id}`})
+    Country.findByIdAndDelete(req.params.id).then(doc => {
+        if (doc)
+            return res.json({message: `Country deleted #${doc._id}`})
     })
 }

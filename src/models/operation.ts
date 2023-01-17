@@ -1,28 +1,43 @@
 import mongoose from "mongoose";
+import { schema as OperationItem } from "./OperationItem";
+import { PersonEntityRefSchema } from "./PersonEntity";
 const { Schema } = mongoose;
 
+enum OperationType {
+  TRADE = 'TRADE',
+  EXCHANGE = 'EXCHANGE',
+}
+enum OperationStatus {
+  CREATED = 'CREATED',
+  PAID = 'PAID',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
 const schema = new Schema({
-  date: { type: Date, required: true, default: Date.now },
-  type: { type: String, enum: ['Trade', 'Exchange'],  },
-  fromEntity: { type: Schema.Types.ObjectId, alias: "from", required: true },
-  toEntity: { type: Schema.Types.ObjectId, alias: "to", required: true },
+  date: { type: Date, default: Date.now, required: true },
+  type: { type: String, enum: OperationType, required: true },
+  fromEntity: { type: PersonEntityRefSchema, alias: "from", required: true }, //{ type: PersonEntityRef, alias: "from", required: true },
+  toEntity: { type: PersonEntityRefSchema, alias: "to", required: true },
   detail: { type: String },
-  items: [{
-    item: { type: Schema.Types.ObjectId, ref: 'OperationItem' },
-    quantity: { type: Number, required: true, min: 0 },
-  }],
+  concepts: [
+    //item: { type: OperationItemFields, required: true },
+    //quantity: { type: Number, required: true, min: 0 },
+    //...OperationItemFields
+    OperationItem
+  ],
   transactions: [{
-    transaction: {type: Schema.Types.ObjectId, ref: 'Transaction' },
+    transaction: { type: Schema.Types.ObjectId, ref: 'Transaction' },
     amount: { type: Number, required: true, min: 0 }, // <= transaction.amount
   }],
-  state: { type: String, enum: ['creation', 'payment', 'completed', 'cancelled'], default: 'pendient' },
+  state: { type: String, enum: OperationStatus, default: OperationStatus.CREATED },
 });
 
-schema.statics.seed = mongoose.seed
+const seeds = []
 
-const model = mongoose.model("Operation", schema);
+const Operation = mongoose.model("Operation", schema);
 
-export { model, schema };
+export { Operation, schema, seeds };
 
 /*
   +schema.createTradeOperation()

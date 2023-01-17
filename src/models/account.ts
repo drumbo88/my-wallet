@@ -1,23 +1,39 @@
-import mongoose from 'mongoose'
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose'
+import { IPersonEntity } from './PersonEntity'
+import { IWallet, schema as Wallet  } from './Wallet'
+// import { PersonEntityRefSchema } from './PersonEntity'
 
-const schema = new Schema({
-    address: { type: String },
-    alias: { type: String },
-    status: { type: String, enum: ['ACTIVE', 'INCATIVE'], default: 'ACTIVE' },
-    adminEntity: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
-    userEntity: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
-    currency: { type: String, alias: 'currencyCode', default: 'ARS' },
-    type: { type: String, enum: ['funds', 'spot', 'earn', 'fixedTerm', 'credit'], default: 'funds' },
-    balance: { type: Number, required: true },
+export enum AccountStatus {
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+}
+export enum AccountTypes {
+    FUNDS = 'FUNDS',
+    SPOT = 'SPOT',
+    EARN = 'EARN',
+    FIXED_TERM = 'FIXED_TERM',
+    CREDIT = 'CREDIT',
+}
+export interface IAccount {
+    adminEntity?: IPersonEntity,
+    userEntity?: IPersonEntity,
+    status?: AccountStatus,
+    type?: AccountTypes,
+    wallets: IWallet[]
+}
 
-    debitCards: [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
-    prepaidCards: [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
-    creditCards: [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
+const schema = new Schema<IAccount>({
+    status: { type: String, enum: AccountStatus, default: AccountStatus.ACTIVE },
+    type: { type: String, enum: AccountTypes, default: AccountTypes.FUNDS },
 
-    detail: { type: String },
+    // adminEntity: { type: PersonEntityRefSchema, required: true },
+    // userEntity: { type: PersonEntityRefSchema, required: true },
+
+    wallets: [ Wallet ]
 })
-/* ToDo: Cada Account tendrá 1 asset (bancos) o más de un Asset (criptoBank)
+// class x {}
+// schema.loadClass(class extends x {})
+/* ToDo: Cada Account tendrá varias wallet (bancos) o más de un Asset (criptoBank)
     - funds: { currency, amount, ... }
     - fixedTerm: { currency, amount, ... }
 
@@ -26,8 +42,6 @@ const schema = new Schema({
     - earn: [{ currency, amount, ... }, ...]
 */
 
-schema.statics.seed = mongoose.seed
+//const model = mongoose.model('Account', schema)
 
-const model = mongoose.model('Account', schema)
-
-export { model, schema }
+export { schema }

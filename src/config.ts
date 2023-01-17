@@ -1,6 +1,79 @@
 import dotenv from 'dotenv'
 dotenv.config() // Copies .env to process.env
 
+export function booleanEnvVar(varName: string, defaultValue: boolean): boolean {
+    const val = process.env[varName]
+    if (val === undefined) {
+      return defaultValue
+    } else if (val === 'true') {
+      return true
+    } else if (val === 'false') {
+      return false
+    } else {
+      throw new Error(
+        `Invalid value "${val}" for env var ${varName}. Should be "true" or "false".`
+      )
+    }
+}
+
+export function stringEnvVar(varName: string, defaultValue: string, nullable = true): string {
+    const val = process.env[varName]
+    if (val == null && !nullable) {
+      throw new Error(`Empty value for ${varName} is not allowed`)
+    }
+    return val || defaultValue
+}
+
+export function floatEnvVar(varName: string, defaultValue: number): number {
+    const val = process.env[varName]
+    if (val === undefined) {
+      return defaultValue
+    }
+    const parsedVal = parseFloat(val)
+    if (isNaN(parsedVal)) {
+      throw new Error(
+        `Invalid value "${val}" for env var ${varName}. Should be a float.`
+      )
+    }
+    return parsedVal
+}
+
+export function integerEnvVar(varName: string, defaultValue: number): number {
+    const val = process.env[varName]
+    if (val === undefined) {
+      return defaultValue
+    }
+    const parsedVal = parseInt(val, 10)
+    if (isNaN(parsedVal)) {
+      throw new Error(
+        `Invalid value "${val}" for env var ${varName}. Should be an integer.`
+      )
+    }
+    return parsedVal
+}
+
+export function baseUrlEnvVar(varName: string): string {
+    const val = process.env[varName]
+    if (val === undefined) {
+      throw new Error(`Empty value for ${varName} is not allowed`)
+    }
+    if (val.slice(0, 8) !== 'https://') {
+      throw new Error(`${varName} (${val}) must start with "https://"`)
+    }
+    if (val.slice(-1) === '/') {
+      throw new Error(`${varName} (${val}) must not end with a slash`)
+    }
+    return val
+}
+
+export function arrayEnvVar(varName: string, defaultValue: string[], nullable = true): string[] {
+    const val = process.env[varName]
+    if (val == null && !nullable) {
+      throw new Error(`Empty value for ${varName} is not allowed`)
+    }
+    return val?.split(',') || defaultValue
+}
+
 const {
     NODE_ENV = "develpoment",
     API_PORT = 3001,

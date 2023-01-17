@@ -1,5 +1,5 @@
 // Import Models
-import { model as Currency } from '../models/currency.js'
+import { Currency } from '../models/Currency.js'
 
 export const list = (req, res) => {
     Currency.find({}).then((currencies) => {
@@ -37,11 +37,15 @@ export const update = (req, res) => {
         concept, source, destiny,
         detail
     })
-    .then(doc => res.json({message: `Currency saved #${doc._id}`}))
+    .then(doc => {
+        if (doc)
+            res.json({message: `Currency saved #${doc._id}`})
+    })
     .catch(error => res.status(409).json({ message: error }))
 }
 export const remove = (req, res) => {
     Currency.findByIdAndDelete(req.params.id).then((doc) => {
-        return res.json({message: `Currency deleted #${doc._id}`})
+        if  (doc)
+            return res.json({message: `Currency deleted #${doc._id}`})
     })
 }

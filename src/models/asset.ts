@@ -1,14 +1,13 @@
-import mongoose from "mongoose";
-const { Schema } = mongoose;
+import mongoose, { Schema } from 'mongoose'
+import { OperationItemDetailFields } from './OperationItemDetail';
 
-const schema = new Schema({
+export const AssetFields = {
   name: { type: String, required: true },
   code: { type: String, required: true },
   //countable: { type: Boolean, required: true }, // Mueble=true, Comida=false
-});
+};
 
-schema.statics.seed = mongoose.seed
-
-const model = mongoose.model("Asset", schema);
-
-export { model, schema };
+export const model = mongoose.model('Asset', new Schema({
+  ...OperationItemDetailFields,
+  ...AssetFields,
+}))

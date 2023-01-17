@@ -1,26 +1,27 @@
 import mongoose from 'mongoose'
-import { dbInit } from './database.js'
+import { dbInit, dbReset, dbSeed } from './database.js'
 import { DB_RESET } from './config.js'
+import models from './models'
 
-const models = [
-    'country',
-    'currency',
-    'company',
-    'person',
-    'transactionConcept',
-    'transaction',
+const seedModels = [
+    'Currency', 'Country',
+    'Company', 'Person',
+    //'Asset', 'OperationConcept',
+    'Operation',
+    'Transaction',
 ]
 
 dbInit()
-.then(async db => {
+.then(async () => {
+    const db = mongoose.connection.db
     if (DB_RESET) {
-        await mongoose.reset()
+        await dbReset()
     }
-    for (const modelName of models) {
-        const { model } = await import(`./models/${modelName}.js`)
-        await model.seed()
+    for (const modelName of seedModels) {
+        const { model, seeds } = models[modelName]
+        await dbSeed(model, seeds)
     }
-    db.connections[0].client.close()
+    mongoose.connections[0].close()
         .catch(err => console.error(err))
         .finally(() => console.log("\x1b[32mSeeding completed!\x1b[0m"))
 })

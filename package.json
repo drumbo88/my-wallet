@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "cross-env NODE_ENV=production && node index.js",
+    "start": "cross-env NODE_ENV=production && node build/index.js",
     "dev": "cross-env NODE_ENV=development && nodemon --ignore app index.js",
-    "seed": "cross-env NODE_ENV=development && node seed.js",
-    "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node seed.js",
+    "seed": "cross-env NODE_ENV=development && node build/seed.js",
+    "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node build/seed.js",
     "webpack": "webpack --mode development --watch",
     "test": "cross-env NODE_ENV=test && cross-env NODE_OPTIONS=--experimental-vm-modules && npx jest --noStackTrace",
     "test:watch": "npm run test -- --watch"

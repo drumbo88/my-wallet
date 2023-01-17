@@ -16,10 +16,10 @@ const cPerson = {}
 router.route('/:id')
     .get(checkAuth, cPerson.read)
     .put(checkAuth, cPerson.update)
-    .delete(checkAuth, cPerson.remove)*/
+    .delete(checkAuth, cPerson.remove)
 
 router.route('/:id/transactions')
-    .get(cTransaction.list)
+    .get(cTransaction.list)*/
 
 // Export
 export default router
