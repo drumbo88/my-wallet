@@ -1,36 +1,60 @@
 import mongoose, { Model } from 'mongoose'
 import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING } from './config.js'
 
+mongoose.set('strictQuery', false)
+
 export interface IModel {
     seed?(seeds): Promise<void>
 }
 type MyModel<T> = IModel & Model<T>;
 
-export const dbSeed = async function <T>(model: MyModel<T>, seeds) {
+export const dbSeed = async function <T>(model: MyModel<T>, modelSeeds: Object|Object[]) {
     //const seeds = [] //model.seeds()
     const count = await model.estimatedDocumentCount()
-    if (seeds?.length && !count) {
-        let seeder
-        if (typeof model.seed == 'undefined') {
-            console.log(`🌱 Seeding ${seeds.length} of ${model.modelName}...`)
-            seeder = async (seeds) => await model.insertMany(seeds)
+    const abstractSchema = !(modelSeeds instanceof Array)
+    let seedsByType = abstractSchema ? modelSeeds : { modelSeeds }
+    // let fieldsByType
+    // if (!count && abstractSchema) {
+    //     const types = Object.keys(seedsByType)
+    //     fieldsByType[]
+    //     for (const type of types) {
+    //         fieldsByType[type] = []
+    //         if (fieldsByType) {
+    //             seeds.
+    //         }
+    //     }
+    // }
+
+    for (let i in seedsByType) {
+        let seeds = seedsByType[i]
+        const modelName = model.modelName + (abstractSchema ? '.' + i : '')
+        if (seeds?.length && !count) {
+            let seeder
+            if (abstractSchema) {
+                seeds.forEach(x => { if (!x.hasOwnProperty(i)) x[i] = {} })
+                //console.log(seeds)
+            }
+            if (typeof model.seed == 'undefined') {
+                console.log(`🌱 Seeding ${seeds.length} of ${modelName}...`)
+                seeder = async (seeds) => await model.insertMany(seeds)
+            }
+            else {
+                console.log(`🌱 Seeding ${seeds.length} of ${modelName} using seeder...`)
+                seeder = async (seeds) => await model.seed?.(seeds)
+            }
+            try {
+                await seeder(seeds)
+            }
+            catch (error) {
+                console.log(`    ❌ ${error}`)
+            }
+        }
+        else if (!seeds || !seeds.length) {
+            console.log(` ℹ Nothing to seed of ${modelName}.`)
         }
         else {
-            console.log(`🌱 Seeding ${seeds.length} of ${model.modelName} using seeder...`)
-            seeder = async (seeds) => await model.seed?.(seeds)
+            console.log(` ℹ No need to seed ${modelName} (${count} existing documents).`)
         }
-        try {
-            await seeder(seeds)
-        }
-        catch (error) {
-            console.log(`    ❌ ${error}`)
-        }
-    }
-    else if (!seeds || !seeds.length) {
-        console.log(` ℹ Nothing to seed of ${model.modelName}.`)
-    }
-    else {
-        console.log(` ℹ No need to seed ${model.modelName} (${count} existing documents).`)
     }
 }
 

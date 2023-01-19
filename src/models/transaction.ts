@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { PaymentCardRef } from "./PaymentCard";
-import { PersonEntityRefSchema } from "./PersonEntity";
 const { Schema } = mongoose;
 
 const schema = new Schema({
@@ -13,21 +12,21 @@ const schema = new Schema({
   type: { type: String, enum: ["cash", "deposit", "transfer", "card"], ref: 'Currency', required: true },
 
   from: { // NULL for cash/deposit
-    entity: { type: PersonEntityRefSchema },
+    entity: { type: Schema.Types.ObjectId, ref: "Entity" },
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+wallet )
     card: { type: PaymentCardRef },
-    usingEntity: { type: PersonEntityRefSchema }, // Digital wallets
+    usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
   },
 
   to: { // null=cash
-    entity: { type: PersonEntityRefSchema },
+    entity: { type: Schema.Types.ObjectId, ref: "Entity" },
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+wallet )
     card: { type: PaymentCardRef },
-    usingEntity: { type: PersonEntityRefSchema }, // Digital wallets
+    usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
   },
   detail: { type: String },
 });

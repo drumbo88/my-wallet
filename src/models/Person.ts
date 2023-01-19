@@ -1,6 +1,6 @@
-import { model, Model, Document } from 'mongoose'
+import { Schema } from 'mongoose'
 import bcrypt from 'bcryptjs'
-import { IPersonEntity, PersonEntitySchema } from './PersonEntity';
+import { IEntity } from './Entity';
 import { IAccount } from './Account';
 
 enum PersonGenders {
@@ -9,24 +9,32 @@ enum PersonGenders {
     OTHER = 'OTHER',
 }
 
-export interface IPerson extends IPersonEntity {
+export interface IPersonData {
   firstname: String,
   lastname: String,
   birthdate: Date,
   gender: PersonGenders,
 }
-export interface IPersonModel extends Model<IPerson> {}
-export interface IPersonDocument extends Document<IPersonModel> {
-  addAccount(accountData: IAccount): IPersonDocument,
+export interface IPerson extends IEntity {
+  person: IPersonData
 }
+export const PersonFields = {
+  firstname: String,
+  lastname: String,
+  birthdate: Date,
+  gender: { type: String, enum: PersonGenders },
+}
+export const PersonSchema = new Schema(PersonFields)
 
 export const seeds: IPerson[] = [
     {
-      firstname: "Darío",
-      lastname: "Rumbo",
-      birthdate: new Date("1988-06-19"),
+      person: {
+        firstname: "Darío",
+        lastname: "Rumbo",
+        birthdate: new Date("1988-06-19"),
+        gender: PersonGenders.MALE,
+      },
       taxId: "20337466711",
-      gender: PersonGenders.MALE,
 
       user: {
         name: "drumbo88",
@@ -106,46 +114,16 @@ export const seeds: IPerson[] = [
       ],*/
     },
     {
-      firstname: "Pablo",
-      lastname: "Fernández",
-      birthdate: new Date("1989-05-19"),
+      person: {
+        firstname: "Pablo",
+        lastname: "Fernández",
+        birthdate: new Date("1989-05-19"),
+        gender: PersonGenders.MALE,
+      },
       //taxId: "20337466729",
-      gender: PersonGenders.MALE,
 
       user: {
         name: "pfdez",
       },
     }
 ];
-
-const PersonSchema = PersonEntitySchema.add({
-  firstname: String,
-  lastname: String,
-  birthdate: Date,
-  gender: { type: String, enum: PersonGenders },
-})
-// const PersonSchema = new Schema<IPerson>({
-//   firstname: String,
-//   lastname: String,
-//   birthdate: Date,
-//   gender: { type: String, enum: PersonGenders },
-//   ...PersonEntityFields
-// })
-
-PersonSchema.methods.addAccount = async function (accountData: IAccount) {
-  //accountData.adminEntity = //PersonEntity.find(accountData)
-    //(await Company.find(accountData.adminEntity) || await Person.find(accountData.adminEntity))
-}
-PersonSchema.statics.seed = async function (seeds: IPerson[]) {
-  const people: IPersonDocument[] = await this.insertMany(seeds)
-  for (const i in seeds) {
-    const seed = seeds[i]
-    const person = people[i]
-    if (seed.accountsOwned?.length) {
-      seed.accountsOwned.forEach(accData => person.addAccount(accData))
-      await person.save()
-    }
-  }
-}
-
-export const Person = model<IPerson, IPersonModel>('Person', PersonSchema)

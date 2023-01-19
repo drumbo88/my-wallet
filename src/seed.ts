@@ -5,7 +5,8 @@ import models from './models'
 
 const seedModels = [
     'Currency', 'Country',
-    'Company', 'Person',
+    'Entity',
+    //'Company', 'Person',
     //'Asset', 'OperationConcept',
     'Operation',
     'Transaction',

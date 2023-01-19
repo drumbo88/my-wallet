@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { schema as OperationItem } from "./OperationItem";
-import { PersonEntityRefSchema } from "./PersonEntity";
 const { Schema } = mongoose;
 
 enum OperationType {
@@ -17,8 +16,8 @@ enum OperationStatus {
 const schema = new Schema({
   date: { type: Date, default: Date.now, required: true },
   type: { type: String, enum: OperationType, required: true },
-  fromEntity: { type: PersonEntityRefSchema, alias: "from", required: true }, //{ type: PersonEntityRef, alias: "from", required: true },
-  toEntity: { type: PersonEntityRefSchema, alias: "to", required: true },
+  fromEntity: { type: Schema.Types.ObjectId, ref: "Entity", alias: "from", required: true }, //{ type: EntityRef, alias: "from", required: true },
+  toEntity: { type: Schema.Types.ObjectId, ref: "Entity", alias: "to", required: true },
   detail: { type: String },
   concepts: [
     //item: { type: OperationItemFields, required: true },

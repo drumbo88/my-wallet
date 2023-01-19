@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
-import { IPersonEntity } from './PersonEntity'
+import { IEntity } from './Entity'
 import { IWallet, schema as Wallet  } from './Wallet'
-// import { PersonEntityRefSchema } from './PersonEntity'
+// import { EntityRefSchema } from './Entity'
 
 export enum AccountStatus {
     ACTIVE = 'ACTIVE',
@@ -15,8 +15,8 @@ export enum AccountTypes {
     CREDIT = 'CREDIT',
 }
 export interface IAccount {
-    adminEntity?: IPersonEntity,
-    userEntity?: IPersonEntity,
+    adminEntity?: IEntity,
+    userEntity?: IEntity,
     status?: AccountStatus,
     type?: AccountTypes,
     wallets: IWallet[]
@@ -26,8 +26,8 @@ const schema = new Schema<IAccount>({
     status: { type: String, enum: AccountStatus, default: AccountStatus.ACTIVE },
     type: { type: String, enum: AccountTypes, default: AccountTypes.FUNDS },
 
-    // adminEntity: { type: PersonEntityRefSchema, required: true },
-    // userEntity: { type: PersonEntityRefSchema, required: true },
+    // adminEntity: { type: EntityRefSchema, required: true },
+    // userEntity: { type: EntityRefSchema, required: true },
 
     wallets: [ Wallet ]
 })
@@ -42,6 +42,6 @@ const schema = new Schema<IAccount>({
     - earn: [{ currency, amount, ... }, ...]
 */
 
-//const model = mongoose.model('Account', schema)
+const Account = mongoose.model('Account', schema)
 
-export { schema }
+export { schema, Account }
