@@ -15,22 +15,32 @@ export enum AccountTypes {
     CREDIT = 'CREDIT',
 }
 export interface IAccount {
+    adminEntityId?: Schema.Types.ObjectId,
+    ownerEntityId?: Schema.Types.ObjectId,
     adminEntity?: IEntity,
-    userEntity?: IEntity,
+    ownerEntity?: IEntity,
     status?: AccountStatus,
     type?: AccountTypes,
     wallets: IWallet[]
 }
 
-const schema = new Schema<IAccount>({
+const AccountSchema = new Schema<IAccount>({
     status: { type: String, enum: AccountStatus, default: AccountStatus.ACTIVE },
     type: { type: String, enum: AccountTypes, default: AccountTypes.FUNDS },
 
-    // adminEntity: { type: EntityRefSchema, required: true },
-    // userEntity: { type: EntityRefSchema, required: true },
+    adminEntityId: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
+    ownerEntityId: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
 
     wallets: [ Wallet ]
-})
+}, { toObject: { virtuals: true }, toJSON: { virtuals: true } })
+
+AccountSchema.virtual('ownerEntity', {
+    ref: 'Entity', localField: 'ownerEntityId', foreignField: '_id',
+});
+AccountSchema.virtual('adminEntity', {
+    ref: 'Entity', localField: 'adminEntityId', foreignField: '_id',
+});
+
 // class x {}
 // schema.loadClass(class extends x {})
 /* ToDo: Cada Account tendrá varias wallet (bancos) o más de un Asset (criptoBank)
@@ -42,6 +52,6 @@ const schema = new Schema<IAccount>({
     - earn: [{ currency, amount, ... }, ...]
 */
 
-const Account = mongoose.model('Account', schema)
+const Account = mongoose.model('Account', AccountSchema)
 
-export { schema, Account }
+export { AccountSchema, Account }

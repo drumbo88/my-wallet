@@ -51,7 +51,7 @@ export const seeds: IPerson[] = [
             detail: "Mi caja de ahorro",
           }]
         },{
-          adminEntity: { taxId: "30999999993" }, // findOne
+          adminEntity: { taxId: "30703088534" }, // findOne
           wallets: [{
             address: "1023948120394812304980",
             alias: "drumbo88mp",

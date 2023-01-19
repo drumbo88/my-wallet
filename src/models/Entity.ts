@@ -1,6 +1,6 @@
 import { Schema, model, Model, Document } from 'mongoose'
 import { IUser, schema as UserSchema } from './User';
-import { Account, IAccount, schema as AccountSchema } from './Account';
+import { Account, IAccount, AccountSchema } from './Account';
 import { seeds as PersonSeeds, PersonFields, IPerson, PersonSchema } from './Person';
 import { seeds as CompanySeeds, CompanyFields, ICompany, CompanySchema } from './Company';
 
@@ -33,8 +33,8 @@ export interface IEntityRef {
 }
 
 export const seeds = {
-  [EntityTypes.PERSON]: PersonSeeds,
   [EntityTypes.COMPANY]: CompanySeeds,
+  [EntityTypes.PERSON]: PersonSeeds,
 }
 
 export const EntitySchema = new Schema({
@@ -43,15 +43,14 @@ export const EntitySchema = new Schema({
   taxId: { type: String, unique: true, sparse: true },
   user: UserSchema,
   currency: { type: String, alias: "currencyCode", ref: 'Currency' },
-  idsAccountsOwned: [{ type: Schema.Types.ObjectId, ref: 'Account' }],
-  idsAccountsAdministrated: [{ type: Schema.Types.ObjectId, ref: 'Account' }],
   person: PersonSchema,
   company: CompanySchema
 }, { toObject: { virtuals: true }, toJSON: { virtuals: true } })
 
 export interface IEntityModel extends Model<IEntity> {}
 export interface IEntityDocument extends Document<IEntityModel>, IEntity {
-  addAccount(accountData: IAccount): IEntityDocument,
+  addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
+  addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
 }
 
 EntitySchema.statics.createPerson = async function (data: IPerson) {
@@ -59,35 +58,52 @@ EntitySchema.statics.createPerson = async function (data: IPerson) {
 EntitySchema.statics.createCompany = async function (data: ICompany) {
 }
 EntitySchema.virtual('accountsOwned', {
-  ref: 'Account', localField: 'idsAccountsOwned', foreignField: '_id',
+  ref: 'Account', localField: '_id', foreignField: 'ownerEntityId',
 });
 EntitySchema.virtual('accountsAdministrated', {
-  ref: 'Account', localField: 'idsAccountsAdministrated', foreignField: '_id',
+  ref: 'Account', localField: '_id', foreignField: 'adminEntityId',
 });
-EntitySchema.methods.addAccount = async function (accountData: IAccount) {
-  const account = await Account.create(accountData)
-  if (!this.idsAccountsOwned.includes(account._id))
-    this.idsAccountsOwned.push(account._id)
+
+EntitySchema.methods.addOwnedAccount = async function (accountData: IAccount) {
+  accountData.ownerEntityId = this._id
+  const adminEntity = (accountData.adminEntity instanceof Entity)
+    ? accountData.adminEntity : await Entity.findOne(accountData.adminEntity)
+  if (!adminEntity) {
+    throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.adminEntity)}).`)
+  }
+  accountData.adminEntityId = adminEntity.id
+  await Account.create(accountData)
   return this
 }
+
+EntitySchema.methods.addAdministratedAccount = async function (accountData: IAccount) {
+  accountData.adminEntityId = this._id
+  const ownedEntity = (accountData.adminEntity instanceof Entity)
+    ? accountData.adminEntity : await Entity.findOne(accountData.ownerEntity)
+  if (!ownedEntity) {
+    throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.ownerEntity)}).`)
+  }
+  accountData.ownerEntityId = ownedEntity.id
+  await Account.create(accountData)
+  return this
+}
+
 EntitySchema.statics.seed = async function (seeds: IEntity[]) {
-  const people: IEntityDocument[] = await this.insertMany(seeds)
+  const entities: IEntityDocument[] = await this.insertMany(seeds)
   for (const i in seeds) {
     const seed = seeds[i]
-    const person = people[i]
+    const entity = entities[i]
     if (seed.accountsOwned?.length) {
       for (const accData of seed.accountsOwned)
-        await person.addAccount(accData)
-      await person.save()
-      console.log(await person.populate('accountsOwned'))
-      person.accountsOwned
+        await entity.addOwnedAccount(accData)
     }
+    if (seed.accountsAdministrated?.length) {
+      for (const accData of seed.accountsAdministrated)
+        await entity.addAdministratedAccount(accData)
+    }
+    await entity.save()
   }
 }
 
 export const Entity = model('Entity', EntitySchema)
-// export const EntityRefSchema = new Schema<IEntityRef>({
-//   entity: { type: Schema.Types.ObjectId, refPath: 'type', required: true },
-//   type: { type: String, enum: EntityTypes, required: true },
-// })
 

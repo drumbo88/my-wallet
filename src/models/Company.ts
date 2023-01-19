@@ -32,6 +32,13 @@ export const seeds = [
         }
     },
     {
+        name: 'Mercado Pago',
+        taxId: '30703088534',
+        company: {
+            type: CompanyTypes.E_WALLET,
+        }
+    },
+    {
         name: 'Foncap SA',
         taxId: '30692317714',
         // company: {
