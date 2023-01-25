@@ -1,8 +1,9 @@
 import { Schema, model, Model, Document } from 'mongoose'
 import { IUser, schema as UserSchema } from './User';
-import { Account, IAccount, AccountSchema } from './Account';
-import { seeds as PersonSeeds, PersonFields, IPerson, PersonSchema } from './Person';
-import { seeds as CompanySeeds, CompanyFields, ICompany, CompanySchema } from './Company';
+import { Account, IAccount } from './Account';
+import { seeds as PersonSeeds, IPerson, PersonSchema } from './Person';
+import { seeds as CompanySeeds, ICompany, CompanySchema } from './Company';
+import { defaultSchemaOptions } from '../database';
 
 export enum EntityStatus {
   ACTIVE = 'ACTIVE',
@@ -14,22 +15,17 @@ export enum EntityTypes {
 }
 
 export interface IEntity {
+  /* Data fields */
   name?: String,
-  type?: EntityTypes,
   status?: EntityStatus,
   taxId?: String,
   user?: IUser,
   currency?: String,
-  idsAccountsOwned?: Schema.Types.ObjectId[],
-  idsAccountsAdministrated?: Schema.Types.ObjectId[],
+  /* Virtuals */
+  // idsAccountsOwned?: Schema.Types.ObjectId[],
+  // idsAccountsAdministrated?: Schema.Types.ObjectId[],
   accountsOwned?: IAccount[],
   accountsAdministrated?: IAccount[],
-  // person?: IPerson,
-  // company?: ICompany,
-}
-export interface IEntityRef {
-  entity: Schema.Types.ObjectId,
-  type: EntityTypes,
 }
 
 export const seeds = {
@@ -38,17 +34,18 @@ export const seeds = {
 }
 
 export const EntitySchema = new Schema({
-  name: String,
+  name: { type: String, unique: true, sparse: true },
   status: { type: String, enum: EntityStatus, default: EntityStatus.ACTIVE },
   taxId: { type: String, unique: true, sparse: true },
   user: UserSchema,
   currency: { type: String, alias: "currencyCode", ref: 'Currency' },
   person: PersonSchema,
   company: CompanySchema
-}, { toObject: { virtuals: true }, toJSON: { virtuals: true } })
+}, defaultSchemaOptions)
 
 export interface IEntityModel extends Model<IEntity> {}
 export interface IEntityDocument extends Document<IEntityModel>, IEntity {
+  // methods
   addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
   addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
 }
@@ -85,6 +82,30 @@ EntitySchema.methods.addAdministratedAccount = async function (accountData: IAcc
   }
   accountData.ownerEntityId = ownedEntity.id
   await Account.create(accountData)
+  this.person?.id
+  return this
+}
+
+EntitySchema.methods.addCreditCard = async function (creditCardData, accountData?: IAccount) {
+  if (!accountData) {
+    /*if (this.accountsOwned.length != 1) {
+      throw new Error(`Must specify Account where the card belongs (${JSON.stringify(creditCardData)}).`)
+    }
+    if (this.accountsOwned.length != 1) {
+      throw new Error(`Must specify Account where the card belongs (${JSON.stringify(creditCardData)}).`)
+    }
+    if (this.accountsOwned.length) {
+      accountData.adminEntityId = this._id
+    }*/
+  }
+  /*const ownedEntity = (accountData.adminEntity instanceof Entity)
+    ? accountData.adminEntity : await Entity.findOne(accountData.ownerEntity)
+  if (!ownedEntity) {
+    throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.ownerEntity)}).`)
+  }
+  accountData.ownerEntityId = ownedEntity.id
+  await Account.create(accountData)
+  this.person?.id*/
   return this
 }
 

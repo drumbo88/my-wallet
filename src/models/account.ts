@@ -1,5 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
+import { defaultSchemaOptions } from '../database'
 import { IEntity } from './Entity'
+import { IPaymentCard, PaymentCardSchema } from './PaymentCard'
 import { IWallet, schema as Wallet  } from './Wallet'
 // import { EntityRefSchema } from './Entity'
 
@@ -21,7 +23,8 @@ export interface IAccount {
     ownerEntity?: IEntity,
     status?: AccountStatus,
     type?: AccountTypes,
-    wallets: IWallet[]
+    wallets?: IWallet[]
+    paymentCards?: IPaymentCard[]
 }
 
 const AccountSchema = new Schema<IAccount>({
@@ -31,15 +34,16 @@ const AccountSchema = new Schema<IAccount>({
     adminEntityId: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
     ownerEntityId: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
 
-    wallets: [ Wallet ]
-}, { toObject: { virtuals: true }, toJSON: { virtuals: true } })
+    wallets: [ Wallet ],
+    paymentCards: [ PaymentCardSchema ]
+}, defaultSchemaOptions)
 
 AccountSchema.virtual('ownerEntity', {
     ref: 'Entity', localField: 'ownerEntityId', foreignField: '_id',
-});
+})
 AccountSchema.virtual('adminEntity', {
     ref: 'Entity', localField: 'adminEntityId', foreignField: '_id',
-});
+})
 
 // class x {}
 // schema.loadClass(class extends x {})

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { PaymentCardRef } from "./PaymentCard";
 const { Schema } = mongoose;
 
 const schema = new Schema({
@@ -16,7 +15,7 @@ const schema = new Schema({
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+wallet )
-    card: { type: PaymentCardRef },
+    card: { type: Schema.Types.ObjectId, ref: "PaymentCard" },
     usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
   },
 
@@ -25,7 +24,7 @@ const schema = new Schema({
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+wallet )
-    card: { type: PaymentCardRef },
+    card: { type: Schema.Types.ObjectId, ref: "PaymentCard" },
     usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
   },
   detail: { type: String },

@@ -1,12 +1,23 @@
 import mongoose, { Schema } from 'mongoose'
-import { PaymentCardFields } from './PaymentCard';
+import { IPaymentCard } from './PaymentCard';
 
-export const PaymentCardDebitFields = {
+enum PeriodType {
+    DAY = 'DAY',
+    MONTH = 'MONTH',
 }
 
-export const PaymentCardDebitSchema = new Schema({
-  ...PaymentCardFields,
-  card: { type: PaymentCardDebitFields, required: true }
-})
+export interface IPaymentCardDebitData {
+  period: {
+    type: {
+        quantity: { type: Number, required: true },
+        type: { type: String, enum: PeriodType, required: true },
+    }
+  },
+}
+export interface IPaymentCardDebit extends IPaymentCard {
+  debit: IPaymentCardDebitData
+}
+export const PaymentCardDebitSchema = new Schema({})
+export const seeds = []
 
-export const model = mongoose.model('PaymentCardDebit', PaymentCardDebitSchema)
+//export const model = mongoose.model('PaymentCardDebit', PaymentCardDebitSchema)

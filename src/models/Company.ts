@@ -16,14 +16,21 @@ export interface ICompanyData {
 export interface ICompany extends IEntity {
     company: ICompanyData
 }
-export const CompanyFields = {
+export const CompanySchema = new Schema({
     legalName: String,
     fantasyName: String,
     type: { type: String, enum: CompanyTypes, default: CompanyTypes.COMPANY },
-}
-export const CompanySchema = new Schema(CompanyFields)
+})
 
 export const seeds = [
+    {
+        name: 'VISA',
+        //taxId: '',
+    },
+    {
+        name: 'MasterCard',
+        //taxId: '',
+    },
     {
         name: 'BBVA Francés',
         taxId: '30500003193',
@@ -41,12 +48,9 @@ export const seeds = [
     {
         name: 'Foncap SA',
         taxId: '30692317714',
-        // company: {
-        //     type: CompanyTypes.COMPANY,
-        // }
-        /*accounts: [{
+        accountsOwned: [{
           adminEntity: { taxId: '30500003193' },
-        }]*/
+        }]
     },
     {
         name: 'Binance',

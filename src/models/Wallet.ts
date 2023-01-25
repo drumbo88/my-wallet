@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose'
-import { PaymentCardRef } from './PaymentCard'
 import { IWalletAsset, schema as WalletAsset } from './WalletAsset'
 
 enum WalletStatus {
@@ -61,7 +60,7 @@ const schema = new Schema<IWallet>({
             }
         },
         {
-            toJSON: { getters: true } //this right here
+            toJS0N: { getters: true } //this right here
         }
     );
 */

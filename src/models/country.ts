@@ -1,33 +1,33 @@
 import mongoose from 'mongoose'
+import { defaultSchemaOptions } from '../database';
 import { Currency, ICurrency } from './Currency'
 const { Schema } = mongoose;
 
 export interface ICountry {
     code: String,
     name: String,
-    currenciesCodes: String[],
+    currencyCodes: String[],
     currencies: ICurrency[],
 }
 
 const schema = new Schema<ICountry>({
     code: { type: String, required: true, unique: true },
     name: { type: String, required: true, unique: true },
-    currenciesCodes: [{ type: String }],
-})
+    currencyCodes: [{ type: String }],
+}, defaultSchemaOptions)
+
 schema.virtual("currencies", {
     ref: "Currency",
-    localField: "currenciesCodes",
+    localField: "currencyCodes",
     foreignField: "code",
     justOne: false,
     strictPopulate: false,
 });
-schema.set("toObject", { virtuals: true });
-schema.set("toJSON", { virtuals: true });
 
 export const seeds = [
-    { code: 'ARG', name: 'Argentina', currenciesCodes: ['ARS'] },
-    { code: 'BRA', name: 'Brasil', currenciesCodes: ['BRL'] },
-    { code: 'USA', name: 'Estados Unidos', currenciesCodes: ['USD'] },
+    { code: 'ARG', name: 'Argentina', currencyCodes: ['ARS'] },
+    { code: 'BRA', name: 'Brasil', currencyCodes: ['BRL'] },
+    { code: 'USA', name: 'Estados Unidos', currencyCodes: ['USD'] },
 ]
 
 // schema.statics.seed = async function (seeds) {

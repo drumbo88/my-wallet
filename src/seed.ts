@@ -8,19 +8,25 @@ const seedModels = [
     'Entity',
     //'Company', 'Person',
     //'Asset', 'OperationConcept',
+    'PaymentCard',
     'Operation',
     'Transaction',
 ]
 
 dbInit()
 .then(async () => {
-    const db = mongoose.connection.db
+    //const db = mongoose.connection.db
     if (DB_RESET) {
         await dbReset()
     }
     for (const modelName of seedModels) {
-        const { model, seeds } = models[modelName]
-        await dbSeed(model, seeds)
+        if (models[modelName]) {
+            const { model, seeds } = models[modelName]
+            await dbSeed(model, seeds)
+        }
+        else {
+            console.log(`❌ Model ${modelName} has to be imported in 'models/index.ts'.`)
+        }
     }
     mongoose.connections[0].close()
         .catch(err => console.error(err))

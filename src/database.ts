@@ -3,6 +3,12 @@ import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING } from 
 
 mongoose.set('strictQuery', false)
 
+export const defaultSchemaOptions = {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true, getters: true },
+    versionKey: false
+}
+
 export interface IModel {
     seed?(seeds): Promise<void>
 }
@@ -13,17 +19,6 @@ export const dbSeed = async function <T>(model: MyModel<T>, modelSeeds: Object|O
     const count = await model.estimatedDocumentCount()
     const abstractSchema = !(modelSeeds instanceof Array)
     let seedsByType = abstractSchema ? modelSeeds : { modelSeeds }
-    // let fieldsByType
-    // if (!count && abstractSchema) {
-    //     const types = Object.keys(seedsByType)
-    //     fieldsByType[]
-    //     for (const type of types) {
-    //         fieldsByType[type] = []
-    //         if (fieldsByType) {
-    //             seeds.
-    //         }
-    //     }
-    // }
 
     for (let i in seedsByType) {
         let seeds = seedsByType[i]

@@ -1,12 +1,18 @@
 import mongoose, { Schema } from 'mongoose'
-import { PaymentCardFields } from './PaymentCard';
+import { IPaymentCard } from './PaymentCard';
 
-export const PaymentCardPrepaidFields = {
+enum PeriodType {
+    DAY = 'DAY',
+    MONTH = 'MONTH',
 }
 
+export interface IPaymentCardPrepaidData {
+}
+export interface IPaymentCardPrepaid extends IPaymentCard {
+  prepaid: IPaymentCardPrepaidData
+}
 export const PaymentCardPrepaidSchema = new Schema({
-  ...PaymentCardFields,
-  card: { type: PaymentCardPrepaidFields, required: true }
 })
+export const seeds = []
 
-export const model = mongoose.model('PaymentCardPrepaid', PaymentCardPrepaidSchema)
+//export const model = mongoose.model('PaymentCardPrepaid', PaymentCardPrepaidSchema)
