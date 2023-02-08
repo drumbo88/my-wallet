@@ -32,7 +32,7 @@ export interface IPaymentCard {
     serviceEntity?: IEntity,
     //adminEntity?: IEntity,
 
-    balance?: { type: Number, required: true },
+    balance?: number,
     status?: PaymentCardStatus,
 
     /*limits: {
@@ -52,8 +52,9 @@ export interface IPaymentCard {
     /* Virtuals */
     setOwnerAccount(accountData: IAccount): Promise<IPaymentCardDocument>
     setAdminEntity(entityData: IEntity): Promise<IPaymentCardDocument>
-    setUserEntity(entityData: IEntity): Promise<IPaymentCardDocument>
-    setServiceEntity(entityData: IEntity): Promise<IPaymentCardDocument>
+    setUserEntity(entityData?: IEntity): Promise<IPaymentCardDocument>
+    unsetUserEntity(): Promise<IPaymentCardDocument>
+    setServiceEntity(entityData?: IEntity): Promise<IPaymentCardDocument>
     unsetServiceEntity(): Promise<IPaymentCardDocument>
 }
 export const seeds = {
@@ -100,65 +101,30 @@ PaymentCardSchema.methods.setOwnerAccount = async function (accountData: IAccoun
         ownerAccount = accountData
     else {
         const pipelines: any[] = []
-        // type Obj = {[key: string] : any}
-        // let fkEntityData: Obj = {}
         for (const field in accountData) {
-            //if (typeof accountData[i] == IEntity)
-            //fkEntityData[field] = accountData[field]
-            pipelines.push({
-                $lookup: {
-                    from: "entities",
-                    localField: field+"Id",
-                    foreignField: "_id",
-                    as: field
-                }
-            })
-            pipelines.push({
-                $unwind: '$'+field
-            })
+            pipelines.push({ $lookup: { from: "entities", localField: field + "Id", foreignField: "_id", as: field } })
+            pipelines.push({ $unwind: '$'+field })
             for (const subfield in accountData[field]) {
                 accountData[field+'.'+subfield] = accountData[field][subfield]
             }
             delete accountData[field]
         }
-        //console.log({accountData})
         pipelines.push({ $match: accountData })
-        // fkEntityData = Object.entries(accountData.ownerEntity).map(([key, value]) => ({ [key]: value }))
 
-        // for (const i in accountData.ownerEntity) {
-        //     accountData['ownerEntity.'+i] = accountData.ownerEntity[i]
-        // }
-        // delete accountData.ownerEntity
-        //console.log({accountData,ownerEntityData,entity, account:await Account.findOne({ownerEntityId:entity?.id})})
-
-        ownerAccount = (await Account.aggregate(pipelines).limit(1).exec())[0]
-        // ownerAccount = (await Account.aggregate([
-        //     {
-        //         $lookup: {
-        //             from: "entities",
-        //             localField: "ownerEntityId",
-        //             foreignField: "_id",
-        //             as: "ownerEntity"
-        //         }
-        //     },
-        //     { $unwind: "$ownerEntity" },
-        //     { $match: accountData }
-        // ]).limit(1).exec())[0]
-        // ownerAccount = await Account.findOne(accountData).populate({
-        //     path: 'ownerEntity',
-        //     match: ownerEntityData[0],
-        // })
-        // ownerAccount = await Account.findOne(accountData).populate({
-        //     path: 'ownerEntity',
-        //     match: { $and: Object.entries(accountData.ownerEntity).map(([key, value]) => ({ ['ownerEntity.'+key]: value })) },
-        // })
-        //console.log({ownerAccount})
+        ownerAccount = (await Account.aggregate(pipelines).limit(1).exec()).shift()
     }
     if (!ownerAccount) {
         throw new Error(`Account doesn't exist (${JSON.stringify(accountData)}).`)
     }
     this.ownerAccountId = ownerAccount._id
     return this
+}
+
+/**
+ *
+ */
+PaymentCardSchema.methods.unsetUserEntity = async function () {
+    return this.setUserEntity(null)
 }
 
 /**
@@ -201,6 +167,23 @@ PaymentCardSchema.methods.setAdminEntity = async function (entityData: IEntity) 
 /**
  *
  */
+PaymentCardSchema.methods.setUserEntity = async function (entityData?: IEntity) {
+    if (!entityData)
+        this.serviceEntityId = null
+    else {
+        const userEntity = (entityData instanceof Entity)
+            ? entityData : await Entity.findOne(entityData)
+        if (!userEntity) {
+            throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
+        }
+        this.userEntityId = userEntity.id
+    }
+    return this
+}
+
+/**
+ *
+ */
 PaymentCardSchema.statics.seed = async function (seeds: IPaymentCard[]) {
   const paymentCards: IPaymentCardDocument[] = await this.insertMany(seeds)
   for (const i in seeds) {
@@ -209,11 +192,14 @@ PaymentCardSchema.statics.seed = async function (seeds: IPaymentCard[]) {
 
     if (!seed.ownerAccount)
         throw new Error(`PaymentCard's ownerAccount is required.`)
-    // if (!seed.adminEntity)
-    //     throw new Error(`PaymentCard's adminEntity is required.`)
+    // if (!seed.serviceEntity)
+    //     throw new Error(`PaymentCard's serviceEntity is required.`)
 
-    await paymentcard.setOwnerAccount(seed.ownerAccount)
-    // await paymentcard.setAdminEntity(seed.adminEntity)
+    await Promise.all([
+        paymentcard.setOwnerAccount(seed.ownerAccount),
+        paymentcard.setUserEntity(seed.userEntity),
+        paymentcard.setServiceEntity(seed.serviceEntity),
+    ])
 
     await paymentcard.save()
   }

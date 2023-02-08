@@ -19,7 +19,7 @@ export interface IWallet {
     type?: WalletType,
 
     currency: String,
-    balance?: Number,
+    balance?: number,
     assets?: IWalletAsset[],
 
     detail: String,

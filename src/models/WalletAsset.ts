@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose'
 
 export interface IWalletAsset {
     currency: String,
-    balance: Number,
+    balance: number,
     detail?: String
 }
 const schema = new Schema<IWalletAsset>({

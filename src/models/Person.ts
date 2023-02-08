@@ -35,6 +35,7 @@ export const seeds: IPerson[] = [
         gender: PersonGenders.MALE,
       },
       taxId: "20337466711",
+      currency: "ARS",
 
       user: {
         name: "drumbo88",

@@ -1,5 +1,5 @@
 import mongoose, { Model } from 'mongoose'
-import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING } from './config.js'
+import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING, DB_PORT } from './config.js'
 
 mongoose.set('strictQuery', false)
 
@@ -77,7 +77,7 @@ export const dbReset = async function () {
 console.log({NODE_ENV,DB_RESET})
 export const dbInit = async () => {
     // Las opciones useNewUrlParser, useUnifiedTopology y useFindAndModify nos ahorrarán advertencias en consola (ni idea pa qué son).
-    console.log('Connecting to the database...')
+    console.log(`Connecting to MongoDB on port ${DB_PORT}...`)
     return new Promise((resolve, reject) => {
         const connectOptions = {
             //useNewUrlParser: true,

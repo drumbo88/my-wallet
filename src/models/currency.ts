@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { defaultSchemaOptions } from '../database';
 const { Schema } = mongoose;
 
 export enum CurrencyType {
@@ -10,7 +11,7 @@ export interface ICurrency {
     code: String,
     symbol: String,
     name: String,
-    value: Number,
+    value: number,
     api?: String,
     type: CurrencyType,
 }
@@ -23,7 +24,7 @@ const schema = new Schema<ICurrency>({
     api: { type: String },
     type: { type: String, enum: CurrencyType, default: CurrencyType.FIAT, required: true },
     //countries: [{ type: String, ref: 'Country', foreignField: 'code' }],
-})
+}, defaultSchemaOptions)
 
 const seeds = [
     { symbol: '$', code: 'ARS', name: 'Peso Argentino', value: 1/130 },

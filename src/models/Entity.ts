@@ -82,30 +82,38 @@ EntitySchema.methods.addAdministratedAccount = async function (accountData: IAcc
   }
   accountData.ownerEntityId = ownedEntity.id
   await Account.create(accountData)
-  this.person?.id
   return this
 }
 
+/**
+ * @accountData
+ *  @value null: unique account / Error
+ *  @value IAccount: Account to use
+ */
 EntitySchema.methods.addCreditCard = async function (creditCardData, accountData?: IAccount) {
   if (!accountData) {
-    /*if (this.accountsOwned.length != 1) {
-      throw new Error(`Must specify Account where the card belongs (${JSON.stringify(creditCardData)}).`)
+    switch (this.accountsOwned.length) {
+      case 0:
+        throw new Error(`Entity doesn't have an Account to add the card (${JSON.stringify(creditCardData)}).`)
+      case 1:
+        accountData = this.accountsOwned[0]
+      default:
+        throw new Error(`Must specify which Account does the card belong (${JSON.stringify(creditCardData)}).`)
     }
-    if (this.accountsOwned.length != 1) {
-      throw new Error(`Must specify Account where the card belongs (${JSON.stringify(creditCardData)}).`)
-    }
-    if (this.accountsOwned.length) {
-      accountData.adminEntityId = this._id
-    }*/
   }
-  /*const ownedEntity = (accountData.adminEntity instanceof Entity)
-    ? accountData.adminEntity : await Entity.findOne(accountData.ownerEntity)
-  if (!ownedEntity) {
+  const account = (accountData instanceof Account)
+    ? accountData : await Account.findOne(accountData)
+  if (!account) {
     throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.ownerEntity)}).`)
   }
-  accountData.ownerEntityId = ownedEntity.id
+  if (account.ownerEntityId != this.id) {
+    throw new Error(`The Account to add the card should be owned by the same Entity (${JSON.stringify({this: this.id, accOwnerId: account.ownerEntityId})}).`)
+  }
+  if (account.ownerEntityId != creditCardData.ownerEntityId) {
+    throw new Error(`The Account to add the card should be owned by the same Entity (${JSON.stringify({this: this.id, accOwnerId: account.ownerEntityId})}).`)
+  }
+  creditCardData = creditCardData
   await Account.create(accountData)
-  this.person?.id*/
   return this
 }
 

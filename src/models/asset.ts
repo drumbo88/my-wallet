@@ -1,13 +1,14 @@
 import mongoose, { Schema } from 'mongoose'
-import { OperationItemDetailFields } from './OperationItemDetail';
+import { IOperationItemDetail, OperationItemDetailFields } from './OperationItemDetail';
 
+export interface IAsset extends IOperationItemDetail {
+    //countable: { type: Boolean, required: true }, // Mueble=true, Comida/Consumible=false
+}
 export const AssetFields = {
-  name: { type: String, required: true },
-  code: { type: String, required: true },
-  //countable: { type: Boolean, required: true }, // Mueble=true, Comida=false
+    //countable: { type: Boolean, required: true }, // Mueble=true, Comida=false
 };
 
-export const model = mongoose.model('Asset', new Schema({
-  ...OperationItemDetailFields,
-  ...AssetFields,
+export const Asset = mongoose.model('Asset', new Schema<IAsset>({
+    ...OperationItemDetailFields,
+    ...AssetFields,
 }))
