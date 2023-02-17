@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "cross-env NODE_ENV=production && node build/index.js",
-        "dev": "cross-env NODE_ENV=development && nodemon --ignore app index.js",
+        "dev": "cross-env NODE_ENV=development && nodemon --ignore app build/index.js",
         "seed": "cross-env NODE_ENV=development && node build/seed.js",
         "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node build/seed.js",
         "webpack": "webpack --mode development --watch",

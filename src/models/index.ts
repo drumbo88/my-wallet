@@ -6,6 +6,11 @@ import { Entity, seeds as EntitySeeds } from './Entity'
 import { PaymentCard, seeds as PaymentCardSeeds } from './PaymentCard'
 import { Operation, seeds as OperationSeeds } from './Operation'
 import { Transaction, seeds as TransactionSeeds } from './Transaction'
+import { Document } from 'mongoose'
+
+export interface IDocument {
+    postSave: Document[]
+}
 
 export default {
     Currency: { model: Currency, seeds: CurrencySeeds },

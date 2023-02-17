@@ -1,11 +1,14 @@
 // Import Models
 import { Country } from '../models/Country.js'
 
-export const list = (req, res) => {
+export const list = async (req, res) => {
     Country.find({}).then((countries) => {
         return res.json({countries, message: 'Countries listed'})
     })
-    .catch(error => res.status(409).json({ message: error }))
+    .catch(error => {
+        console.log({error})
+        res.status(409).json({ message: error })
+    })
 }
 export const create = (req, res) => {
     const {

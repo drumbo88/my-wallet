@@ -1,7 +1,7 @@
 import { Schema, Model, Document, model } from 'mongoose'
 import { defaultSchemaOptions } from '../database';
 import { Account, IAccount } from './Account';
-import { Entity, IEntity } from './Entity';
+import { Entity, IEntity, EntityModel } from './Entity';
 import { seeds as PaymentCardCreditSeeds, PaymentCardCreditSchema } from './PaymentCardCredit';
 import { seeds as PaymentCardDebitSeeds, PaymentCardDebitSchema } from './PaymentCardDebit';
 import { seeds as PaymentCardPrepaidSeeds, PaymentCardPrepaidSchema } from './PaymentCardPrepaid';
@@ -141,7 +141,7 @@ PaymentCardSchema.methods.setServiceEntity = async function (entityData?: IEntit
   if (!entityData)
     this.serviceEntityId = null
   else {
-    const serviceEntity = (entityData instanceof Entity)
+    const serviceEntity = (entityData instanceof EntityModel)
         ? entityData : await Entity.findOne(entityData)
     if (!serviceEntity) {
         throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
@@ -155,7 +155,7 @@ PaymentCardSchema.methods.setServiceEntity = async function (entityData?: IEntit
  *
  */
 PaymentCardSchema.methods.setAdminEntity = async function (entityData: IEntity) {
-  const adminEntity = (entityData instanceof Entity)
+  const adminEntity = (entityData instanceof EntityModel)
     ? entityData : await Entity.findOne(entityData)
   if (!adminEntity) {
     throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
@@ -171,7 +171,7 @@ PaymentCardSchema.methods.setUserEntity = async function (entityData?: IEntity) 
     if (!entityData)
         this.serviceEntityId = null
     else {
-        const userEntity = (entityData instanceof Entity)
+        const userEntity = (entityData instanceof EntityModel)
             ? entityData : await Entity.findOne(entityData)
         if (!userEntity) {
             throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)

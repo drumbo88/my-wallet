@@ -1,34 +1,34 @@
 // Import Models
-import mongoose from 'mongoose'
-/*import { model as Transaction } from '../models/transaction.js'
-import { model as Account } from '../models/account.js'
+import { Transaction } from '../models/Transaction'
+import { Account } from '../models/Account'
+import { Entity } from '../models/Entity'
 
 export const list = async (req, res) => {
-    const query = req.params.from ? { fromAccount: req.params.from } : {}
+    const query: any = req.params.from ? { from: { account: req.params.from } } : {}
     req.body.idEntity = req.params.id
     try {
         if (req.body.idEntity) {
-            query.userEntity = mongoose.Types.ObjectId(req.body.idEntity)
+            query.userEntity = Entity.findOne({ _id: req.body.idEntity })
             const accounts = await Account.find(query, '_id')
             const txQuery = { $or: [
-                { fromAccount: { $in: accounts } },
-                { toAccount: { $in: accounts } }
+                { from: { account: { $in: accounts } } },
+                { to: { account: { $in: accounts } } }
             ]}
             await Transaction.find(txQuery)
-                .populate('fromAccount').populate({ path: 'fromAccount', populate: 'userEntity' })
-                .populate('toAccount').populate({ path: 'toAccount', populate: 'userEntity' })
-                .populate('concept')
+                .populate('from.account')/*.populate({ path: 'fromAccount', populate: 'userEntity' })*/
+                .populate('to.account')/*.populate({ path: 'toAccount', populate: 'userEntity' })*/
+                //.populate('concept')
                 .then((transactions) => {
                 return res.json({transactions, message: `Transactions listed from Entity #${query.userEntity}`})
             })
         }
         else {
-            await Transaction.find(query)
-                .populate('fromAccount').populate({ path: 'fromAccount', populate: 'userEntity' })
-                .populate('toAccount').populate({ path: 'toAccount', populate: 'userEntity' })
-                .populate('concept').then((transactions) => {
-                return res.json({transactions, message: 'Transactions listed'})
-            })
+            const transactions = await Transaction.find(query)
+                .populate('from.account')//.populate({ path: 'fromAccount', populate: 'userEntity' })
+                .populate('to.account')//.populate({ path: 'toAccount', populate: 'userEntity' })
+                //.populate('concept')
+            console.log({query, transactions})
+            return res.json({transactions, message: 'Transactions listed'})
         }
     }
     catch (error) {
@@ -66,12 +66,11 @@ export const update = (req, res) => {
         concept, source, destiny,
         detail
     })
-    .then(doc => res.json({message: `Transaction saved #${doc._id}`}))
+    .then(doc => res.json({message: `Transaction saved #${doc?._id}`}))
     .catch(error => res.status(409).json({ message: error }))
 }
 export const remove = (req, res) => {
     Transaction.findByIdAndDelete(req.params.id).then((doc) => {
-        return res.json({message: `Transaction deleted #${doc._id}`})
+        return res.json({message: `Transaction deleted #${doc?._id}`})
     })
 }
-*/

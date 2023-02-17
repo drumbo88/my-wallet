@@ -6,6 +6,7 @@ import cors from 'cors'
 
 import routesRoot from './routes/root.routes.js'
 import routesPerson from './routes/person.routes.js'
+import routesIncome from './routes/income.routes.js'
 import routesCurrency from './routes/currency.routes.js'
 import routesCountry from './routes/country.routes.js'
 import routesTransaction from './routes/transaction.routes.js'
@@ -29,6 +30,7 @@ app.use(cors()) // <- antes de las rutas
 // ----- Routes -----
 app.use('/api', routesRoot)
 app.use('/api/person', routesPerson)
+app.use('/api/income', routesIncome)
 app.use('/api/currency', routesCurrency)
 app.use('/api/country', routesCountry)
 app.use('/api/transaction', routesTransaction)

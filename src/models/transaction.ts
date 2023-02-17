@@ -1,5 +1,9 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { IOperation, IOperationDocument, IOperationModel, Operation } from "./Operation";
+import { IDocument } from ".";
+import { IOperation, Operation } from "./Operation";
+import { Entity, IEntity } from "./Entity";
+import { Account, IAccount } from "./Account";
+import { IPaymentCard } from "./PaymentCard";
 
 enum TransactionTypes {
     CASH = 'CASH',
@@ -14,12 +18,16 @@ export interface ITransactionAllocation {
     amount?: number,
 }
 export interface ITransactionSide {
-    entity?: String,
-    accountId?: String,
-    card?: String,
-    usingEntiy?: String,
+    entity?: IEntity,
+    entityId?: Schema.Types.ObjectId,
+    account?: IAccount,
+    accountId?: Schema.Types.ObjectId,
+    card?: IPaymentCard,
+    cardId?: Schema.Types.ObjectId,
+    usingEntiy?: IEntity,
+    usingEntiyId?: Schema.Types.ObjectId,
 }
-export interface ITransaction {
+export interface ITransaction extends IDocument {
     datetime?: Date
     currency?: String
     toCurrency?: String
@@ -32,15 +40,17 @@ export interface ITransaction {
     from?: ITransactionSide
     to?: ITransactionSide
     detail?: String
+
+    allocateOperation(allocationData: ITransactionAllocation): Promise<ITransaction>
 }
 
 const TransactionSide = new Schema({ // NULL for cash/deposit
-    entity: { type: Schema.Types.ObjectId, ref: "Entity" },
+    entityId: { type: Schema.Types.ObjectId, ref: "Entity" },
     // For transfer
     accountId: { type: Schema.Types.ObjectId, ref: "Account" },
     // For Card (+ digital wallet)
-    card: { type: Schema.Types.ObjectId, ref: "PaymentCard" },
-    usingEntity: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
+    cardId: { type: Schema.Types.ObjectId, ref: "PaymentCard" },
+    usingEntityId: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
 })
 
 const schema = new Schema<ITransaction>({
@@ -64,6 +74,13 @@ const schema = new Schema<ITransaction>({
     detail: { type: String },
 });
 
+schema.virtual('from.account', {
+    ref: 'Account', localField: 'from.accountId', foreignField: '_id', justOne: true
+})
+schema.virtual('to.account', {
+    ref: 'Account', localField: 'to.accountId', foreignField: '_id', justOne: true
+})
+
 /**
  *
  */
@@ -79,11 +96,21 @@ schema.methods.allocateOperation = async function (allocationData: ITransactionA
     //   allocationData.operation.totalAmount = this.unallocatedAmount
 
     // Get Operation. If doesn't exist, throw error.
-    let operation = (allocationData.operation instanceof Document)
-        ? allocationData.operation : await Operation.findOne(allocationData.operation) // Look for many, require to adjust filter to get just one
+    let operation
+    if (allocationData.operation instanceof Document) {
+        operation = allocationData.operation
+    }
+    else {
+        const operations = await Operation.find(allocationData.operation)
+        if (operations.length > 1)
+            throw new Error(`Only 1 Operation must match to allocate Transaction, found ${operations.length} (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
+        operation = operations.pop()
+    }
+
     if (!operation) {
         throw new Error(`Operation to allocate Transaction not found (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
     }
+
     if (typeof operation.paidAmount == 'undefined') {
         operation.paidAmount = 0
         operation.unpaidAmount = operation.totalAmount
@@ -97,12 +124,25 @@ schema.methods.allocateOperation = async function (allocationData: ITransactionA
     }
     const allocationAmount = allocationData.amount || 0
     operation.paidAmount += allocationAmount
+    operation.unpaidAmount = operation.totalAmount - operation.paidAmount
+    this.postSave.push(operation)
+    //await operation.save() // to afterSave
     allocationData.operationId = operation.id
+    allocationData.operation = operation
     this.allocations.push(allocationData)
     this.allocatedAmount += allocationAmount
     this.unallocatedAmount -= allocationAmount
     return this
 }
+
+schema.post('validate', doc => {
+    if (!doc.postSave)
+        doc.postSave = []
+})
+schema.post('save', async (doc) => {
+    await Promise.all(doc.postSave.map(async (doc) => await doc.save()))
+    doc.postSave = []
+})
 
 const seeds = [
     {
@@ -110,8 +150,17 @@ const seeds = [
         currency: 'ARS',
         amount: 1000,
         toCurrency: 'ARS',
-        from: { entity: { taxId: '20337466711' } },
-        allocations: [{ operation: true/*{ datetime: '2022-12-12 12:12:12' }*/, amount: 1000 }],
+        from: { account: { ownerEntity: { taxId: '20337466711' } } },
+        allocations: [{ operation: { datetime: '2022-12-12 12:12:12' }, amount: 1000 }],
+    },
+    {
+        datetime: '2022-12-01 12:12:12',
+        currency: 'ARS',
+        amount: 200000,
+        toCurrency: 'ARS',
+        from: { account: { ownerEntity: { taxId: '30692317714' } } },
+        to: { account: { ownerEntity: { taxId: '20337466711' } } },
+        allocations: [{ operation: { datetime: '2022-12-01 12:12:12' }, amount: 200000 }],
     }
 ]
 /*const seeds = [
@@ -160,8 +209,58 @@ const seeds = [
   },
 ];*/
 
-schema.statics.seeder = async (data) => {
-    /*const { date, currency, amount, detail } = data;
+schema.statics.seed = async function (seeds: ITransaction[]) {
+
+    //const operations: IOperationDocument[] = await this.insertMany(seeds)
+    for (const i in seeds) {
+        const seed = seeds[i]
+        const allocations = seed.allocations || []
+        if (allocations)
+            delete seed.allocations
+        if (seed.from?.account) {
+            const accountData = seed.from.account
+            if (accountData.ownerEntity) {
+                const ownerEntity = await Entity.findOne(accountData.ownerEntity)
+                if (ownerEntity)
+                    accountData.ownerEntityId = ownerEntity.id
+                delete accountData.ownerEntity
+            }
+            const fromAccount = await Account.findOne(accountData)
+            if (fromAccount)
+                seed.from.accountId = fromAccount.id
+        }
+        if (seed.to?.account) {
+            const accountData = seed.to.account
+            if (accountData.ownerEntity) {
+                const ownerEntity = await Entity.findOne(accountData.ownerEntity)
+                if (ownerEntity)
+                    accountData.ownerEntityId = ownerEntity.id
+                delete accountData.ownerEntity
+            }
+            const toAccount = await Account.findOne(accountData)
+            if (toAccount)
+                seed.to.accountId = toAccount.id
+        }
+
+        const transaction: ITransactionDocument = await this.create(seed)
+        // if (!seed.fromEntity)
+        //     throw new Error(`Operation's fromEntity is required.`)
+
+        // await Promise.all([
+        //     operation.setFromEntity(seed.fromEntity),
+        //     operation.setToEntity(seed.toEntity),
+        // ])
+        for (const allocationData of allocations) {
+            // if (!itemData.currencyCode)
+            //     itemData.currencyCode = operation.fromEntity?.currency
+            await transaction.allocateOperation(allocationData)
+        }
+        await transaction.save() // save Operations as well
+    }
+}
+
+/*schema.statics.seeder = async (data) => {
+    const { date, currency, amount, detail } = data;
     let concept = await TransactionConceptModel.findOne(data.concept);
 
     const me = await PersonModel.findOne({ taxId: "20337466711" }).populate("entity").populate("entity.accounts");
@@ -207,8 +306,8 @@ schema.statics.seeder = async (data) => {
 
     const obj = new model(transactionData);
 
-    await obj.save();*/
-};
+    await obj.save();
+};*/
 
 //schema.statics.seed = mongoose.seed;
 export interface ITransactionModel extends Model<ITransaction> { }

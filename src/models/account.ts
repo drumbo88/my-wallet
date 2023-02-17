@@ -1,6 +1,6 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Document, Model, Schema } from 'mongoose'
 import { defaultSchemaOptions } from '../database'
-import { IEntity } from './Entity'
+import { Entity, IEntity, EntityModel } from './Entity'
 import { IPaymentCard, PaymentCardSchema } from './PaymentCard'
 import { IWallet, schema as Wallet  } from './Wallet'
 // import { EntityRefSchema } from './Entity'
@@ -26,6 +26,11 @@ export interface IAccount {
     wallets?: IWallet[]
     paymentCards?: IPaymentCard[]
 }
+export interface IAccountModel extends Model<IAccount> { }
+export interface IAccountDocument extends Document<IAccountModel>, IAccount {
+    // methods
+    getByOwner(itemData: IAccount): Promise<IAccountModel>
+}
 
 const AccountSchema = new Schema<IAccount>({
     status: { type: String, enum: AccountStatus, default: AccountStatus.ACTIVE },
@@ -39,11 +44,20 @@ const AccountSchema = new Schema<IAccount>({
 }, defaultSchemaOptions)
 
 AccountSchema.virtual('ownerEntity', {
-    ref: 'Entity', localField: 'ownerEntityId', foreignField: '_id',
+    ref: 'Entity', localField: 'ownerEntityId', foreignField: '_id', justOne: true,
 })
 AccountSchema.virtual('adminEntity', {
-    ref: 'Entity', localField: 'adminEntityId', foreignField: '_id',
+    ref: 'Entity', localField: 'adminEntityId', foreignField: '_id', justOne: true,
 })
+
+AccountSchema.statics.getByOwner = async function (entityData: IEntity) {
+    const ownerEntity = (entityData instanceof EntityModel)
+        ? entityData : await Entity.findOne(entityData)
+    if (!ownerEntity) {
+        throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
+    }
+    return Account.find({ ownerEntityId: ownerEntity._id })
+}
 
 // class x {}
 // schema.loadClass(class extends x {})

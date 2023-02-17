@@ -1,5 +1,6 @@
-import mongoose, { Model } from 'mongoose'
+import mongoose, { Model, Schema } from 'mongoose'
 import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING, DB_PORT } from './config.js'
+import { EntityModel } from './models/Entity.js'
 
 mongoose.set('strictQuery', false)
 
@@ -9,12 +10,13 @@ export const defaultSchemaOptions = {
     versionKey: false
 }
 
-export interface IModel {
+export interface IModel<T extends Document> extends Model<T> {
     seed?(seeds): Promise<void>
+    //schema: Schema & { seed?(seeds): Promise<void> }
 }
-type MyModel<T> = IModel & Model<T>;
+type MyModel<T extends Document> = IModel<T> & Model<T>;
 
-export const dbSeed = async function <T>(model: MyModel<T>, modelSeeds: Object|Object[]) {
+export const dbSeed = async function <T extends Document>(model: MyModel<T>, modelSeeds: Object|Object[]) {
     //const seeds = [] //model.seeds()
     const count = await model.estimatedDocumentCount()
     const abstractSchema = !(modelSeeds instanceof Array)
@@ -29,7 +31,8 @@ export const dbSeed = async function <T>(model: MyModel<T>, modelSeeds: Object|O
                 seeds.forEach(x => { if (!x.hasOwnProperty(i)) x[i] = {} })
                 //console.log(seeds)
             }
-            if (typeof model.seed == 'undefined') {
+            console.log(model.schema.statics.seed,model.seed)
+            if (!model.seed) {
                 console.log(`🌱 Seeding ${seeds.length} of ${modelName}...`)
                 seeder = async (seeds) => await model.insertMany(seeds)
             }
