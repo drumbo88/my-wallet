@@ -11,7 +11,7 @@ export const defaultSchemaOptions = {
 }
 
 export interface IModel<T extends Document> extends Model<T> {
-    seed?(seeds): Promise<void>
+    seed?(seeds: T | T[]): Promise<T[]>
     //schema: Schema & { seed?(seeds): Promise<void> }
 }
 type MyModel<T extends Document> = IModel<T> & Model<T>;

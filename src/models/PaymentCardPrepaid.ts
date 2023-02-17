@@ -9,7 +9,7 @@ enum PeriodType {
 export interface IPaymentCardPrepaidData {
 }
 export interface IPaymentCardPrepaid extends IPaymentCard {
-  prepaid: IPaymentCardPrepaidData
+    prepaid: IPaymentCardPrepaidData
 }
 export const PaymentCardPrepaidSchema = new Schema({
 })

@@ -5,6 +5,7 @@ import { seeds as PersonSeeds, IPerson, PersonSchema } from './Person';
 import { seeds as CompanySeeds, ICompany, CompanySchema } from './Company';
 import { defaultSchemaOptions } from '../database';
 import { PaymentCard } from './PaymentCard';
+import { IModel } from '../database';
 
 export enum EntityStatus {
     ACTIVE = 'ACTIVE',
@@ -47,7 +48,7 @@ export const EntitySchema = new Schema({
 // export interface IEntityModel extends Model<IEntity> {
 //     seed?(seeds: IEntity[] | IEntity): Promise<IEntityDocument>[] | Promise<IEntityDocument>
 // }
-export class EntityModel extends Model<IEntity> {
+export class EntityModel extends IModel<IEntity> {
     static async seed(seeds: IEntity[] | IEntity): Promise<IEntityDocument | Promise<IEntityDocument>[] | IEntityDocument[]> {
         console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
         const retOne = !Array.isArray(seeds)

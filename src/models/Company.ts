@@ -53,6 +53,13 @@ export const seeds = [
         }]
     },
     {
+        name: 'Foncap SA',
+        taxId: '30692317714',
+        accountsOwned: [{
+          adminEntity: { taxId: '30500003193' },
+        }]
+    },
+    {
         name: 'Binance',
         company: {
             type: CompanyTypes.CRYPTO_EXCHANGE,
