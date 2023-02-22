@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
+import { defaultSchemaOptions } from '../database'
 import { IWalletAsset, schema as WalletAsset } from './WalletAsset'
 
 enum WalletStatus {
@@ -40,7 +41,7 @@ const schema = new Schema<IWallet>({
     // creditCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
 
     detail: { type: String },
-})
+}, defaultSchemaOptions)
 /* ToDo: Cada Wallet tendrá 1 asset (bancos) o más de un Asset (criptoBank)
     - funds: { currency, amount, ... }
     - fixedTerm: { currency, amount, ... }

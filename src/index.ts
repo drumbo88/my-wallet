@@ -67,7 +67,7 @@ const server = (config.NODE_ENV == 'test')
             dbInit()
                 .catch(err => console.error(err))
         }
-        console.log(`Server online on port ${config.API_PORT}`)
+        console.log(`API Server online on port ${config.API_PORT}`)
     })
 
 export { app, server }

@@ -7,32 +7,46 @@ export const list = async (req, res) => {
     const query: any = req.params.from ? { from: { account: req.params.from } } : {}
     req.body.idEntity = req.params.id
     try {
+        let txQuery, message
         if (req.body.idEntity) {
-            query.userEntity = Entity.findOne({ _id: req.body.idEntity })
+            message = `Transactions of Entity #${req.body.idEntity}`
+            console.log(message)
+            query.ownerEntityId = req.body.idEntity
             const accounts = await Account.find(query, '_id')
-            const txQuery = { $or: [
-                { from: { account: { $in: accounts } } },
-                { to: { account: { $in: accounts } } }
+            const accountIds = accounts.map((account:any) => account._id)
+            txQuery = { $or: [
+                { 'from.accountId': { $in: accountIds } },
+                { 'to.accountId': { $in: accountIds } }
             ]}
-            await Transaction.find(txQuery)
-                .populate('from.account')/*.populate({ path: 'fromAccount', populate: 'userEntity' })*/
-                .populate('to.account')/*.populate({ path: 'toAccount', populate: 'userEntity' })*/
-                //.populate('concept')
-                .then((transactions) => {
-                return res.json({transactions, message: `Transactions listed from Entity #${query.userEntity}`})
-            })
         }
         else {
-            const transactions = await Transaction.find(query)
-                .populate('from.account')//.populate({ path: 'fromAccount', populate: 'userEntity' })
-                .populate('to.account')//.populate({ path: 'toAccount', populate: 'userEntity' })
-                //.populate('concept')
-            console.log({query, transactions})
-            return res.json({transactions, message: 'Transactions listed'})
+            message = 'Transactions of everyone'
+            console.log(message)
+            txQuery = query
         }
+        const transactions = await Transaction.find(txQuery)
+        .populate('from.account')
+        .populate('to.account')
+        .populate('allocations.operation')
+        const transaction = transactions?.[0]
+        for (const transaction of transactions) {
+            const account: any = transaction.from?.account
+            if (account) {
+                await account.populate('ownerEntity')
+                if (transaction.from)
+                    transaction.from.account = account
+            }
+        }
+        const from = transaction?.from
+        const fromAccount = from?.account
+        const fromAccountOwner = fromAccount?.ownerEntity || from?.accountOwner
+        const allocation = transaction?.allocations?.[0]
+        const operation = allocation?.operation
+        //console.log({transaction, from, fromAccount, fromAccountOwner})
+        return res.json({ transactions, message })
     }
-    catch (error) {
-        console.log(error)
+    catch (error: any) {
+        console.error(error.stack)
         res.status(409).json({ message: error })
     }
 }

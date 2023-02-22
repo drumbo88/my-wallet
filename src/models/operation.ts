@@ -62,10 +62,10 @@ const schema = new Schema<IOperation>({
     toEntityId: { type: Schema.Types.ObjectId, ref: "Entity", alias: "to" },
     detail: { type: String },
     items: [OperationItem],
-    transactions: [new Schema({
-        transactionId: { type: Schema.Types.ObjectId, ref: 'Transaction' },
-        amount: { type: Number, min: 0 }, // <= transaction.amount
-    })],
+    // transactions: [new Schema({
+    //     transactionId: { type: Schema.Types.ObjectId, ref: 'Transaction' },
+    //     amount: { type: Number, min: 0 }, // <= transaction.amount
+    // })],
     status: { type: String, enum: OperationStatus, default: OperationStatus.CREATED },
     totalAmount: { type: Number, default: 0, required: true },
     paidAmount: { type: Number, default: 0, required: true },
@@ -77,6 +77,9 @@ schema.virtual('fromEntity', {
 })
 schema.virtual('toEntity', {
     ref: 'Entity', localField: 'toEntityId', foreignField: '_id', justOne: true,
+})
+schema.virtual('transactions', {
+    ref: 'Transaction', localField: '_id', foreignField: 'allocations.operationId',
 })
 
 const seeds = [

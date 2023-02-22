@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { defaultSchemaOptions } from "../database";
 import { IOperationItemDetailRef, OperationItemDetail, OperationItemDetailRef } from "./OperationItemDetail";
 
 export interface IOperationItemConcept {
@@ -22,10 +23,10 @@ export const schema = new Schema({
   amount: { type: Number, default: 0, required: true },
   total: { type: Number, default: 0 },
 
-  conceptId: new Schema(OperationItemDetailRef),
+  conceptId: new Schema(OperationItemDetailRef, defaultSchemaOptions),
   // excluyent types of item
   //asset: { type: Schema.Types.ObjectId, ref: 'Asset' }, // Opcional (objetos tangibles o intangibles)
   //concept: { type: Schema.Types.ObjectId, ref: 'OperationConcept' }, // Opcional (impuesto, interés, conceptos abstractos)
 
   detail: { type: String },
-})
+}, defaultSchemaOptions)

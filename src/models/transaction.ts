@@ -4,6 +4,7 @@ import { IOperation, Operation } from "./Operation";
 import { Entity, IEntity } from "./Entity";
 import { Account, IAccount } from "./Account";
 import { IPaymentCard } from "./PaymentCard";
+import { defaultSchemaOptions } from "../database";
 
 enum TransactionTypes {
     CASH = 'CASH',
@@ -21,6 +22,7 @@ export interface ITransactionSide {
     entity?: IEntity,
     entityId?: Schema.Types.ObjectId,
     account?: IAccount,
+    accountOwner?: IEntity,
     accountId?: Schema.Types.ObjectId,
     card?: IPaymentCard,
     cardId?: Schema.Types.ObjectId,
@@ -51,6 +53,13 @@ const TransactionSide = new Schema({ // NULL for cash/deposit
     // For Card (+ digital wallet)
     cardId: { type: Schema.Types.ObjectId, ref: "PaymentCard" },
     usingEntityId: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
+}, defaultSchemaOptions)
+
+TransactionSide.virtual('account', {
+    ref: 'Account', localField: 'accountId', foreignField: '_id', justOne: true
+})
+TransactionSide.virtual('accountOwner', {
+    ref: 'Entity', localField: 'account.ownerEntityId', foreignField: '_id', justOne: true
 })
 
 const schema = new Schema<ITransaction>({
@@ -64,21 +73,18 @@ const schema = new Schema<ITransaction>({
 
     type: { type: String, enum: TransactionTypes, default: TransactionTypes.CASH, required: true },
     allocations: [new Schema({
-        operation: { type: Schema.Types.ObjectId, ref: 'Operation' },
+        operationId: { type: Schema.Types.ObjectId, ref: 'Operation' },
         amount: Number,
-    })],
+    }, defaultSchemaOptions)],
 
-    from: { type: TransactionSide },
-    to: { type: TransactionSide },
+    from: TransactionSide,
+    to: TransactionSide,
 
     detail: { type: String },
-});
+}, defaultSchemaOptions);
 
-schema.virtual('from.account', {
-    ref: 'Account', localField: 'from.accountId', foreignField: '_id', justOne: true
-})
-schema.virtual('to.account', {
-    ref: 'Account', localField: 'to.accountId', foreignField: '_id', justOne: true
+schema.virtual('allocations.operation', {
+    ref: 'Operation', localField: 'allocations.operationId', foreignField: '_id', justOne: true
 })
 
 /**

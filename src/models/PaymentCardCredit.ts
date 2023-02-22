@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
+import { defaultSchemaOptions } from '../database';
 import { IPaymentCard } from './PaymentCard';
 
 enum PeriodType {
@@ -22,7 +23,7 @@ export const PaymentCardCreditSchema = new Schema({
       quantity: { type: Number, required: true },
       type: { type: String, enum: PeriodType, required: true },
   }),
-})
+}, defaultSchemaOptions)
 export const seeds = [
   {
     name: 'DARIO A RUMBO',

@@ -2,6 +2,7 @@ import { Schema } from 'mongoose'
 import bcrypt from 'bcryptjs'
 import { IEntity } from './Entity';
 import { IAccount } from './Account';
+import { defaultSchemaOptions } from '../database';
 
 enum PersonGenders {
     MALE = 'MALE',
@@ -24,7 +25,7 @@ export const PersonFields = {
     birthdate: Date,
     gender: { type: String, enum: PersonGenders },
 }
-export const PersonSchema = new Schema(PersonFields)
+export const PersonSchema = new Schema(PersonFields, defaultSchemaOptions)
 
 export const seeds: IPerson[] = [
     {

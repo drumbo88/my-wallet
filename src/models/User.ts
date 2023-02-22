@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import { defaultSchemaOptions } from '../database'
 
 export enum UserStatus {
     INACTIVE = 'INACTIVE',
@@ -20,4 +21,4 @@ export const UserFields = {
     status: { type: String, enum: UserStatus, default: UserStatus.ACTIVE },
 }
 
-export const schema = new Schema<IUser>(UserFields)
+export const schema = new Schema<IUser>(UserFields, defaultSchemaOptions)

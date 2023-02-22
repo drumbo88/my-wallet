@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
+import { defaultSchemaOptions } from '../database'
 
 export interface IWalletAsset {
     currency: String,
@@ -10,7 +11,7 @@ const schema = new Schema<IWalletAsset>({
     balance: { type: Number, required: true },
 
     detail: { type: String },
-})
+}, defaultSchemaOptions)
 
 //export { model, schema }
 export { schema }

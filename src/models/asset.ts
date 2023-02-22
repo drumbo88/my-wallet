@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
+import { defaultSchemaOptions } from '../database';
 import { IOperationItemDetail, OperationItemDetailFields } from './OperationItemDetail';
 
 export interface IAsset extends IOperationItemDetail {
@@ -11,4 +12,4 @@ export const AssetFields = {
 export const Asset = mongoose.model('Asset', new Schema<IAsset>({
     ...OperationItemDetailFields,
     ...AssetFields,
-}))
+}, defaultSchemaOptions))

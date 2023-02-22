@@ -117,7 +117,7 @@ const TransactionsPage = () => {
     },{*/
       field: 'conceptName',
       headerName: 'Concepto',
-      valueGetter: (params) => params.row.concept.name,
+      valueGetter: (params) => params.row.allocations[0]?.operation.detail || 'Sin definir',
       flex: 1
     },{
       field: 'detail',
@@ -126,7 +126,7 @@ const TransactionsPage = () => {
     },{
       field: 'fromAccount',
       headerName: 'Origen',
-      valueGetter: (params) => params.row.fromAccount?.alias ?? params.row.fromAccount.userEntity.type,
+      valueGetter: (params) => params.row.from?.alias ?? params.row.from.account.alias,
       flex: 1
     },{
       field: 'toAccount',
@@ -137,12 +137,12 @@ const TransactionsPage = () => {
       field: 'type',
       headerName: 'Tipo',
       renderCell: (params: any) => {
-        const from = params.row.fromAccount, to = params.row.toAccount
-        if (from.userEntity._id == to?.userEntity._id)
+        const from = params.row.from?.account, to = params.row.to?.account
+        if (from?.ownerEntity?._id == to?.ownerEntity?._id)
           return <Chip label="Self-transfer" color="info" />
-        if (myEntityId == from.userEntity._id)
+        if (myEntityId == from?.ownerEntity?._id)
           return <Chip label="Expense" color="error" />
-        if (myEntityId == to?.userEntity._id)
+        if (myEntityId == to?.ownerEntity?._id)
           return <Chip label="Income" color="success" variant="outlined" />
       },
       flex: 1

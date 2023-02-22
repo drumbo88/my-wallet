@@ -4,7 +4,7 @@ import checkAuth from '../middlewares/auth.js'
 const router = express.Router();
 
 // Import controllers
-/*import * as cTransaction from '../controllers/transaction.controller.js'
+import * as cTransaction from '../controllers/transaction.controller.js'
 
 // Routes definitions
 router.route('/:from?')

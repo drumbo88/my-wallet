@@ -1,11 +1,10 @@
 import { Schema, model, Model, Document } from 'mongoose'
 import { IUser, schema as UserSchema } from './User';
 import { Account, IAccount } from './Account';
-import { seeds as PersonSeeds, IPerson, PersonSchema } from './Person';
-import { seeds as CompanySeeds, ICompany, CompanySchema } from './Company';
-import { defaultSchemaOptions } from '../database';
+import { seeds as PersonSeeds, IPerson, PersonSchema, IPersonData } from './Person';
+import { seeds as CompanySeeds, ICompany, CompanySchema, ICompanyData } from './Company';
+import { defaultSchemaOptions, ISeed, MyModel } from '../database';
 import { PaymentCard } from './PaymentCard';
-import { IModel } from '../database';
 
 export enum EntityStatus {
     ACTIVE = 'ACTIVE',
@@ -16,7 +15,20 @@ export enum EntityTypes {
     COMPANY = 'company'
 }
 
-export interface IEntity {
+export interface IAccountSeed extends ISeed {
+}
+export interface IEntityFields {
+    /* Data fields */
+    name?: String,
+    status?: EntityStatus,
+    taxId?: String,
+    user?: IUser,
+    currency?: String,
+
+    person?: IPersonData,
+    company?: ICompanyData,
+}
+export interface IEntitySeed extends IEntityFields, ISeed {
     /* Data fields */
     name?: String,
     status?: EntityStatus,
@@ -24,8 +36,14 @@ export interface IEntity {
     user?: IUser,
     currency?: String,
     /* Virtuals */
-    // idsAccountsOwned?: Schema.Types.ObjectId[],
-    // idsAccountsAdministrated?: Schema.Types.ObjectId[],
+    idsAccountsOwned?: Schema.Types.ObjectId[],
+    idsAccountsAdministrated?: Schema.Types.ObjectId[],
+    accountsOwned?: (IAccount | IAccountSeed | Schema.Types.ObjectId)[],
+    accountsAdministrated?: (IAccount | IAccountSeed | Schema.Types.ObjectId)[],
+}
+export interface IEntity extends IEntityFields {
+    idsAccountsOwned?: Schema.Types.ObjectId[],
+    idsAccountsAdministrated?: Schema.Types.ObjectId[],
     accountsOwned?: IAccount[],
     accountsAdministrated?: IAccount[],
 }
@@ -48,18 +66,23 @@ export const EntitySchema = new Schema({
 // export interface IEntityModel extends Model<IEntity> {
 //     seed?(seeds: IEntity[] | IEntity): Promise<IEntityDocument>[] | Promise<IEntityDocument>
 // }
-export class EntityModel extends IModel<IEntity> {
-    static async seed(seeds: IEntity[] | IEntity): Promise<IEntityDocument | Promise<IEntityDocument>[] | IEntityDocument[]> {
-        console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+export interface IEntityDocument extends IEntity, Document {
+    addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
+    addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
+}
+export interface IEntityModel extends MyModel<IEntityDocument>, EntityModel {}
+
+export class EntityModel extends MyModel<IEntityDocument> {
+    static async seed(seeds: IEntitySeed[] | IEntitySeed): Promise<IEntityDocument | IEntityDocument[]> {
         const retOne = !Array.isArray(seeds)
         if (retOne)
-            seeds = [seeds as IEntity]
-        const entities: IEntityDocument[] = await this.insertMany(seeds)
+            seeds = [seeds as IEntitySeed]
+        const entities: IEntityDocument[] = await Entity.insertMany(seeds)
         for (const i in seeds) {
             const seed = seeds[i]
             const entity = entities[i]
             if (seed.accountsOwned?.length) {
-                console.log({seed})
+                //console.log({seed})
                 for (const accData of seed.accountsOwned)
                     await entity.addOwnedAccount(accData)
             }
@@ -72,13 +95,11 @@ export class EntityModel extends IModel<IEntity> {
         return retOne ? entities.pop() as IEntityDocument : entities
     }
 }
-export interface IEntityModel extends Model<IEntity>, EntityModel {}
-
-export interface IEntityDocument extends Document<EntityModel>, IEntity {
-    // statics & methods
-    addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
-    addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
-}
+// export interface IEntityDocument extends Document<EntityModel>, IEntity {
+//     // statics & methods
+//     addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
+//     addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
+// }
 
 EntitySchema.statics.createPerson = async function (data: IPerson) {
 }
@@ -100,7 +121,7 @@ EntitySchema.methods.addOwnedAccount = async function (accountData: IAccount) {
     }
     accountData.adminEntityId = adminEntity.id
     await Account.create(accountData)
-    console.log({accountData})
+    //console.log({accountData})
     return this
 }
 
@@ -149,25 +170,6 @@ EntitySchema.methods.addCreditCard = async function (creditCardData, accountData
     return this
 }
 
-// EntitySchema.statics.seed = async function (seeds: IEntity[] | IEntity) {
-//     const retOne = !Array.isArray(seeds)
-//     if (retOne)
-//         seeds = [seeds as IEntity]
-//     const entities: IEntityDocument[] = await this.insertMany(seeds)
-//     for (const i in seeds) {
-//         const seed = seeds[i]
-//         const entity = entities[i]
-//         if (seed.accountsOwned?.length) {
-//             for (const accData of seed.accountsOwned)
-//                 await entity.addOwnedAccount(accData)
-//         }
-//         if (seed.accountsAdministrated?.length) {
-//             for (const accData of seed.accountsAdministrated)
-//                 await entity.addAdministratedAccount(accData)
-//         }
-//         await entity.save()
-//     }
-//     return retOne ? entities.push() : entities
-// }
+EntitySchema.statics.seed = EntityModel.seed;
 
-export const Entity = model<IEntity, EntityModel>('Entity', EntitySchema)
+export const Entity = model<IEntity, IEntityModel>('Entity', EntitySchema)
