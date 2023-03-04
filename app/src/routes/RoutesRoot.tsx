@@ -10,6 +10,7 @@ import IncomesPage from '../pages/IncomesPage';
 import CurrenciesPage from '../pages/CurrenciesPage';
 import CountriesPage from '../pages/CountriesPage';
 import TransactionsPage from '../pages/TransactionsPage';
+import PeoplePage from '../pages/PeoplePage';
 
 function RoutesRoot() {
   return (
@@ -20,6 +21,7 @@ function RoutesRoot() {
         <Route path="countries/*" element={<CountriesPage />} />
         <Route path="transactions/*" element={<TransactionsPage />} />
         <Route path="person/:id/transactions/*" element={<TransactionsPage />} />
+        <Route path="person/*" element={<PeoplePage />} />
         <Route path="messages" element={<MessagesPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />
