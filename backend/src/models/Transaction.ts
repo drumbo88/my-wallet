@@ -31,8 +31,8 @@ export interface ITransactionSide {
 }
 export interface ITransaction extends IDocument {
     datetime?: Date
-    currency?: String
-    toCurrency?: String
+    currencyCode?: String
+    toCurrencyCode?: String
     amount?: number
     allocations?: ITransactionAllocation[]
     allocatedAmount?: number
@@ -64,11 +64,11 @@ TransactionSide.virtual('accountOwner', {
 
 const schema = new Schema<ITransaction>({
     datetime: { type: Date, required: true, default: Date.now },
-    currency: { type: String, alias: "currencyCode", ref: 'Currency' },
+    currencyCode: { type: String, ref: 'Currency' },
     amount: { type: Number, required: true, min: 0 },
     allocatedAmount: { type: Number, required: true, default: 0, min: 0 },
     unallocatedAmount: { type: Number, required: true, default: function () { const x = this as ITransaction; return (x.amount || 0) - (x.allocatedAmount || 0) }, min: 0 },
-    toCurrency: { type: String, alias: "toCurrencyCode", ref: 'Currency' },
+    toCurrencyCode: { type: String, ref: 'Currency' },
     exchangeRate: { type: Number },
 
     type: { type: String, enum: TransactionTypes, default: TransactionTypes.CASH, required: true },
@@ -83,6 +83,12 @@ const schema = new Schema<ITransaction>({
     detail: { type: String },
 }, defaultSchemaOptions);
 
+schema.virtual("currency", {
+    ref: "Currency",
+    localField: "currencyCode",
+    foreignField: "code",
+    justOne: true,
+});
 schema.virtual('allocations.operation', {
     ref: 'Operation', localField: 'allocations.operationId', foreignField: '_id', justOne: true
 })
@@ -153,17 +159,17 @@ schema.post('save', async (doc) => {
 const seeds = [
     {
         datetime: '2022-12-12 12:12:12',
-        currency: 'ARS',
+        currencyCode: 'ARS',
         amount: 1000,
-        toCurrency: 'ARS',
+        toCurrencyCode: 'ARS',
         from: { account: { ownerEntity: { taxId: '20337466711' } } },
         allocations: [{ operation: { datetime: '2022-12-12 12:12:12' }, amount: 1000 }],
     },
     {
         datetime: '2022-12-01 12:12:12',
-        currency: 'ARS',
+        currencyCode: 'ARS',
         amount: 200000,
-        toCurrency: 'ARS',
+        toCurrencyCode: 'ARS',
         from: { account: { ownerEntity: { taxId: '30692317714' } } },
         to: { account: { ownerEntity: { taxId: '20337466711' } } },
         allocations: [{ operation: { datetime: '2022-12-01 12:12:12' }, amount: 200000 }],

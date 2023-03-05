@@ -69,6 +69,8 @@ export const EntitySchema = new Schema({
 export interface IEntityDocument extends IEntity, Document {
     addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
     addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
+    getPeople(data: any): Promise<IEntityDocument[]>
+    getCompanies(data: any): Promise<IEntityDocument[]>
 }
 export interface IEntityModel extends MyModel<IEntityDocument>, EntityModel {}
 
@@ -100,6 +102,29 @@ export class EntityModel extends MyModel<IEntityDocument> {
 //     addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
 //     addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
 // }
+
+/**
+ * GET
+ */
+EntitySchema.statics.getPeople = async function (data: any) {
+    // que person esté definido y company sea null
+    if (!data.person) data.person = {}
+    data.person.$exists = true
+    data.person.$ne = null
+    if (data.company) delete data.company
+    //data.$or = [ { company: { $exists: false } }, { company: { $in: ['', null] } } ]
+    return await Entity.find(data)
+}
+EntitySchema.statics.getCompanies = async function (data: any) {
+    // que company esté definido y person sea null
+    if (!data.company) data.company = {}
+    data.company.$exists = true
+    data.company.$ne = null
+    if (data.person) delete data.person
+    //data.$or = [ { person: { $exists: false } }, { person: { $in: ['', null] } } ]
+    return Entity.find(data)
+}
+
 
 EntitySchema.statics.createPerson = async function (data: IPerson) {
 }

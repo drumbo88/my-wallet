@@ -28,13 +28,22 @@ export const list = async (req, res) => {
         .populate('from.account')
         .populate('to.account')
         .populate('allocations.operation')
+        .populate('currency')
         const transaction = transactions?.[0]
         for (const transaction of transactions) {
-            const account: any = transaction.from?.account
+            let account: any = transaction.from?.account
             if (account) {
                 await account.populate('ownerEntity')
+                await account.populate('adminEntity')
                 if (transaction.from)
                     transaction.from.account = account
+            }
+            account = transaction.to?.account
+            if (account) {
+                await account.populate('ownerEntity')
+                await account.populate('adminEntity')
+                if (transaction.to)
+                    transaction.to.account = account
             }
         }
         const from = transaction?.from

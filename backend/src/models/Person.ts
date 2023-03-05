@@ -117,6 +117,33 @@ export const seeds: IPerson[] = [
     },
     {
         person: {
+            firstname: "Rocío",
+            lastname: "Fariña",
+            birthdate: new Date("1993-03-26"),
+            gender: PersonGenders.FEMALE,
+        },
+        taxId: "27373543212",
+        currency: 'USD',
+        user: {
+            name: "f.rocio",
+        },
+    },
+    {
+        person: {
+            firstname: "José",
+            lastname: "Dorce",
+            birthdate: new Date("1987-03-15"),
+            gender: PersonGenders.MALE,
+        },
+        taxId: "27326775652",
+        currency: 'ARS',
+        user: {
+            email: "dorcejose@yahoo.com.ar",
+            name: "jdorce",
+        },
+    },
+    {
+        person: {
             firstname: "Pablo",
             lastname: "Fernández",
             birthdate: new Date("1989-05-19"),
