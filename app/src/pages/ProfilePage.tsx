@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Avatar, Box, Button, Grid, TextField, Typography, Card } from '@material-ui/core';
-//import Paper from '@material-ui/core/Paper';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 import { Paper } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
-    // backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(3),
   },
   avatar: {

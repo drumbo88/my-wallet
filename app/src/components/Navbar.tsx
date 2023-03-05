@@ -32,7 +32,7 @@ import {
   Dashboard,
   ExpandLess,
   ExpandMore,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import {
   AddCard,
   AdminPanelSettings,
