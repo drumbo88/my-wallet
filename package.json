@@ -1,0 +1,30 @@
+{
+    "name": "my-wallets",
+    "version": "1.0.0",
+    "description": "",
+    "workspaces": [
+        "frontend",
+        "backend",
+        "common"
+    ],
+    "scripts": {
+        "start-backend": "cross-env NODE_ENV=production && node backend/build/index.js",
+        "start-frontend": "cross-env NODE_ENV=production && node frontend/build/index.js",
+        "start-all": "cross-env NODE_ENV=production && node build/index.js",
+        "start:dev": "cross-env NODE_ENV=production && npx tsc --watch & npx nodemon build/server.js",
+        "dev-backend": "cross-env NODE_ENV=development && nodemon backend/build/index.js",
+        "seed": "cross-env NODE_ENV=development && node backend/build/seed.js",
+        "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node backend/build/seed.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/drumbo88/my-wallet.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/drumbo88/my-wallet/issues"
+    },
+    "homepage": "https://github.com/drumbo88/my-wallet#readme"
+}

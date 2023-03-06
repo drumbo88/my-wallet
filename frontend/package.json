@@ -1,5 +1,5 @@
 {
-  "name": "my-wallets",
+  "name": "@my-wallets/frontend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

@@ -6,17 +6,7 @@ import { IOperationItem, IOperationItemConcept, schema as OperationItem } from "
 import { OperationItemConcept } from "./OperationItemConcept";
 import { IOperationItemDetail, OperationItemDetail, OperationItemDetailType } from "./OperationItemDetail";
 import { ITransaction, Transaction } from "./Transaction";
-
-enum OperationTypes {
-    TRADE = 'TRADE',
-    EXCHANGE = 'EXCHANGE',
-}
-enum OperationStatus {
-    CREATED = 'CREATED',
-    PAID = 'PAID',
-    COMPLETED = 'COMPLETED',
-    CANCELLED = 'CANCELLED',
-}
+import { OperationStatus, OperationTypes } from "common/types/operation";
 
 export interface ITransactionAllocation {
     transactionId?: Schema.Types.ObjectId,
