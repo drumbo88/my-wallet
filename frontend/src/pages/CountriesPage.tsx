@@ -44,7 +44,7 @@ const CountriesPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data } = await axios.get('http://localhost:3001/api/country');
+      const { data } = await axios.get('http://localhost:3080/api/country');
       setData(data.countries)
     }
     fetchData().catch(err => console.error(err))

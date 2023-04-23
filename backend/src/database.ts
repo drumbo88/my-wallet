@@ -1,6 +1,6 @@
-import mongoose, { Model, Document } from 'mongoose'
+import mongoose, { Document } from 'mongoose'
 import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING, DB_PORT } from './config.js'
-import { EntityModel, EntitySchema } from './models/Entity.js'
+import { MyModel } from './types.js'
 
 mongoose.set('strictQuery', false)
 
@@ -8,13 +8,6 @@ export const defaultSchemaOptions = {
     toObject: { virtuals: true },
     toJSON: { virtuals: true, getters: true },
     versionKey: false
-}
-
-export interface ISeed {}
-
-export abstract class MyModel<T extends Document> extends Model<T> {
-    //static seed?<T extends Document>(seeds: T | T[]): Promise<T[]>
-    static seed?<T extends ISeed>(seeds: T | T[]): Promise<Document | Document[]>
 }
 
 export const dbSeed = async function <T extends Document>(model: MyModel<T>, modelSeeds: Object|Object[]) {

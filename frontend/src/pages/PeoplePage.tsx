@@ -99,7 +99,7 @@ const PeoplePage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const apiUrl = `http://localhost:3001/api/person`;
+      const apiUrl = `http://localhost:3080/api/person`;
       axios.get(apiUrl).then((res) => {
         console.log(res.data.people);
         res.data.people.forEach((row) => {});

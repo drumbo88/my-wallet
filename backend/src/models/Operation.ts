@@ -4,9 +4,9 @@ import { Asset } from "./Asset";
 import { Entity, IEntity, IEntityDocument, EntityModel } from "./Entity";
 import { IOperationItem, IOperationItemConcept, schema as OperationItem } from "./OperationItem";
 import { OperationItemConcept } from "./OperationItemConcept";
-import { IOperationItemDetail, OperationItemDetail, OperationItemDetailType } from "./OperationItemDetail";
+import { OperationItemDetailType } from "./OperationItemDetail";
 import { ITransaction, Transaction } from "./Transaction";
-import { OperationStatus, OperationTypes } from "common/types/operation";
+import { IOperation, OperationStatus, OperationTypes } from "common/types/operation";
 
 export interface ITransactionAllocation {
     transactionId?: Schema.Types.ObjectId,
@@ -14,29 +14,16 @@ export interface ITransactionAllocation {
     amount?: number,
 }
 
-export interface IOperation {
-    /* Data fields */
-    datetime: String,
-    type?: String,
+export interface IOperationBackend extends IOperation {
     fromEntityId?: Schema.Types.ObjectId,
     toEntityId?: Schema.Types.ObjectId,
-    detail: String,
-    items?: IOperationItem[],
-    transactions?: ITransactionAllocation[],
-    status?: OperationStatus,
-
-    fromEntity?: IEntity,
-    toEntity?: IEntity,
-
-    totalAmount: number,
-    paidAmount?: number,
-    unpaidAmount?: number,
     /* Virtuals */
     setFromEntity(entityData: IEntity): Promise<IOperationDocument>
     setToEntity(entityData: IEntity): Promise<IOperationDocument>
 }
-export interface IOperationModel extends Model<IOperation> { }
-export interface IOperationDocument extends Document<IOperationModel>, IOperation {
+
+export interface IOperationModel extends Model<IOperationBackend> { }
+export interface IOperationDocument extends Document<IOperationModel>, IOperationBackend {
     // methods
     addItem(itemData: IOperationItemConcept): Promise<IOperationModel>
     addTransactionAllocation(allocationData: ITransactionAllocation): Promise<IOperationModel>
@@ -45,7 +32,7 @@ export interface IOperationDocument extends Document<IOperationModel>, IOperatio
 const schemaOptions = { ...defaultSchemaOptions }
 schemaOptions.toJSON.getters = true
 
-const schema = new Schema<IOperation>({
+const schema = new Schema<IOperationBackend>({
     datetime: { type: Date, default: Date.now, required: true },
     type: { type: String, enum: OperationTypes, default: OperationTypes.TRADE, required: true },
     fromEntityId: { type: Schema.Types.ObjectId, ref: "Entity", alias: "from" }, //{ type: EntityRef, alias: "from", required: true },

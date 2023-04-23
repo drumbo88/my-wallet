@@ -56,7 +56,7 @@ AccountSchema.statics.getByOwner = async function (entityData: IEntity) {
     if (!ownerEntity) {
         throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
     }
-    return Account.find({ ownerEntityId: ownerEntity._id })
+    // return Account.find({ ownerEntityId: ownerEntity._id })
 }
 
 // class x {}

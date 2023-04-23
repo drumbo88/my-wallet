@@ -65,7 +65,7 @@ const CurrenciesPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await axios.get('http://localhost:3001/api/currency');
+      const res = await axios.get('http://localhost:3080/api/currency');
       setData(res.data.currencies)
     }
     fetchData().catch(err => console.error(err))

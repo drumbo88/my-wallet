@@ -1,33 +1,16 @@
 import { Schema } from 'mongoose'
 import bcrypt from 'bcryptjs'
-import { IEntity } from './Entity';
-import { IAccount } from './Account';
 import { defaultSchemaOptions } from '../database';
+import { IPerson, PersonGenders, PersonFields } from 'common/types/person';
+import { ISeed } from 'src/types';
 
-enum PersonGenders {
-    MALE = 'MALE',
-    FEMALE = 'FEMALE',
-    OTHER = 'OTHER',
-}
-
-export interface IPersonData {
-    firstname: String,
-    lastname: String,
-    birthdate: Date,
-    gender: PersonGenders,
-}
-export interface IPerson extends IEntity {
-    person: IPersonData
-}
-export const PersonFields = {
-    firstname: String,
-    lastname: String,
-    birthdate: Date,
-    gender: { type: String, enum: PersonGenders },
-}
 export const PersonSchema = new Schema(PersonFields, defaultSchemaOptions)
 
-export const seeds: IPerson[] = [
+export interface IPersonSeed extends IPerson, ISeed {
+    accountsOwned: Account[],
+}
+
+export const seeds: IPersonSeed[] = [
     {
         person: {
             firstname: "Darío",

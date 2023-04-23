@@ -86,7 +86,7 @@ const IncomesPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await axios.get("http://localhost:3001/api/income");
+      const res = await axios.get("http://localhost:3080/api/income");
       setData(res.data.transactions);
     };
     fetchData().catch((err) => console.error(err));
