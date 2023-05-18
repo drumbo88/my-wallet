@@ -20,6 +20,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { getNumber, getDateTime, getMoney } from "../utils/formatting";
 
+import OperationTypes from 'common/types/operation'
+
 const personForm = [
   {
     control: <MyDatePicker />,
@@ -85,6 +87,8 @@ const personForm = [
 ];
 
 const PeoplePage = () => {
+
+    console.log(OperationTypes)
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();

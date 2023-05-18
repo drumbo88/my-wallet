@@ -16,8 +16,9 @@ RUN npm run seed
 
 # Copy rest of the code to container
 COPY . .
+COPY common ../common
 
 EXPOSE 3080
 
 # Run the API on Nodemon
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start:dev"]

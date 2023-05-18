@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema } from 'mongoose'
 import { defaultSchemaOptions } from '../database'
-import { Entity, IEntity, EntityModel } from './Entity'
+import { IEntity, EntityModel } from './Entity'
 import { IPaymentCard, PaymentCardSchema } from './PaymentCard'
 import { IWallet, schema as Wallet  } from './Wallet'
 // import { EntityRefSchema } from './Entity'
@@ -52,7 +52,8 @@ AccountSchema.virtual('adminEntity', {
 
 AccountSchema.statics.getByOwner = async function (entityData: IEntity) {
     const ownerEntity = (entityData instanceof EntityModel)
-        ? entityData : await Entity.findOne(entityData)
+        ? entityData : await EntityModel.findOne(entityData)
+
     if (!ownerEntity) {
         throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
     }

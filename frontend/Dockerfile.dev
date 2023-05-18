@@ -13,6 +13,7 @@ RUN npm install
 
 # Copy rest of the code to container
 COPY . .
+COPY common ../common
 
 EXPOSE 3000
 

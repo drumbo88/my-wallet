@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "cross-env NODE_ENV=production && node build/index.js",
-        "start:dev": "cross-env NODE_ENV=production && npx tsc --watch & npx nodemon build/server.js",
+        "start:dev": "cross-env NODE_ENV=production && npx tsc --watch && npx nodemon build/server.js",
         "dev": "cross-env NODE_ENV=development && nodemon build/index.js",
         "seed": "cross-env NODE_ENV=development && node build/seed.js",
         "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node build/seed.js",

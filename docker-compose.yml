@@ -1,19 +1,19 @@
 version: "3.9"
 services:
 
-  common:
-   build:
-      context: ./common
-      dockerfile: Dockerfile.dev
-   ports:
-     - 3081:3081
-   container_name: mern-common
-   networks:
-     - mern-stack-net
-   volumes:
-    - ./common/src:/usr/app/src
-   depends_on:
-    - db
+  # common:
+  #  build:
+  #     context: ./common
+  #     dockerfile: Dockerfile.dev
+  #  ports:
+  #    - 3081:3081
+  #  container_name: mern-common
+  #  networks:
+  #    - mern-stack-net
+  #  volumes:
+  #   - ./common/src:/usr/app/src
+  #  depends_on:
+  #   - db
 
   frontend:
    build:
@@ -29,7 +29,6 @@ services:
     -  ./frontend/public:/usr/app/public
    depends_on:
     - backend
-    - common
    stdin_open: true
    tty: true
 
@@ -45,7 +44,6 @@ services:
    volumes:
     - ./backend/src:/usr/app/src
    depends_on:
-    - common
     - db
 
   db:

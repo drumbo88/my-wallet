@@ -1,3 +1,5 @@
+import { ICompanyData } from "./company";
+import { IPersonData } from "./person";
 import { IUser } from "./user";
 
 export enum EntityStatus {
@@ -22,18 +24,23 @@ export interface IEntity {
     person?: IPersonData,
     company?: ICompanyData,
 
-    abstract addOwnedAccount(),
-    abstract addAdministratedAccount(),
-    abstract getPeople(),
-    abstract getCompanies(),
+    addOwnedAccount(),
+    addAdministratedAccount(),
+    getPeople(),
+    getCompanies(),
 }
 export abstract class Entity implements IEntity {
-    name?: string,
-    status: EntityStatus,
-    taxId?: String,
-    user?: IUser,
-    currency?: string,
+    name?: string
+    status: EntityStatus
+    taxId?: String
+    user?: IUser
+    currency?: string
 
-    person?: IPersonData,
-    company?: ICompanyData,
+    person?: IPersonData
+    company?: ICompanyData
+
+    addOwnedAccount() {}
+    addAdministratedAccount() {}
+    getPeople() {}
+    getCompanies() {}
 }
