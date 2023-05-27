@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
 dotenv.config() // Copies .env to process.env
 
 export function booleanEnvVar(varName: string, defaultValue: boolean): boolean {

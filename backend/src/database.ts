@@ -7,7 +7,8 @@ mongoose.set('strictQuery', false)
 export const defaultSchemaOptions = {
     toObject: { virtuals: true },
     toJSON: { virtuals: true, getters: true },
-    versionKey: false
+    versionKey: false,
+    timestamps: true,
 }
 
 export const dbSeed = async function <T extends Document>(model: MyModel<T>, modelSeeds: Object|Object[]) {

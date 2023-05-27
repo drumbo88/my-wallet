@@ -3,10 +3,20 @@ import { defaultSchemaOptions } from '../database'
 import { IEntity, EntityModel } from './Entity'
 import { IPaymentCard, PaymentCardSchema } from './PaymentCard'
 import { IWallet, schema as Wallet  } from './Wallet'
-import { AccountStatus, AccountTypes, IAccount } from 'common/Types/Account'
 // import { EntityRefSchema } from './Entity'
 
-export interface IAccountBackend {
+export enum AccountStatus {
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
+}
+export enum AccountTypes {
+    FUNDS = 'FUNDS',
+    SPOT = 'SPOT',
+    EARN = 'EARN',
+    FIXED_TERM = 'FIXED_TERM',
+    CREDIT = 'CREDIT',
+}
+export interface IAccount {
     adminEntityId?: Schema.Types.ObjectId,
     ownerEntityId?: Schema.Types.ObjectId,
     adminEntity?: IEntity,
