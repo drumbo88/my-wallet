@@ -18,7 +18,7 @@ RUN npm run seed
 COPY . .
 COPY common ../common
 
-EXPOSE 3080
+EXPOSE 3001
 
 # Run the API on Nodemon
 CMD ["npm", "run", "start:dev"]

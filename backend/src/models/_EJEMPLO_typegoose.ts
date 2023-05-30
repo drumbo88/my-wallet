@@ -4,8 +4,6 @@ import mongoose from 'mongoose';
 import { DB_CONNECTION_STRING } from '../config';
 
 mongoose.set('strictQuery', false)
-mongoose.connect(DB_CONNECTION_STRING)
-console.log({DB_CONNECTION_STRING})
 
 const myModelOptions = {
     schemaOptions: {
@@ -28,9 +26,9 @@ export class Empresa {
     taxNumber: string;
 
     //nuevoEmpleado(this: ReturnModelType<typeof Empresa>, e: Empleado) {
-    public nuevoEmpleado(this: DocumentType<Empresa>, empleado: DocumentType<Empleado>) {
+    public async nuevoEmpleado(this: DocumentType<Empresa>, empleado: DocumentType<Empleado>): Promise<void> {
         empleado.empresa = this.id
-        empleado.save()
+        await empleado.save()
     }
 }
 
@@ -107,6 +105,13 @@ export const ClienteModel = getDiscriminatorModelForClass(PersonaModel, Cliente,
 //const answer: number = Employee.myStaticMethod(); // 42
 
 (async () => {
+    await mongoose.connect(DB_CONNECTION_STRING)
+    if (!mongoose.connection.db) {
+        console.log(`No se pudo conectar con la base de datos '${DB_CONNECTION_STRING}'.`)
+        return
+    }
+    console.log(`Conectado a la base de datos '${DB_CONNECTION_STRING}'.`)
+
     let empresa = await EmpresaModel.findOne({ nombre: 'Rumbex SRL' });
     let empleado = await EmpleadoModel.findOne({ nombre: 'drumbo' });
     if (!empresa) {
@@ -116,12 +121,12 @@ export const ClienteModel = getDiscriminatorModelForClass(PersonaModel, Cliente,
     else console.log("Empresa encontrada!")
     if (!empleado) {
         empleado = new EmpleadoModel({ nombre: 'drumbo', salario:200000 });
-        empleado.save();
+        await empleado.save();
         console.log("Empleado creado.")
     }
     else console.log("Empleado encontrado!")
     if (!empleado.empresa) {
-        empresa.nuevoEmpleado(empleado)
+        await empresa.nuevoEmpleado(empleado)
         console.log("Empleado asignado a empresa.")
     }
     else console.log("El empleado ya pertenece a la empresa!")

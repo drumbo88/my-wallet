@@ -20,7 +20,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
    ports:
-    -  3000:3000
+    -  3080:3080
    container_name: mern-frontend
    networks:
     -  mern-stack-net
@@ -37,7 +37,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
    ports:
-     - 3080:3080
+     - 3001:3001
    container_name: mern-backend
    networks:
      - mern-stack-net
@@ -49,7 +49,7 @@ services:
   db:
     image: mongo
     ports:
-      - 27017:27017
+      - 3017:27017
     container_name: mongo-db
     networks:
       - mern-stack-net

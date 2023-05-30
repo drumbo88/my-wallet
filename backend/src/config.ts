@@ -76,14 +76,14 @@ export function arrayEnvVar(varName: string, defaultValue: string[], nullable = 
 
 const {
     NODE_ENV = "develpoment",
-    API_PORT = 3080,
-    API_PORT_DEV = 3080,
-    API_PORT_TEST = 3080,
+    API_PORT = 3001,
+    API_PORT_DEV = 3001,
+    API_PORT_TEST = 3001,
 
     DB_NAME = 'myWallets',
-    DB_PORT = 27017,
-    DB_PORT_DEV = 27017,
-    DB_PORT_TEST = 27017,
+    DB_PORT = 3017,
+    DB_PORT_DEV = 3017,
+    DB_PORT_TEST = 3017,
     DB_DNS = 'localhost',
     DB_DNS_DEV = 'localhost',
     DB_DNS_TEST = 'localhost',
