@@ -75,9 +75,9 @@ export class Empleado extends Persona {
     empresa: Ref<Empresa>;
 
     getTipo(): string {
-      return Persona.tipos.EMPLEADO;
+        return Persona.tipos.EMPLEADO;
     }
-  }
+}
 
 // Genera el modelo a partir de la clase utilizando Typegoose
 export const EmpleadoModel = getDiscriminatorModelForClass(PersonaModel, Empleado, 'Empleado');
@@ -90,9 +90,9 @@ export class Cliente extends Persona {
     taxNumber: string;
 
     getTipo(): string {
-      return Persona.tipos.CLIENTE;
+        return Persona.tipos.CLIENTE;
     }
-  }
+}
 
 // Genera el modelo a partir de la clase utilizando Typegoose
 export const ClienteModel = getDiscriminatorModelForClass(PersonaModel, Cliente, Persona.tipos.CLIENTE);
@@ -105,6 +105,7 @@ export const ClienteModel = getDiscriminatorModelForClass(PersonaModel, Cliente,
 //const answer: number = Employee.myStaticMethod(); // 42
 
 (async () => {
+    // Conexión a la BD
     await mongoose.connect(DB_CONNECTION_STRING)
     if (!mongoose.connection.db) {
         console.log(`No se pudo conectar con la base de datos '${DB_CONNECTION_STRING}'.`)
@@ -112,23 +113,30 @@ export const ClienteModel = getDiscriminatorModelForClass(PersonaModel, Cliente,
     }
     console.log(`Conectado a la base de datos '${DB_CONNECTION_STRING}'.`)
 
+    // Obtener o crear empresa
     let empresa = await EmpresaModel.findOne({ nombre: 'Rumbex SRL' });
-    let empleado = await EmpleadoModel.findOne({ nombre: 'drumbo' });
     if (!empresa) {
         empresa = await EmpresaModel.create({ nombre: 'Rumbex SRL' });
         console.log("Empresa creada!")
     }
     else console.log("Empresa encontrada!")
+
+    // Obtener o crear empleado
+    let empleado = await EmpleadoModel.findOne({ nombre: 'drumbo' });
     if (!empleado) {
-        empleado = new EmpleadoModel({ nombre: 'drumbo', salario:200000 });
+        empleado = new EmpleadoModel({ nombre: 'drumbo', salario: 200000 });
         await empleado.save();
         console.log("Empleado creado.")
     }
     else console.log("Empleado encontrado!")
+
+    // Asignación de empleado a empresa
     if (!empleado.empresa) {
         await empresa.nuevoEmpleado(empleado)
         console.log("Empleado asignado a empresa.")
     }
     else console.log("El empleado ya pertenece a la empresa!")
-    console.log({empresa,empleado})
+
+    // FIN
+    console.log({ empresa, empleado })
 })()
