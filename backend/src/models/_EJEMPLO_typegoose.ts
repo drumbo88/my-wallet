@@ -5,7 +5,7 @@ import { DB_CONNECTION_STRING } from '../config';
 
 mongoose.set('strictQuery', false)
 
-const myModelOptions = {
+export const myModelOptions = {
     schemaOptions: {
         toObject: { virtuals: true },
         toJSON: { virtuals: true, getters: true },
