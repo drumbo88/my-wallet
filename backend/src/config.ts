@@ -113,6 +113,15 @@ switch (NODE_ENV) {
 }
 const DB_CONNECTION_STRING = connString
 
+const myModelOptions = {
+    schemaOptions: {
+        toObject: { virtuals: true },
+        toJSON: { virtuals: true, getters: true },
+        versionKey: false,
+        timestamps: true,
+    }
+}
+
 export {
     NODE_ENV,
     API_PORT,
@@ -137,5 +146,7 @@ export {
 
     JWT_KEY,
     SESSION_TIME,
+
+    myModelOptions
 }
 

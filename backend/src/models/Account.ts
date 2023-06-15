@@ -1,44 +1,13 @@
-import mongoose, { Document, Model, Schema } from 'mongoose'
+import mongoose, { Document, Model, ObjectId, Schema } from 'mongoose'
 import { defaultSchemaOptions } from '../database'
 import { IEntity, EntityModel } from './Entity'
-import { IPaymentCard, PaymentCardSchema } from './PaymentCard'
+import { IPaymentCard, PaymentCard, PaymentCardSchema } from './PaymentCard'
 import { IWallet, schema as Wallet  } from './Wallet'
-import { AccountStatus, AccountTypes, IAccount } from 'common/Types/Account'
+import { Account, AccountStatus, AccountTypes, IAccount } from 'common/Types/Account'
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
+import { myModelOptions } from 'src/config'
+import { Entity } from 'common/src/types/entity'
 // import { EntityRefSchema } from './Entity'
-
-export interface IAccountBackend {
-    adminEntityId?: Schema.Types.ObjectId,
-    ownerEntityId?: Schema.Types.ObjectId,
-    adminEntity?: IEntity,
-    ownerEntity?: IEntity,
-    status?: AccountStatus,
-    type?: AccountTypes,
-    wallets?: IWallet[]
-    paymentCards?: IPaymentCard[]
-}
-export interface IAccountModel extends Model<IAccount> { }
-export interface IAccountDocument extends Document<IAccountModel>, IAccount {
-    // methods
-    getByOwner(itemData: IAccount): Promise<IAccountModel>
-}
-
-const AccountSchema = new Schema<IAccount>({
-    status: { type: String, enum: AccountStatus, default: AccountStatus.ACTIVE },
-    type: { type: String, enum: AccountTypes, default: AccountTypes.FUNDS },
-
-    adminEntityId: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
-    ownerEntityId: { type: Schema.Types.ObjectId, ref: 'Entity', required: true },
-
-    wallets: [ Wallet ],
-    paymentCards: [ PaymentCardSchema ]
-}, defaultSchemaOptions)
-
-AccountSchema.virtual('ownerEntity', {
-    ref: 'Entity', localField: 'ownerEntityId', foreignField: '_id', justOne: true,
-})
-AccountSchema.virtual('adminEntity', {
-    ref: 'Entity', localField: 'adminEntityId', foreignField: '_id', justOne: true,
-})
 
 AccountSchema.statics.getByOwner = async function (entityData: IEntity) {
     const ownerEntity = (entityData instanceof EntityModel)
@@ -50,17 +19,48 @@ AccountSchema.statics.getByOwner = async function (entityData: IEntity) {
     // return Account.find({ ownerEntityId: ownerEntity._id })
 }
 
-// class x {}
-// schema.loadClass(class extends x {})
-/* ToDo: Cada Account tendrá varias wallet (bancos) o más de un Asset (criptoBank)
-    - funds: { currency, amount, ... }
-    - fixedTerm: { currency, amount, ... }
+/*************************************************************************************
+ * Clase "Account"
+ */
+@modelOptions(myModelOptions)
+export class AccountBackend extends Account implements IAccount {
+    @prop()
+    id: ObjectId;
 
-    - funds: [{ currency, amount, ... }, ...]
-    - spot: [{ currency, amount, ... }, ...]
-    - earn: [{ currency, amount, ... }, ...]
-*/
+    @prop({ type: AccountStatus, required: true })
+    status: AccountStatus
 
-const Account = mongoose.model('Account', AccountSchema)
+    @prop({ type: AccountTypes, required: true })
+    type: AccountTypes
 
-export { AccountSchema, Account }
+    @prop({ type: Entity })
+    adminEntity: String
+
+    @prop({ type: Entity })
+    ownerEntity: String
+
+    @prop({ type: [Wallet] })
+    wallets: [ typeof Wallet ]
+
+    @prop({ type: [PaymentCard] })
+    paymentCards: [ typeof PaymentCard ]
+
+    // Método abstracto para obtener el tipo de persona
+    async getByOwner(entityData: IEntity): Promise<Entity> {
+        const ownerEntity = (entityData instanceof Entity)
+            ? entityData : await Entity.findOne(entityData)
+
+        if (!ownerEntity) {
+            throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
+        }
+        return ownerEntity
+    }
+
+    // Método abstracto para obtener el tipo de persona
+    getTipo(): string {
+        throw new Error('El método getTipo() debe ser implementado por las clases hijas');
+    }
+}
+
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const AccountModel = getModelForClass(AccountBackend);

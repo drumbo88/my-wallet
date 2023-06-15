@@ -1,11 +1,10 @@
 import { Schema, model, Model, Document } from 'mongoose'
 import { schema as UserSchema } from './User';
-import { Account, IAccount } from './Account';
-import { seeds as PersonSeeds, IPerson, PersonSchema, IPersonData } from './Person';
-import { seeds as CompanySeeds, ICompany, CompanySchema, ICompanyData } from './Company';
+import { AccountModel, AccountBackend, IAccount } from './Account';
+import { seeds as PersonSeeds, IPerson } from './Person';
+import { seeds as CompanySeeds, ICompany } from './Company';
 import { defaultSchemaOptions } from '../database';
 import { PaymentCard } from './PaymentCard';
-import { EntityStatus, EntityTypes } from 'common/types/entity';
 import { ISeed } from 'src/types';
 
 export const seeds = {
@@ -13,40 +12,51 @@ export const seeds = {
     [EntityTypes.PERSON]: PersonSeeds,
 }
 
-export interface IAccountModel extends Model<IAccount> { }
-export interface IAccountDocument extends Document<IAccountModel>, IAccount {
-    // methods
-    getByOwner(itemData: IAccount): Promise<IAccountModel>
-}
 
-export interface IEntityBackend extends IEntity {
-    getPeople(data: any): Promise<IEntityDocument>[],
-    getCompanies(data: any): Promise<IEntityDocument>[],
-}
-export interface IEntityModel extends Model<IEntityBackend> { }
-export interface IEntityDocument extends Document<IEntityBackend>, IEntityBackend {
-    addOwnedAccount(accountData: IAccount): Promise<IEntity>,
-    addAdministratedAccount(accountData: IAccount): Promise<IEntity>,
-}
-export const EntitySchema = new Schema({
-    name: { type: String, unique: true, sparse: true },
-    status: { type: String, enum: EntityStatus, default: EntityStatus.ACTIVE },
-    taxId: { type: String, unique: true, sparse: true },
-    user: UserSchema,
-    currency: { type: String, alias: "currencyCode", ref: 'Currency' },
-    person: PersonSchema,
-    company: CompanySchema
-}, defaultSchemaOptions)
+import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { IEntity, EntityStatus, EntityTypes, Entity } from "common/types/entity";
+import { myModelOptions } from 'src/config';
+import { IUser } from 'common/src/types/user';
 
-// export const Entity = model<IEntity, IEntityModel>('Entity', EntitySchema)
+/*************************************************************************************
+ * Clase abstracta "Entity" (Employee | Client)
+ */
+@modelOptions(myModelOptions)
+export class EntityBackend extends Entity implements IEntity {
+    @prop({ type: String, unique: true, required: true })
+    name: string
 
-export class EntityBackend extends Entity, MyModel<IEntityDocument> implements IEntityBackend {
+    @prop({ type: EntityStatus, required: true })
+    status: EntityStatus
 
-    static async createPerson(data: IPerson) {
+    @prop({ type: String, unique: true, required: true })
+    taxId: string
+
+    @prop({ type: String, unique: true, required: true })
+    user: IUser
+
+    @prop({ type: String, alias: "currencyCode", ref: 'Currency' })
+    currency: string
+
+    @prop({ type: IPerson })
+    person: IPerson
+
+    @prop({ type: ICompany })
+    company: ICompany
+
+    @prop({ type: () => [AccountBackend], ref: AccountBackend, required: true, default: [] })
+    accountsOwned: Ref<AccountBackend>[]
+
+    @prop({ type: () => [AccountBackend], ref: AccountBackend, required: true, default: [] })
+    accountsAdministrated: Ref<AccountBackend>[]
+
+    static async createPerson(this: ReturnModelType<typeof EntityBackend>, data: IPerson) {
+        await this.create(data)
     }
-    static async createCompany(data: ICompany) {
+    static async createCompany(this: ReturnModelType<typeof EntityBackend>, data: ICompany) {
+        await this.create(data)
     }
-    
+
     static async getPeople(data: any) {
         // que person esté definido y company sea null
         if (!data.person) data.person = {}
@@ -54,7 +64,7 @@ export class EntityBackend extends Entity, MyModel<IEntityDocument> implements I
         data.person.$ne = null
         if (data.company) delete data.company
         //data.$or = [ { company: { $exists: false } }, { company: { $in: ['', null] } } ]
-        return await Entity.find(data)
+        return await EntityModel.find(data)
     }
     static async getCompanies(data: any) {
         // que company esté definido y person sea null
@@ -63,40 +73,47 @@ export class EntityBackend extends Entity, MyModel<IEntityDocument> implements I
         data.company.$ne = null
         if (data.person) delete data.person
         //data.$or = [ { person: { $exists: false } }, { person: { $in: ['', null] } } ]
-        return Entity.find(data)
+        return EntityModel.find(data)
     }
-    
-    async addOwnedAccount(accountData: IAccount) {
-        accountData.ownerEntityId = this._id
-        const adminEntity = (accountData.adminEntity instanceof EntityModel)
-            ? accountData.adminEntity : await Entity.findOne(accountData.adminEntity)
+
+    async addOwnedAccount(
+        this: DocumentType<EntityBackend>,
+        accountData: IAccount
+    ): Promise<Document<EntityBackend>> {
+        accountData.ownerEntityId = this.id
+        const adminEntity = (accountData.adminEntity instanceof Document<EntityBackend>)
+            ? accountData.adminEntity : await EntityModel.findOne(accountData.adminEntity)
         if (!adminEntity) {
             throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.adminEntity)}).`)
         }
         accountData.adminEntityId = adminEntity.id
-        await Account.create(accountData)
+        await AccountModel.create(accountData)
         //console.log({accountData})
-        return this
+        //const document: Document<EntityBackend> = this.toObject();
+        return this.toObject()
     }
-    
-    async addAdministratedAccount(accountData: IAccount) {
+    async addAdministratedAccount(this: DocumentType<EntityBackend>, accountData: IAccount) {
         accountData.adminEntityId = this._id
-        const ownedEntity = (accountData.adminEntity instanceof EntityModel)
-            ? accountData.adminEntity : await Entity.findOne(accountData.ownerEntity)
+        const ownedEntity = (accountData.adminEntity instanceof Document<EntityBackend>)
+            ? accountData.adminEntity : await EntityModel.findOne(accountData.ownerEntity)
         if (!ownedEntity) {
             throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.ownerEntity)}).`)
         }
         accountData.ownerEntityId = ownedEntity.id
-        await Account.create(accountData)
-        return this
+        await AccountModel.create(accountData)
+        return this.toObject()
     }
-    
+
     /**
      * @accountData
      *  @value null: unique account / Error
      *  @value IAccount: Account to use
      */
-    async addCreditCard(creditCardData, accountData?: IAccount) {
+    async addCreditCard(
+        this: DocumentType<EntityBackend>,
+        creditCardData,
+        accountData?: IAccount
+    ): Promise<Document<EntityBackend>> {
         if (!accountData) {
             switch (this.accountsOwned.length) {
                 case 0:
@@ -107,8 +124,8 @@ export class EntityBackend extends Entity, MyModel<IEntityDocument> implements I
                     throw new Error(`Must specify which Account does the card belong (${JSON.stringify(creditCardData)}).`)
             }
         }
-        const account = (accountData instanceof Account)
-            ? accountData : await Account.findOne(accountData)
+        const account = (accountData instanceof AccountModel)
+            ? accountData : await AccountModel.findOne(accountData)
         if (!account) {
             throw new Error(`Entity doesn't exist (${JSON.stringify(accountData.ownerEntity)}).`)
         }
@@ -121,40 +138,10 @@ export class EntityBackend extends Entity, MyModel<IEntityDocument> implements I
         creditCardData = creditCardData
         await PaymentCard.create(accountData)
         console.log('Account created')
-        return this
+        return this.toObject()
     }
-}
 
-/* BACKEND */
-export interface IAccountSeed extends ISeed {
-}
-export interface IEntitySeed extends IEntity, ISeed {
-    /* Virtuals */
-    idsAccountsOwned?: Schema.Types.ObjectId[],
-    idsAccountsAdministrated?: Schema.Types.ObjectId[],
-    accountsOwned?: (IAccount | IAccountSeed | Schema.Types.ObjectId)[],
-    accountsAdministrated?: (IAccount | IAccountSeed | Schema.Types.ObjectId)[],
-}
-export interface IEntity extends Entity {
-    idsAccountsOwned?: Schema.Types.ObjectId[],
-    idsAccountsAdministrated?: Schema.Types.ObjectId[],
-    accountsOwned?: IAccount[],
-    accountsAdministrated?: IAccount[],
-}
-
-// export interface IEntityModel extends Model<IEntity> {
-//     seed?(seeds: IEntity[] | IEntity): Promise<IEntityDocument>[] | Promise<IEntityDocument>
-// }
-export interface IEntityDocument extends IEntity, Document {
-    addOwnedAccount(accountData: IAccount): Promise<IEntityDocument>,
-    addAdministratedAccount(accountData: IAccount): Promise<IEntityDocument>,
-    getPeople(data: any): Promise<IEntityDocument[]>
-    getCompanies(data: any): Promise<IEntityDocument[]>
-}
-export interface IEntityModel extends MyModel<IEntityDocument>, EntityModel {}
-
-export class EntityModel extends MyModel<IEntityDocument> {
-    static async seed(seeds: IEntitySeed[] | IEntitySeed): Promise<IEntityDocument | IEntityDocument[]> {
+    /*static async seed(seeds: IEntitySeed[] | IEntitySeed): Promise<IEntityDocument | IEntityDocument[]> {
         const retOne = !Array.isArray(seeds)
         if (retOne)
             seeds = [seeds as IEntitySeed]
@@ -174,9 +161,27 @@ export class EntityModel extends MyModel<IEntityDocument> {
             await entity.save()
         }
         return retOne ? entities.pop() as IEntityDocument : entities
-    }
+    }*/
+
 }
 
-EntitySchema.statics.seed = EntityModel.seed;
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const EntityModel = getModelForClass(EntityBackend);
 
-export const Entity = model<IEntity, IEntityModel>('Entity', EntitySchema)
+
+/* BACKEND */
+export interface IAccountSeed extends ISeed {
+}
+export interface IEntitySeed extends IEntity, ISeed {
+    /* Virtuals */
+    // idsAccountsOwned?: Schema.Types.ObjectId[],
+    // idsAccountsAdministrated?: Schema.Types.ObjectId[],
+    // accountsOwned?: (IAccount | IAccountSeed | Schema.Types.ObjectId)[],
+    // accountsAdministrated?: (IAccount | IAccountSeed | Schema.Types.ObjectId)[],
+}
+/*export interface IEntity extends Entity {
+    idsAccountsOwned?: Schema.Types.ObjectId[],
+    idsAccountsAdministrated?: Schema.Types.ObjectId[],
+    accountsOwned?: IAccount[],
+    accountsAdministrated?: IAccount[],
+}*/
