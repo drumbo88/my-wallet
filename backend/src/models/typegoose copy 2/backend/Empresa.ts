@@ -1,7 +1,7 @@
 import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
-import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
 import mongoose from "mongoose";
 import { DB_CONNECTION_STRING } from "../../../config";
+import { BaseModel, DocPartial } from "./BaseModel";
 
 export const myModelOptions = {
     schemaOptions: {
@@ -11,22 +11,12 @@ export const myModelOptions = {
         timestamps: true,
     }
 }
-async function findOrCreateDocument<T>(
-    model: ReturnModelType<AnyParamConstructor<T>, {}>,
-    query: Partial<DocumentType<T>> | DocumentType<T>
-): Promise<DocumentType<T>> {
-    if (query instanceof model)
-        return query as DocumentType<T>;
 
-    return await model.findOne(query as DocumentType<T>) || await model.create(query) as DocumentType<T>;
-}
-
-type DocEmpresa = DocumentType<Empresa>;
-type DocEmpleado = DocumentType<Empleado>;
+export type DocEmpresa = DocumentType<Empresa>;
 
 //  class
 @modelOptions(myModelOptions)
-export class Empresa {
+export class Empresa extends BaseModel {
     @prop({ type: String, required: true })
     nombre: string;
 
@@ -34,8 +24,8 @@ export class Empresa {
     taxNumber: string;
 
     //nuevoEmpleado(this: ReturnModelType<typeof Empresa>, e: Empleado) {
-    public async nuevoEmpleado(this: DocEmpresa, empData: DocEmpleado | Partial<Empleado> | Empleado): Promise<DocEmpresa> {
-        let empleado: DocEmpleado = await findOrCreateDocument<Empleado>(EmpleadoModel, empData)
+    public async nuevoEmpleado(this: DocEmpresa, empData: DocPartial<Empleado>): Promise<DocEmpresa> {
+        let empleado: DocEmpleado = await EmpleadoModel.findOrCreate(empData)
         empleado.empresa = this
         await empleado.save()
         console.log(`Empleado: ${empleado}`)
@@ -52,9 +42,10 @@ export class Empresa {
 // Genera el modelo a partir de la clase utilizando Typegoose
 export const EmpresaModel = getModelForClass(Empresa);
 
+export type DocEmpleado = DocumentType<Empleado>;
 //  class
 @modelOptions(myModelOptions)
-export class Empleado {
+export class Empleado extends BaseModel {
     @prop({ type: String, required: true })
     nombre: string;
 
@@ -81,7 +72,7 @@ export const EmpleadoModel = getModelForClass(Empleado);
     }
     console.log(`Conectado a la base de datos '${DB_CONNECTION_STRING}'.`)
 
-    const empresa: DocEmpresa = await findOrCreateDocument<Empresa>(EmpresaModel, { nombre: 'Foncap', taxNumber: '123123' })
+    const empresa: DocEmpresa = await EmpresaModel.findOrCreate({ nombre: 'Foncap', taxNumber: '123123' })
     //await empresa.nuevoEmpleado({ nombre: 'Rumbex', taxNumber: '345345' })
     const empleado = await EmpleadoModel.findOne({ nombre: 'Rumbex', taxNumber: '345345' })
     if (empleado)

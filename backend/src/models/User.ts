@@ -1,5 +1,24 @@
-import { IUser, UserFields } from 'common/src/types/user'
-import { Schema } from 'mongoose'
-import { defaultSchemaOptions } from '../database'
+import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
+import { IUser, UserStatus } from 'common/src/types/user';
+import { myModelOptions } from '../config';
+import { BaseModel } from './BaseModel';
 
-export const schema = new Schema<IUser>(UserFields, defaultSchemaOptions)
+export type DocUser = DocumentType<User>;
+
+/*************************************************************************************
+ * Clase "User"
+ */
+@modelOptions(myModelOptions)
+export class User extends BaseModel implements IUser {
+    @prop({ type: String, required: true })
+    name: string
+
+    @prop({ type: String, required: true })
+    email: string
+
+    @prop({ type: String })
+    password: string
+
+    @prop({ type: UserStatus })
+    status: UserStatus
+}

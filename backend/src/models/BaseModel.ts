@@ -4,7 +4,7 @@ import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
 export type DocPartial<T> = DocumentType<T> | Partial<T> | T;
 
 export class BaseModel {
-    static async findOrCreate<T extends BaseModel>(
+    static async getOrCreate<T extends BaseModel>(
         this: ReturnModelType<AnyParamConstructor<T>, {}>,
         query: Partial<DocumentType<T>> | DocumentType<T>
     ): Promise<DocumentType<T>> {
@@ -12,5 +12,15 @@ export class BaseModel {
             return query as DocumentType<T>;
 
         return await this.findOne(query as DocumentType<T>) || await this.create(query) as DocumentType<T>;
+    }
+
+    static async getOne<T extends BaseModel>(
+        this: ReturnModelType<AnyParamConstructor<T>, {}>,
+        query: Partial<DocumentType<T>> | DocumentType<T>
+    ): Promise<DocumentType<T> | undefined> {
+        if (query instanceof this)
+            return query as DocumentType<T>;
+
+        return await this.findOne(query as DocumentType<T>) || undefined
     }
 }

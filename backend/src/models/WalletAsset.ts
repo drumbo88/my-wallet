@@ -1,17 +1,24 @@
+import { DocumentType, modelOptions, prop, Ref } from '@typegoose/typegoose';
 import mongoose, { Schema } from 'mongoose'
+import { myModelOptions } from '../config';
 import { defaultSchemaOptions } from '../database'
+import { BaseModel } from './BaseModel';
+import { Currency } from './Currency';
 
-export interface IWalletAsset {
-    currency: String,
-    balance: number,
-    detail?: String
+export type DocWalletAsset = DocumentType<WalletAsset>;
+
+/*************************************************************************************
+ * Clase "Operation" para operaciones de compra/venta
+ */
+@modelOptions(myModelOptions)
+export class WalletAsset extends BaseModel
+{
+    @prop({ ref: Currency, foreignField: 'code', alias: "currencyCode", required: true })
+    currency: Ref<Currency>
+
+    @prop({ type: Number, default: 0, required: true })
+    balance: number
+
+    @prop({ type: String })
+    detail: string
 }
-const schema = new Schema<IWalletAsset>({
-    currency: { type: String, alias: 'currencyCode', default: 'ARS' },
-    balance: { type: Number, required: true },
-
-    detail: { type: String },
-}, defaultSchemaOptions)
-
-//export { model, schema }
-export { schema }

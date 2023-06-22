@@ -1,160 +1,212 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
-import { IDocument } from ".";
-import { IOperation, Operation } from "./Operation";
-import { Entity, IEntity } from "./Entity";
-import { Account, IAccount } from "./Account";
-import { IPaymentCard } from "./PaymentCard";
-import { defaultSchemaOptions } from "../database";
+import { Operation, OperationModel } from "./Operation";
+import { Entity as Entity, EntityModel, IEntity } from "./Entity";
+import { Account as Account, AccountModel, IAccount } from "./Account";
+import { IPaymentCard, PaymentCard } from "./PaymentCard";
+import { DocumentType, getModelForClass, modelOptions, post, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { myModelOptions } from "../config";
+import { BaseModel } from "./BaseModel";
+import { Currency } from "./Currency";
+import { TransactionTypes } from "common/types/transaction";
 
-enum TransactionTypes {
-    CASH = 'CASH',
-    DEPOSIT = 'DEPOSIT',
-    TRANSFER = 'TRANSFER',
-    CARD = 'CARD',
-}
 
-export interface ITransactionAllocation {
-    operationId?: Schema.Types.ObjectId,
-    operation?: IOperation,
-    amount?: number,
-}
-export interface ITransactionSide {
-    entity?: IEntity,
-    entityId?: Schema.Types.ObjectId,
-    account?: IAccount,
-    accountOwner?: IEntity,
-    accountId?: Schema.Types.ObjectId,
-    card?: IPaymentCard,
-    cardId?: Schema.Types.ObjectId,
-    usingEntiy?: IEntity,
-    usingEntiyId?: Schema.Types.ObjectId,
-}
-export interface ITransaction extends IDocument {
-    datetime?: Date
-    currencyCode?: String
-    toCurrencyCode?: String
-    amount?: number
-    allocations?: ITransactionAllocation[]
-    allocatedAmount?: number
-    unallocatedAmount?: number
-    exchangeRate?: number
-    type: TransactionTypes
-    from?: ITransactionSide
-    to?: ITransactionSide
-    detail?: String
 
-    allocateOperation(allocationData: ITransactionAllocation): Promise<ITransaction>
-}
-
-const TransactionSide = new Schema({ // NULL for cash/deposit
-    entityId: { type: Schema.Types.ObjectId, ref: "Entity" },
-    // For transfer
-    accountId: { type: Schema.Types.ObjectId, ref: "Account" },
-    // For Card (+ digital wallet)
-    cardId: { type: Schema.Types.ObjectId, ref: "PaymentCard" },
-    usingEntityId: { type: Schema.Types.ObjectId, ref: "Entity" }, // Digital wallets
-}, defaultSchemaOptions)
-
-TransactionSide.virtual('account', {
-    ref: 'Account', localField: 'accountId', foreignField: '_id', justOne: true
-})
-TransactionSide.virtual('accountOwner', {
-    ref: 'Entity', localField: 'account.ownerEntityId', foreignField: '_id', justOne: true
-})
-
-const schema = new Schema<ITransaction>({
-    datetime: { type: Date, required: true, default: Date.now },
-    currencyCode: { type: String, ref: 'Currency' },
-    amount: { type: Number, required: true, min: 0 },
-    allocatedAmount: { type: Number, required: true, default: 0, min: 0 },
-    unallocatedAmount: { type: Number, required: true, default: function () { const x = this as ITransaction; return (x.amount || 0) - (x.allocatedAmount || 0) }, min: 0 },
-    toCurrencyCode: { type: String, ref: 'Currency' },
-    exchangeRate: { type: Number },
-
-    type: { type: String, enum: TransactionTypes, default: TransactionTypes.CASH, required: true },
-    allocations: [new Schema({
-        operationId: { type: Schema.Types.ObjectId, ref: 'Operation' },
-        amount: Number,
-    }, defaultSchemaOptions)],
-
-    from: TransactionSide,
-    to: TransactionSide,
-
-    detail: { type: String },
-}, defaultSchemaOptions);
-
-schema.virtual("currency", {
-    ref: "Currency",
-    localField: "currencyCode",
-    foreignField: "code",
-    justOne: true,
-});
-schema.virtual('allocations.operation', {
-    ref: 'Operation', localField: 'allocations.operationId', foreignField: '_id', justOne: true
-})
-
-/**
- *
+/*************************************************************************************
+ * Clase "TransactionSide" para especificar origen o destino de una transacción
  */
-schema.methods.allocateOperation = async function (allocationData: ITransactionAllocation) {
+@modelOptions(myModelOptions)
+export class TransactionSide extends BaseModel {
+    @prop({ type: () => Entity, ref: Entity, required: true })
+    entity: Ref<Entity>
 
-    // Needs transaction data
-    if (!allocationData.operation) {
-        throw new Error(`Need specify the Operation that allocates this Transaction (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })}).`)
-    }
+    // For transfer
+    @prop({ type: () => Account, ref: Account })
+    account: Ref<Account>
 
-    // If no amount of operation specified, it will look for the Operation with the Transaction's unallocatedAmount
-    // if (!allocationData.operation?.totalAmount)
-    //   allocationData.operation.totalAmount = this.unallocatedAmount
+    // For Card (+ digital wallet)
+    @prop({ type: () => PaymentCard, ref: PaymentCard })
+    card: Ref<PaymentCard>
 
-    // Get Operation. If doesn't exist, throw error.
-    let operation
-    if (allocationData.operation instanceof Document) {
-        operation = allocationData.operation
-    }
-    else {
-        const operations = await Operation.find(allocationData.operation)
-        if (operations.length > 1)
-            throw new Error(`Only 1 Operation must match to allocate Transaction, found ${operations.length} (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
-        operation = operations.pop()
-    }
-
-    if (!operation) {
-        throw new Error(`Operation to allocate Transaction not found (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
-    }
-
-    if (typeof operation.paidAmount == 'undefined') {
-        operation.paidAmount = 0
-        operation.unpaidAmount = operation.totalAmount
-    }
-
-    // If no amount to allocate was specified, allocates the whole the Transaction unallocatedAmount needed to cancel
-    if (!allocationData.amount) {
-        allocationData.amount = (this.unallocatedAmount > operation.totalAmount)
-            ? operation.unpaidAmount //this.totalAmount - this.paidAmount // To cancel
-            : this.unallocatedAmount // 100%
-    }
-    const allocationAmount = allocationData.amount || 0
-    operation.paidAmount += allocationAmount
-    operation.unpaidAmount = operation.totalAmount - operation.paidAmount
-    this.postSave.push(operation)
-    //await operation.save() // to afterSave
-    allocationData.operationId = operation.id
-    allocationData.operation = operation
-    this.allocations.push(allocationData)
-    this.allocatedAmount += allocationAmount
-    this.unallocatedAmount -= allocationAmount
-    return this
+    // Digital wallets
+    @prop({ type: () => Entity, ref: Entity })
+    usingEntity: Ref<Entity>
 }
 
-schema.post('validate', doc => {
-    if (!doc.postSave)
+
+/*************************************************************************************
+ * Clase "TransactionAllocation" para imputación de monto de transacción a una operación
+ */
+@modelOptions(myModelOptions)
+export class TransactionAllocation extends BaseModel {
+    @prop({ type: () => Operation, ref: Operation })
+    operation!: Ref<Operation>
+
+    @prop({ type: Number, default: 0, required: true })
+    amount!: number
+}
+
+
+export type DocTransaction = DocumentType<Transaction>;
+
+/*************************************************************************************
+ * Clase "Transaction" para movimientos de dinero
+ */
+@modelOptions(myModelOptions)
+@post<Transaction>('validate', function (doc) {
+    if (!doc.postSave) {
         doc.postSave = []
+    }
 })
-schema.post('save', async (doc) => {
-    await Promise.all(doc.postSave.map(async (doc) => await doc.save()))
-    doc.postSave = []
+@post<Transaction>('save', async function () {
+    await Promise.all(this.postSave.map(async () => await this.save()))
+    this.postSave = []
 })
+export class Transaction extends BaseModel {
+    @prop({ type: Date, default: Date.now, required: true })
+    datetime: Date
+
+    @prop({ ref: Currency, foreignField: 'code', alias: "currencyCode", required: true })
+    currency: Ref<Currency>
+
+    @prop({ ref: Currency, foreignField: 'code', alias: "toCurrencyCode", required: true })
+    toCurrency: Ref<Currency>
+
+    @prop({ type: Number, default: 0, required: true })
+    amount!: number
+
+    @prop({ type: () => [TransactionAllocation], default: [], required: true })
+    allocations!: TransactionAllocation[]
+
+    @prop({ type: Number, default: 0, required: true })
+    allocatedAmount!: number
+
+    @prop({ type: Number, default: 0, required: true })
+    unallocatedAmount!: number
+
+    @prop({ type: Number, default: 0, required: true })
+    exchangeRate?: number
+
+    @prop({ enum: TransactionTypes, required: true })
+    type: TransactionTypes
+
+    @prop({ type: () => TransactionSide })
+    from?: TransactionSide
+
+    @prop({ type: () => TransactionSide })
+    to?: TransactionSide
+
+    @prop({ type: String })
+    detail?: string
+
+    postSave: Operation[]
+
+    /**
+     *
+     */
+    async allocateOperation(allocationData: ITransactionAllocation) {
+
+        // Needs transaction data
+        if (!allocationData.operation) {
+            throw new Error(`Need specify the Operation that allocates this Transaction (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })}).`)
+        }
+
+        // If no amount of operation specified, it will look for the Operation with the Transaction's unallocatedAmount
+        // if (!allocationData.operation?.totalAmount)
+        //   allocationData.operation.totalAmount = this.unallocatedAmount
+
+        // Get Operation. If doesn't exist, throw error.
+        let operation
+        if (allocationData.operation instanceof Document) {
+            operation = allocationData.operation
+        }
+        else {
+            const operations = await OperationModel.find(allocationData.operation)
+            if (operations.length > 1)
+                throw new Error(`Only 1 Operation must match to allocate Transaction, found ${operations.length} (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
+            operation = operations.pop()
+        }
+
+        if (!operation) {
+            throw new Error(`Operation to allocate Transaction not found (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
+        }
+
+        if (typeof operation.paidAmount == 'undefined') {
+            operation.paidAmount = 0
+            operation.unpaidAmount = operation.totalAmount
+        }
+
+        // If no amount to allocate was specified, allocates the whole the Transaction unallocatedAmount needed to cancel
+        if (!allocationData.amount) {
+            allocationData.amount = (this.unallocatedAmount > operation.totalAmount)
+                ? operation.unpaidAmount //this.totalAmount - this.paidAmount // To cancel
+                : this.unallocatedAmount // 100%
+        }
+        const allocationAmount = allocationData.amount || 0
+        operation.paidAmount += allocationAmount
+        operation.unpaidAmount = operation.totalAmount - operation.paidAmount
+        this.postSave.push(operation)
+        //await operation.save() // to afterSave
+        allocationData.operationId = operation.id
+        allocationData.operation = operation
+        this.allocations.push(allocationData)
+        this.allocatedAmount += allocationAmount
+        this.unallocatedAmount -= allocationAmount
+        return this
+    }
+
+    static async seed(this: ReturnModelType<typeof Transaction>, seeds: ITransaction[])
+    {
+        //const operations: IOperationDocument[] = await this.insertMany(seeds)
+        for (const i in seeds) {
+            const seed = seeds[i]
+            const allocations = seed.allocations || []
+            if (allocations)
+                delete seed.allocations
+            if (seed.from?.account) {
+                const accountData = seed.from.account
+                if (accountData.ownerEntity) {
+                    const ownerEntity = await EntityModel.findOne(accountData.ownerEntity)
+                    if (ownerEntity)
+                        accountData.ownerEntityId = ownerEntity.id
+                    delete accountData.ownerEntity
+                }
+                const fromAccount = await AccountModel.findOne(accountData)
+                if (fromAccount)
+                    seed.from.accountId = fromAccount.id
+            }
+            if (seed.to?.account) {
+                const accountData = seed.to.account
+                if (accountData.ownerEntity) {
+                    const ownerEntity = await EntityModel.findOne(accountData.ownerEntity)
+                    if (ownerEntity)
+                        accountData.ownerEntityId = ownerEntity.id
+                    delete accountData.ownerEntity
+                }
+                const toAccount = await AccountModel.findOne(accountData)
+                if (toAccount)
+                    seed.to.accountId = toAccount.id
+            }
+
+            const transaction/*: DocTransaction*/ = await this.create(seed)
+            // if (!seed.fromEntity)
+            //     throw new Error(`Operation's fromEntity is required.`)
+
+            // await Promise.all([
+            //     operation.setFromEntity(seed.fromEntity),
+            //     operation.setToEntity(seed.toEntity),
+            // ])
+            for (const allocationData of allocations) {
+                // if (!itemData.currencyCode)
+                //     itemData.currencyCode = operation.fromEntity?.currency
+                await transaction.allocateOperation(allocationData)
+            }
+            await transaction.save() // save Operations as well
+        }
+    }
+}
+
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const TransactionModel = getModelForClass(Transaction);
 
 const seeds = [
     {
@@ -221,56 +273,6 @@ const seeds = [
   },
 ];*/
 
-schema.statics.seed = async function (seeds: ITransaction[]) {
-
-    //const operations: IOperationDocument[] = await this.insertMany(seeds)
-    for (const i in seeds) {
-        const seed = seeds[i]
-        const allocations = seed.allocations || []
-        if (allocations)
-            delete seed.allocations
-        if (seed.from?.account) {
-            const accountData = seed.from.account
-            if (accountData.ownerEntity) {
-                const ownerEntity = await Entity.findOne(accountData.ownerEntity)
-                if (ownerEntity)
-                    accountData.ownerEntityId = ownerEntity.id
-                delete accountData.ownerEntity
-            }
-            const fromAccount = await Account.findOne(accountData)
-            if (fromAccount)
-                seed.from.accountId = fromAccount.id
-        }
-        if (seed.to?.account) {
-            const accountData = seed.to.account
-            if (accountData.ownerEntity) {
-                const ownerEntity = await Entity.findOne(accountData.ownerEntity)
-                if (ownerEntity)
-                    accountData.ownerEntityId = ownerEntity.id
-                delete accountData.ownerEntity
-            }
-            const toAccount = await Account.findOne(accountData)
-            if (toAccount)
-                seed.to.accountId = toAccount.id
-        }
-
-        const transaction: ITransactionDocument = await this.create(seed)
-        // if (!seed.fromEntity)
-        //     throw new Error(`Operation's fromEntity is required.`)
-
-        // await Promise.all([
-        //     operation.setFromEntity(seed.fromEntity),
-        //     operation.setToEntity(seed.toEntity),
-        // ])
-        for (const allocationData of allocations) {
-            // if (!itemData.currencyCode)
-            //     itemData.currencyCode = operation.fromEntity?.currency
-            await transaction.allocateOperation(allocationData)
-        }
-        await transaction.save() // save Operations as well
-    }
-}
-
 /*schema.statics.seeder = async (data) => {
     const { date, currency, amount, detail } = data;
     let concept = await TransactionConceptModel.findOne(data.concept);
@@ -322,16 +324,13 @@ schema.statics.seed = async function (seeds: ITransaction[]) {
 };*/
 
 //schema.statics.seed = mongoose.seed;
-export interface ITransactionModel extends Model<ITransaction> { }
-export interface ITransactionDocument extends Document<ITransactionModel>, ITransaction {
+// export interface ITransactionModel extends Model<ITransaction> { }
+// export interface ITransactionDocument extends Document<ITransactionModel>, ITransaction {
     // methods
     // addOwnedAccount(accountData: IAccount): Promise<ITransactionDocument>,
     // addAdministratedAccount(accountData: IAccount): Promise<ITransactionDocument>,
 }
 
-const Transaction = mongoose.model("Transaction", schema);
-
-export { Transaction, schema, seeds };
 
 /*
 {

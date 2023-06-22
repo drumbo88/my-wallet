@@ -1,22 +1,43 @@
-import mongoose, { Schema } from "mongoose";
+import { DocumentType, modelOptions, prop, Ref } from "@typegoose/typegoose";
+import { myModelOptions } from "../config";
 import { defaultSchemaOptions } from "../database";
+import { BaseModel } from "./BaseModel";
+import { Currency } from "./Currency";
 import { IOperationItemDetailRef, OperationItemDetail, OperationItemDetailRef } from "./OperationItemDetail";
+import { OperationItemStatus } from "common/types/operationItem";
 
-export interface IOperationItemConcept {
+export type DocOperationItem = DocumentType<OperationItem>;
 
+/*************************************************************************************
+ * Clase "OperationItem" para Items de Operations
+ */
+@modelOptions(myModelOptions)
+export class OperationItem extends BaseModel
+{
+    @prop({ ref: Currency, foreignField: 'code', alias: "currencyCode" })
+    currency: Ref<Currency>
+
+    @prop({ type: Number, default: 0, required: true })
+    quantity: number
+
+    @prop({ type: Number, default: 0, required: true })
+    amount: number
+
+    @prop({ type: Number, default: 0, required: true })
+    total: number
+
+    @prop({ type: () => OperationItemDetail, ref: OperationItemDetail })
+    concept: Ref<OperationItemDetail>
+
+    @prop({ type: String })
+    detail: string
+
+    @prop({ type: String, enum: OperationItemStatus, default: OperationItemStatus.ASSIGNED, required: true })
+    status: string
 }
-export interface IOperationItem {
-  currencyCode?: String,
-  quantity?: number,
-  amount?: number,
-  total?: number,
 
-  conceptId?: IOperationItemDetailRef, //Schema.Types.ObjectId,
-  concept?: OperationItemDetail,
 
-  detail: String,
-};
-
+/*
 export const schema = new Schema({
   currencyCode: { type: String, ref: 'Currency' },
   quantity: { type: Number, default: 0 },
@@ -30,3 +51,4 @@ export const schema = new Schema({
 
   detail: { type: String },
 }, defaultSchemaOptions)
+*/

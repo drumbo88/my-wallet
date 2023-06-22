@@ -1,39 +1,33 @@
+import { DocumentType, getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
 import mongoose from 'mongoose'
+import { myModelOptions } from '../config';
 import { defaultSchemaOptions } from '../database';
-import { Currency, ICurrency } from './Currency'
+import { BaseModel } from './BaseModel';
+import { Currency } from './Currency'
 const { Schema } = mongoose;
 
-export interface ICountry {
-    code: String,
-    name: String,
-    currencyCodes: String[],
-    currencies: ICurrency[],
+export type DocCountry = DocumentType<Country>;
+
+/*************************************************************************************
+ * Clase "Currency" para monedas FIAT y CRIPTO
+ */
+@modelOptions(myModelOptions)
+export class Country extends BaseModel {
+    @prop({ type: String, unique: true, required: true })
+    code: string
+
+    @prop({ type: String, required: true })
+    name: string
+
+    @prop({ type: () => [Currency], ref: Currency })
+    currencyCodes: Ref<Currency>[]
 }
 
-const schema = new Schema<ICountry>({
-    code: { type: String, required: true, unique: true },
-    name: { type: String, required: true, unique: true },
-    currencyCodes: [{ type: String }],
-}, defaultSchemaOptions)
-
-schema.virtual("currencies", {
-    ref: "Currency",
-    localField: "currencyCodes",
-    foreignField: "code",
-    justOne: false,
-    strictPopulate: false,
-});
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const CountryModel = getModelForClass(Country);
 
 export const seeds = [
     { code: 'ARG', name: 'Argentina', currencyCodes: ['ARS'] },
     { code: 'BRA', name: 'Brasil', currencyCodes: ['BRL'] },
     { code: 'USA', name: 'Estados Unidos', currencyCodes: ['USD'] },
 ]
-
-// schema.statics.seed = async function (seeds) {
-//     await this.insertMany(seeds)
-//     // const x = await this.findOne().populate('currencies');
-//     // console.log(x)
-// }
-const Country = mongoose.model<ICountry>('Country', schema)
-export { Country }

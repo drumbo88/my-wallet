@@ -1,5 +1,5 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { IPersona, Persona } from "../common/Persona";
+import { IPersona, IPersonaTipos, Persona } from "../common/Persona";
 import { myModelOptions } from "../_EJEMPLO_typegoose_2";
 
 /*************************************************************************************
@@ -12,6 +12,9 @@ export class PersonaBackend extends Persona implements IPersona {
 
     @prop({ type: Number })
     edad: number;
+
+    @prop({ type: IPersonaTipos })
+    tipo: IPersonaTipos;
 
     // Método abstracto para obtener el tipo de persona
     getTipo(): string {

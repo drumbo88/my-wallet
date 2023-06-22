@@ -1,15 +1,24 @@
-import mongoose, { Schema } from 'mongoose'
-import { defaultSchemaOptions } from '../database';
+import { DocumentType, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { myModelOptions } from '../config';
+import { BaseModel } from './BaseModel';
 import { IOperationItemDetail, OperationItemDetailFields } from './OperationItemDetail';
 
-export interface IAsset extends IOperationItemDetail {
-    //countable: { type: Boolean, required: true }, // Mueble=true, Comida/Consumible=false
-}
-export const AssetFields = {
-    //countable: { type: Boolean, required: true }, // Mueble=true, Comida=false
-};
+export type DocAsset = DocumentType<Asset>;
 
-export const Asset = mongoose.model('Asset', new Schema<IAsset>({
-    ...OperationItemDetailFields,
-    ...AssetFields,
-}, defaultSchemaOptions))
+/*************************************************************************************
+ * Clase "Asset" para monedas FIAT y CRIPTO
+ */
+@modelOptions(myModelOptions)
+export class Asset extends BaseModel {
+    @prop({ type: String, unique: true, required: true })
+    code: string
+
+    @prop({ type: String, unique: true, required: true })
+    symbol: string
+
+    @prop({ type: Number, required: true, default: 0 })
+    balance: number
+}
+
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const AssetModel = getModelForClass(Asset);

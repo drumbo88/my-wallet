@@ -1,12 +1,15 @@
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { myModelOptions } from "src/config";
-import { ICurrency, CurrencyType, Currency } from "common/types/currency";
+import { DocumentType, getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { myModelOptions } from "../config";
+import { ICurrency, CurrencyType } from "common/types/currency";
+import { BaseModel } from "./BaseModel";
+
+export type DocCurrency = DocumentType<Currency>;
 
 /*************************************************************************************
  * Clase "Currency" para monedas FIAT y CRIPTO
  */
 @modelOptions(myModelOptions)
-export class CurrencyBackend extends Currency implements ICurrency {
+export class Currency extends BaseModel {
     @prop({ type: String, unique: true, required: true })
     code: string
 
@@ -39,4 +42,4 @@ export const seeds = [
 ]
 
 // Genera el modelo a partir de la clase utilizando Typegoose
-export const CurrencyModel = getModelForClass(CurrencyBackend);
+export const CurrencyModel = getModelForClass(Currency);

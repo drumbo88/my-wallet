@@ -1,208 +1,168 @@
+import { DocumentType, getModelForClass, ModelOptions, prop, Ref, ReturnModelType } from '@typegoose/typegoose';
 import { Schema, Model, Document, model } from 'mongoose'
+import { myModelOptions } from '../config';
 import { defaultSchemaOptions } from '../database';
-import { Account, IAccount } from './Account';
-import { Entity, IEntity, EntityModel } from './Entity';
+import { Account, AccountModel } from './Account';
+import { BaseModel } from './BaseModel';
+import { Entity, EntityModel } from './Entity';
 import { seeds as PaymentCardCreditSeeds, PaymentCardCreditSchema } from './PaymentCardCredit';
 import { seeds as PaymentCardDebitSeeds, PaymentCardDebitSchema } from './PaymentCardDebit';
 import { seeds as PaymentCardPrepaidSeeds, PaymentCardPrepaidSchema } from './PaymentCardPrepaid';
+import { PaymentCardTypes, PaymentCardStatus } from "common/types/paymentCard";
 
-enum PaymentCardStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-    EXPIRED = 'EXPIRED',
-}
-enum PaymentCardTypes {
-    DEBIT = 'debit',
-    CREDIT = 'credit',
-    PREPAID = 'prepaid',
-}
 
-export interface IPaymentCard {
-    /* Data fields */
-    name: String,
-    number: String,
-    expDate: String,
-
-    ownerAccountId?: Schema.Types.ObjectId,
-    userEntityId?: Schema.Types.ObjectId,
-    serviceEntityId?: Schema.Types.ObjectId,
-    //adminEntityId?: Schema.Types.ObjectId,
-    ownerAccount?: IAccount,
-    userEntity?: IEntity,
-    serviceEntity?: IEntity,
-    //adminEntity?: IEntity,
-
-    balance?: number,
-    status?: PaymentCardStatus,
-
-    /*limits: {
-        payment: {
-            day: { type: Number, min: 0 },
-            week: { type: Number, min: 0 },
-            month: { type: Number, min: 0 },
-            all: { type: Number, min: 0 },
-        },
-        extraction: {
-            day: { type: Number, min: 0 },
-            week: { type: Number, min: 0 },
-            month: { type: Number, min: 0 },
-            all: { type: Number, min: 0 },
-        },
-    },*/
-    /* Virtuals */
-    setOwnerAccount(accountData: IAccount): Promise<IPaymentCardDocument>
-    setAdminEntity(entityData: IEntity): Promise<IPaymentCardDocument>
-    setUserEntity(entityData?: IEntity): Promise<IPaymentCardDocument>
-    unsetUserEntity(): Promise<IPaymentCardDocument>
-    setServiceEntity(entityData?: IEntity): Promise<IPaymentCardDocument>
-    unsetServiceEntity(): Promise<IPaymentCardDocument>
-}
 export const seeds = {
     [PaymentCardTypes.DEBIT]: PaymentCardDebitSeeds,
     [PaymentCardTypes.CREDIT]: PaymentCardCreditSeeds,
     [PaymentCardTypes.PREPAID]: PaymentCardPrepaidSeeds,
 }
-const schemaOptions = { ...defaultSchemaOptions }
-schemaOptions.toJSON.getters = true
-export const PaymentCardSchema = new Schema({
-    name: { type: String },
-    number: { type: String, max: 16 },
-    expDate: { type: String },
 
-    ownerAccountId: { type: Schema.Types.ObjectId, ref: 'Account' }, //
-    userEntityId: { type: Schema.Types.ObjectId, ref: 'Entity' }, // Null=Me, notNull=Extension
-    serviceEntityId: { type: Schema.Types.ObjectId, ref: 'Entity' }, // (opt.) Visa / Mastercard
-    //adminEntityId: { type: Schema.Types.ObjectId, ref: 'PaymentCard' }, // DC=Company | CC=Company/null | PPC=Sube/Previaje=>MinTransporte / GiftVoucher=>Company
+export type DocPaymentCard = DocumentType<PaymentCard>;
 
-    balance: {
-        type: Number, required: true,
-        get: v => (v/100).toFixed(2),
-        set: v => v*100,
-    },
-    status: { type: String, enum: PaymentCardStatus, default: PaymentCardStatus.ACTIVE, required: true },
-
-    debit: PaymentCardDebitSchema,
-    credit: PaymentCardCreditSchema,
-    prepaid: PaymentCardPrepaidSchema,
-  }, schemaOptions)
-
-export interface IPaymentCardModel extends Model<IPaymentCard> {}
-export interface IPaymentCardDocument extends Document<IPaymentCardModel>, IPaymentCard {
-    // methods
-    method(param: number): Promise<IPaymentCardDocument>,
-}
-
-/**
- *
+/*************************************************************************************
+ * Clase "PaymentCard"
  */
-PaymentCardSchema.methods.setOwnerAccount = async function (accountData: IAccount) {
-    let ownerAccount
-    if (accountData instanceof Account)
-        ownerAccount = accountData
-    else {
-        const pipelines: any[] = []
-        for (const field in accountData) {
-            pipelines.push({ $lookup: { from: "entities", localField: field + "Id", foreignField: "_id", as: field } })
-            pipelines.push({ $unwind: '$'+field })
-            for (const subfield in accountData[field]) {
-                accountData[field+'.'+subfield] = accountData[field][subfield]
+@ModelOptions(myModelOptions)
+export class PaymentCard extends BaseModel {
+    @prop({ type: String, required: true })
+    name: string
+
+    @prop({ type: String, required: true })
+    number: string
+
+    @prop({ type: String, required: true })
+    expDate: string
+
+    @prop({ type: () => Account, ref: Account })
+    ownerAccount: Ref<Account> | null
+
+    @prop({ type: () => Entity, ref: Entity })
+    userEntity: Ref<Entity> | null
+
+    @prop({ type: () => Entity, ref: Entity })
+    serviceEntity?: Ref<Entity> | null
+
+    @prop({
+        type: String, required: true,
+        get: v => (v / 100).toFixed(2),
+        set: v => v * 100,
+    })
+    balance: number
+
+    @prop({ type: PaymentCardStatus, required: true, default: PaymentCardStatus.INACTIVE })
+    status: string
+
+    /**
+     *
+     */
+    async setOwnerAccount(this: DocPaymentCard, accountData: IAccount) {
+        let ownerAccount
+        if (accountData instanceof AccountModel)
+            ownerAccount = accountData
+        else {
+            const pipelines: any[] = []
+            for (const field in accountData) {
+                pipelines.push({ $lookup: { from: "entities", localField: field + "Id", foreignField: "_id", as: field } })
+                pipelines.push({ $unwind: '$' + field })
+                for (const subfield in accountData[field]) {
+                    accountData[field + '.' + subfield] = accountData[field][subfield]
+                }
+                delete accountData[field]
             }
-            delete accountData[field]
+            pipelines.push({ $match: accountData })
+
+            ownerAccount = (await AccountModel.aggregate(pipelines).limit(1).exec()).shift()
         }
-        pipelines.push({ $match: accountData })
-
-        ownerAccount = (await Account.aggregate(pipelines).limit(1).exec()).shift()
+        if (!ownerAccount) {
+            throw new Error(`Account doesn't exist (${JSON.stringify(accountData)}).`)
+        }
+        this.ownerAccount = ownerAccount._id
+        return this
     }
-    if (!ownerAccount) {
-        throw new Error(`Account doesn't exist (${JSON.stringify(accountData)}).`)
+
+    /**
+     *
+     */
+    async unsetUserEntity(this: DocPaymentCard) {
+        return this.setUserEntity(null)
     }
-    this.ownerAccountId = ownerAccount._id
-    return this
-}
 
-/**
- *
- */
-PaymentCardSchema.methods.unsetUserEntity = async function () {
-    return this.setUserEntity(null)
-}
-
-/**
- *
- */
-PaymentCardSchema.methods.unsetServiceEntity = async function () {
-    return this.setServiceEntity(null)
-}
-
-/**
- *
- */
-PaymentCardSchema.methods.setServiceEntity = async function (entityData?: IEntity) {
-  if (!entityData)
-    this.serviceEntityId = null
-  else {
-    const serviceEntity = (entityData instanceof EntityModel)
-        ? entityData : await Entity.findOne(entityData)
-    if (!serviceEntity) {
-        throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
+    /**
+     *
+     */
+    async unsetServiceEntity(this: DocPaymentCard) {
+        return this.setServiceEntity(null)
     }
-    this.serviceEntityId = serviceEntity.id
-  }
-  return this
-}
 
-/**
- *
- */
-PaymentCardSchema.methods.setAdminEntity = async function (entityData: IEntity) {
-  const adminEntity = (entityData instanceof EntityModel)
-    ? entityData : await Entity.findOne(entityData)
-  if (!adminEntity) {
-    throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
-  }
-  this.adminEntityId = adminEntity.id
-  return this
-}
+    /**
+     *
+     */
+    async setServiceEntity(this: DocPaymentCard, entityData: Entity | null = null) {
+        if (!entityData)
+            this.serviceEntity = undefined
+        else {
+            const serviceEntity = await EntityModel.getOne(entityData)
+            if (!serviceEntity) {
+                throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
+            }
+            this.serviceEntity = serviceEntity
+        }
+        return this
+    }
 
-/**
- *
- */
-PaymentCardSchema.methods.setUserEntity = async function (entityData?: IEntity) {
-    if (!entityData)
-        this.serviceEntityId = null
-    else {
-        const userEntity = (entityData instanceof EntityModel)
-            ? entityData : await Entity.findOne(entityData)
-        if (!userEntity) {
+    /**
+     *
+     */
+    async setAdminEntity(this: DocPaymentCard, entityData: Entity | null = null) {
+        const adminEntity = await EntityModel.getOne(entityData)
+        if (!adminEntity) {
             throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
         }
-        this.userEntityId = userEntity.id
+        this.adminEntity = adminEntity
+        return this
     }
-    return this
+
+    /**
+     *
+     */
+    async setUserEntity(this: DocPaymentCard, entityData: Entity | null = null) {
+        if (!entityData)
+            this.userEntity = undefined
+        else {
+            const userEntity = await EntityModel.getOne(entityData)
+            if (!userEntity) {
+                throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
+            }
+            this.userEntity = userEntity
+        }
+        return this
+    }
+
+    /**
+     *
+     */
+    static async seed(this: ReturnModelType<typeof PaymentCard>, seeds: IPaymentCard[]) {
+        const paymentCards: IPaymentCardDocument[] = await this.insertMany(seeds)
+        for (const i in seeds) {
+            const seed = seeds[i]
+            const paymentcard = paymentCards[i]
+
+            if (!seed.ownerAccount)
+                throw new Error(`PaymentCard's ownerAccount is required.`)
+            // if (!seed.serviceEntity)
+            //     throw new Error(`PaymentCard's serviceEntity is required.`)
+
+            await Promise.all([
+                paymentcard.setOwnerAccount(seed.ownerAccount),
+                paymentcard.setUserEntity(seed.userEntity),
+                paymentcard.setServiceEntity(seed.serviceEntity),
+            ])
+
+            await paymentcard.save()
+        }
+    }
+
 }
 
-/**
- *
- */
-PaymentCardSchema.statics.seed = async function (seeds: IPaymentCard[]) {
-  const paymentCards: IPaymentCardDocument[] = await this.insertMany(seeds)
-  for (const i in seeds) {
-    const seed = seeds[i]
-    const paymentcard = paymentCards[i]
-
-    if (!seed.ownerAccount)
-        throw new Error(`PaymentCard's ownerAccount is required.`)
-    // if (!seed.serviceEntity)
-    //     throw new Error(`PaymentCard's serviceEntity is required.`)
-
-    await Promise.all([
-        paymentcard.setOwnerAccount(seed.ownerAccount),
-        paymentcard.setUserEntity(seed.userEntity),
-        paymentcard.setServiceEntity(seed.serviceEntity),
-    ])
-
-    await paymentcard.save()
-  }
-}
-
-export const PaymentCard = model('PaymentCard', PaymentCardSchema)
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const PaymentCardModel = getModelForClass(PaymentCard);
