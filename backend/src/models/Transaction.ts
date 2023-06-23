@@ -1,11 +1,11 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 import { Operation, OperationModel } from "./Operation";
-import { Entity as Entity, EntityModel, IEntity } from "./Entity";
-import { Account as Account, AccountModel, IAccount } from "./Account";
-import { IPaymentCard, PaymentCard } from "./PaymentCard";
-import { DocumentType, getModelForClass, modelOptions, post, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { Entity as Entity, EntityModel } from "./Entity";
+import { Account as Account, AccountModel } from "./Account";
+import { PaymentCard } from "./PaymentCard";
+import { DocumentType, getModelForClass, isDocument, modelOptions, post, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
-import { BaseModel } from "./BaseModel";
+import { BaseModel, DocPartial } from "./BaseModel";
 import { Currency } from "./Currency";
 import { TransactionTypes } from "common/types/transaction";
 
@@ -44,6 +44,8 @@ export class TransactionAllocation extends BaseModel {
     @prop({ type: Number, default: 0, required: true })
     amount!: number
 }
+// Genera el modelo a partir de la clase utilizando Typegoose
+export const TransactionAllocationModel = getModelForClass(TransactionAllocation);
 
 
 export type DocTransaction = DocumentType<Transaction>;
@@ -101,61 +103,47 @@ export class Transaction extends BaseModel {
     postSave: Operation[]
 
     /**
-     *
+     *  @allocationData
      */
-    async allocateOperation(allocationData: ITransactionAllocation) {
+    async allocateOperation(this: DocTransaction, allocationData: DocPartial<TransactionAllocation>): Promise<typeof this> {
 
-        // Needs transaction data
-        if (!allocationData.operation) {
-            throw new Error(`Need specify the Operation that allocates this Transaction (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })}).`)
+        // Get allocation document or generate it
+        const allocation = (allocationData instanceof Document)
+            ? allocationData : new TransactionAllocationModel(allocationData)
+
+        // Needs Operation data
+        const operation = await allocation.populateAndGet<Operation>('operation')
+        if (!allocation.operation || !operation) {
+            throw new Error(`Operation to allocate Transaction not found (${JSON.stringify({ transaction: this.id, operation: allocation.operation })}).`)
         }
 
-        // If no amount of operation specified, it will look for the Operation with the Transaction's unallocatedAmount
-        // if (!allocationData.operation?.totalAmount)
-        //   allocationData.operation.totalAmount = this.unallocatedAmount
-
-        // Get Operation. If doesn't exist, throw error.
-        let operation
-        if (allocationData.operation instanceof Document) {
-            operation = allocationData.operation
-        }
-        else {
-            const operations = await OperationModel.find(allocationData.operation)
-            if (operations.length > 1)
-                throw new Error(`Only 1 Operation must match to allocate Transaction, found ${operations.length} (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
-            operation = operations.pop()
-        }
-
-        if (!operation) {
-            throw new Error(`Operation to allocate Transaction not found (${JSON.stringify({ transaction: this.id, operation: allocationData.operation })})`)
-        }
-
+        // First allocation to that Operation
         if (typeof operation.paidAmount == 'undefined') {
             operation.paidAmount = 0
             operation.unpaidAmount = operation.totalAmount
         }
 
-        // If no amount to allocate was specified, allocates the whole the Transaction unallocatedAmount needed to cancel
-        if (!allocationData.amount) {
-            allocationData.amount = (this.unallocatedAmount > operation.totalAmount)
+        // If no amount to allocate was specified, allocates the whole the Transaction unallocatedAmount needed to cancel the Operation unpaid amount
+        if (!allocation.amount) {
+            allocation.amount = (this.unallocatedAmount > operation.totalAmount)
                 ? operation.unpaidAmount //this.totalAmount - this.paidAmount // To cancel
                 : this.unallocatedAmount // 100%
         }
-        const allocationAmount = allocationData.amount || 0
+        const allocationAmount = allocation.amount
+
+        // Update operation amounts
         operation.paidAmount += allocationAmount
         operation.unpaidAmount = operation.totalAmount - operation.paidAmount
         this.postSave.push(operation)
-        //await operation.save() // to afterSave
-        allocationData.operationId = operation.id
-        allocationData.operation = operation
-        this.allocations.push(allocationData)
+        //await operation.save()
+        allocation.operation = operation
+        this.allocations.push(allocation)
         this.allocatedAmount += allocationAmount
         this.unallocatedAmount -= allocationAmount
         return this
     }
 
-    static async seed(this: ReturnModelType<typeof Transaction>, seeds: ITransaction[])
-    {
+    static async seed(this: ReturnModelType<typeof Transaction>, seeds: ITransactionSeed[] | ITransactionSeed) {
         //const operations: IOperationDocument[] = await this.insertMany(seeds)
         for (const i in seeds) {
             const seed = seeds[i]
@@ -208,7 +196,7 @@ export class Transaction extends BaseModel {
 // Genera el modelo a partir de la clase utilizando Typegoose
 export const TransactionModel = getModelForClass(Transaction);
 
-const seeds = [
+export const seeds = [
     {
         datetime: '2022-12-12 12:12:12',
         currencyCode: 'ARS',
@@ -227,6 +215,10 @@ const seeds = [
         allocations: [{ operation: { datetime: '2022-12-01 12:12:12' }, amount: 200000 }],
     }
 ]
+
+interface ITransactionSeed {
+
+}
 /*const seeds = [
   {
     currency: "ARS",
@@ -329,7 +321,7 @@ const seeds = [
     // methods
     // addOwnedAccount(accountData: IAccount): Promise<ITransactionDocument>,
     // addAdministratedAccount(accountData: IAccount): Promise<ITransactionDocument>,
-}
+// }
 
 
 /*

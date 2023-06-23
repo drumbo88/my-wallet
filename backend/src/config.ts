@@ -115,12 +115,15 @@ const DB_CONNECTION_STRING = connString
 
 const myModelOptions = {
     schemaOptions: {
+        _id: true,
         toObject: { virtuals: true },
         toJSON: { virtuals: true, getters: true },
         versionKey: false,
         timestamps: true,
     }
 }
+const myModelOptionsNoId = { ...myModelOptions }
+myModelOptionsNoId.schemaOptions._id = false
 
 export {
     NODE_ENV,
@@ -147,6 +150,7 @@ export {
     JWT_KEY,
     SESSION_TIME,
 
-    myModelOptions
+    myModelOptions,
+    myModelOptionsNoId
 }
 

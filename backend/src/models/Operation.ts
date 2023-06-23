@@ -1,14 +1,13 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
-import { defaultSchemaOptions } from "../database";
+import { Document, Model, Schema } from "mongoose";
 import { Entity, DocEntity, EntityModel } from "./Entity";
-import { IOperationItem, IOperationItemConcept, schema as OperationItem } from "./OperationItem";
 import { OperationItemConcept, OperationItemConceptModel } from "./OperationItemConcept";
-import { OperationItemDetailType } from "./OperationItemDetail";
-import { DocTransaction, ITransaction, Transaction, TransactionModel } from "./Transaction";
+import { OperationItemType } from "common/types/operationItem";
+import { DocTransaction, Transaction, TransactionAllocation, TransactionModel } from "./Transaction";
 import { IOperation, OperationStatus, OperationTypes } from "common/types/operation";
-import { DocumentType, getModelForClass, ModelOptions, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { DocumentType, getModelForClass, isDocument, ModelOptions, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
-import { BaseModel } from "./BaseModel";
+import { BaseModel, DocPartial } from "./BaseModel";
+import { OperationItem } from "./OperationItem";
 
 export type DocOperation = DocumentType<Operation>;
 
@@ -53,42 +52,33 @@ export class Operation extends BaseModel {
     /**
      *
      */
-    async setFromEntity(this: DocOperation, entityData: Entity) {
-        const fromEntity = await EntityModel.getOne(entityData)
-        if (!fromEntity) {
-            throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
-        }
-        this.fromEntity = fromEntity
+    async setFromEntity(this: DocOperation, entityData: DocPartial<Entity>) {
+        this.fromEntity = await EntityModel.getOrCreate(entityData)
         return this
     }
 
     /**
      *
      */
-    async setToEntity(this: DocOperation, entityData: Entity) {
-        let toEntity = await EntityModel.getOne(entityData)
-        if (!toEntity && Entity.seed) {
-            toEntity = await EntityModel.seed(entityData) as DocEntity
-            //throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
-        }
-        this.toEntity = toEntity || undefined
+    async setToEntity(this: DocOperation, entityData: DocPartial<Entity>) {
+        this.toEntity = await EntityModel.getOrCreate(entityData)
         return this
     }
 
     /**
      *
      */
-    async addItem(this: DocOperation, itemData: IOperationItem) {
+    async addItem(this: DocOperation, itemData: any/* IOperationItem */) {
 
         if (!itemData.conceptId?.type) {
             throw new Error(`Need to define type of OperationItem to add to the Operation (${JSON.stringify({ this: this.id, item: itemData.conceptId })}).`)
         }
         let concept //: OperationItemDetail | null
         switch (itemData.conceptId.type) {
-            case OperationItemDetailType.ASSET:
+            case OperationItemType.ASSET:
                 concept = OperationModel.getOrCreate(itemData.conceptId.entity)
                 break
-            case OperationItemDetailType.CONCEPT:
+            case OperationItemType.CONCEPT:
                 concept = OperationItemConceptModel.getOrCreate(itemData.conceptId.entity)
                 break
         }
@@ -102,19 +92,24 @@ export class Operation extends BaseModel {
     /**
      *
      */
-    async addTransactionAllocation(this: DocOperation, allocationData: ITransactionAllocation) {
-
+    /*async addTransactionAllocation(
+        this: DocOperation,
+        transaction: DocumentType<Transaction>,
+        allocation: TransactionAllocation
+    ) {
         // Needs transaction data
-        if (!allocationData.transaction) {
+        //let transaction = await allocationData.populateAndGet<Transaction>('transaction')
+        transaction.findOne({  }).parent()
+        if (!transaction) {
             throw new Error(`Need specify the transaction that paid this Operation (${JSON.stringify({ this: this.id, transaction: allocationData.transactionId })}).`)
         }
 
         // If no amount of transaction specified, it will be for the totalAmount of the Operation
-        if (!allocationData.transaction?.amount)
-            allocationData.transaction.amount = this.totalAmount
+        if (!transaction?.amount)
+            transaction.amount = this.totalAmount
 
         // Get Transaction. If doesn't exist, create it.
-        let transaction = await TransactionModel.getOrCreate(allocationData.transaction)
+        transaction = await TransactionModel.getOrCreate(transaction)
 
         // If no amount to allocate specified, allocates the whole the Transaction unallocatedAmount needed to cancel
         if (!allocationData.amount) {
@@ -126,7 +121,7 @@ export class Operation extends BaseModel {
         this.transactions.push(allocationData)
         this.paidAmount += allocationData.amount || 0
         return this
-    }
+    }*/
 
     static async seed(this: ReturnModelType<typeof Operation>, seeds: IOperation[]) {
 
@@ -140,7 +135,7 @@ export class Operation extends BaseModel {
             if (transactions)
                 delete seed.transactions
 
-            const operation: IOperationDocument = await this.create(seed)
+            const operation: DocOperation = await this.create(seed)
 
             // if (!seed.fromEntity)
             //     throw new Error(`Operation's fromEntity is required.`)
@@ -154,15 +149,19 @@ export class Operation extends BaseModel {
             //     operation.setToEntity(seed.toEntity),
             // ])
             operation.paidAmount = seed.paidAmount || 0
+            // await operation.populate('fromEntity')
+            // let fromEntity: DocEntity | undefined = isDocument(operation.fromEntity) ? operation.fromEntity : undefined //.toJSON()
+            const fromEntity = await operation.populateAndGet<Entity>('fromEntity')
             for (const itemData of items) {
-                if (!itemData.currencyCode)
-                    itemData.currencyCode = operation.fromEntity?.currency
+                if (!itemData.currency)
+                    itemData.currency = fromEntity?.currency
                 await operation.addItem(itemData)
             }
             operation.unpaidAmount = operation.totalAmount - operation.paidAmount
 
-            for (const allocationData of transactions)
-                await operation.addTransactionAllocation(allocationData)
+            // TO FIX:
+            // for (const allocationData of transactions)
+            //     await operation.addTransactionAllocation(allocationData)
 
             await operation.save()
         }
@@ -175,36 +174,36 @@ export class Operation extends BaseModel {
 export const OperationModel = getModelForClass(Operation);
 
 
-export interface ITransactionAllocation {
-    transactionId?: Schema.Types.ObjectId,
-    transaction?: ITransaction,
-    amount?: number,
-}
+// export interface ITransactionAllocation {
+//     transactionId?: Schema.Types.ObjectId,
+//     transaction?: ITransaction,
+//     amount?: number,
+// }
 
-export interface IOperationBackend extends IOperation {
-    fromEntityId?: Schema.Types.ObjectId,
-    toEntityId?: Schema.Types.ObjectId,
-    /* Virtuals */
-    setFromEntity(entityData: Entity): Promise<IOperationDocument>
-    setToEntity(entityData: Entity): Promise<IOperationDocument>
-}
+// export interface IOperationBackend extends IOperation {
+//     fromEntityId?: Schema.Types.ObjectId,
+//     toEntityId?: Schema.Types.ObjectId,
+//     /* Virtuals */
+//     setFromEntity(entityData: Entity): Promise<IOperationDocument>
+//     setToEntity(entityData: Entity): Promise<IOperationDocument>
+// }
 
-export interface IOperationModel extends Model<IOperationBackend> { }
-export interface IOperationDocument extends Document<IOperationModel>, IOperationBackend {
-    // methods
-    addItem(itemData: IOperationItemConcept): Promise<IOperationModel>
-    addTransactionAllocation(allocationData: ITransactionAllocation): Promise<IOperationModel>
-}
+// export interface IOperationModel extends Model<IOperationBackend> { }
+// export interface IOperationDocument extends Document<IOperationModel>, IOperationBackend {
+//     // methods
+//     addItem(itemData: IOperationItemConcept): Promise<IOperationModel>
+//     addTransactionAllocation(allocationData: ITransactionAllocation): Promise<IOperationModel>
+// }
 
 
-const seeds = [
+export const seeds = [
     {
         datetime: '2022-12-12 12:12:13',
         type: OperationTypes.EXCHANGE,
         fromEntity: { taxId: '20337466711' },
         toEntity: { taxId: '20337466711' },
         items: [
-            { /*detail: 'Carga SUBE', */quantity: 1, amount: 1000, conceptId: { type: OperationItemDetailType.CONCEPT, entity: { name: 'Carga SUBE' } } }
+            { /*detail: 'Carga SUBE', */quantity: 1, amount: 1000, conceptId: { type: OperationItemType.CONCEPT, entity: { name: 'Carga SUBE' } } }
         ],
         //transactions: [] // Seed Transaction, con array de datos de Operations (que cada una debe encontrar UNA)
         //transactions: [{ transaction: { from: { /*entity*/ }, to: {} }}]
@@ -216,8 +215,8 @@ const seeds = [
         //toEntity: { taxId: '20337466711' },
         detail: 'Compra en el Super',
         items: [
-            { /*detail: 'Carga SUBE', */quantity: 10, amount: 250, conceptId: { type: OperationItemDetailType.OPERATION, entity: { name: 'Atún' } } },
-            { detail: 'Promo 10%', quantity: 1, amount: -100, conceptId: { type: OperationItemDetailType.CONCEPT, entity: { name: 'Descuento' } } },
+            { /*detail: 'Carga SUBE', */quantity: 10, amount: 250, conceptId: { type: OperationItemType.OPERATION, entity: { name: 'Atún' } } },
+            { detail: 'Promo 10%', quantity: 1, amount: -100, conceptId: { type: OperationItemType.CONCEPT, entity: { name: 'Descuento' } } },
         ],
         //transactions: [] // Seed Transaction, con array de datos de Operations (que cada una debe encontrar UNA)
         //transactions: [{ transaction: { from: { /*entity*/ }, to: {} }, amount: 100 }],
@@ -229,7 +228,7 @@ const seeds = [
         toEntity: { taxId: '20337466711' },
         detail: 'Salario mensual',
         items: [
-            { detail: 'Sueldo neto', quantity: 1, amount: 200000, conceptId: { type: OperationItemDetailType.CONCEPT, entity: { name: 'Sueldo Neto' } } },
+            { detail: 'Sueldo neto', quantity: 1, amount: 200000, conceptId: { type: OperationItemType.CONCEPT, entity: { name: 'Sueldo Neto' } } },
         ],
     },
     {
@@ -239,7 +238,7 @@ const seeds = [
         toEntity: { taxId: '20335035128', name: 'Roti El Sol', company: {} },
         detail: 'Pizza',
         items: [
-            { detail: 'Pizza 4 sabores', quantity: 1, amount: 2000, conceptId: { type: OperationItemDetailType.OPERATION, entity: { name: 'Pizza' } } },
+            { detail: 'Pizza 4 sabores', quantity: 1, amount: 2000, conceptId: { type: OperationItemType.OPERATION, entity: { name: 'Pizza' } } },
         ],
     },
 ]

@@ -1,8 +1,8 @@
 import { Schema, model, Model, Document, ObjectId } from 'mongoose'
 import { User } from './User';
 import { AccountModel, Account } from './Account';
-import { seeds as PersonSeeds, Person } from './Person';
-import { seeds as CompanySeeds, Company } from './Company';
+import { seeds as PersonSeeds, Person, DocPerson } from './Person';
+import { seeds as CompanySeeds, Company, DocCompany } from './Company';
 import { defaultSchemaOptions } from '../database';
 import { PaymentCard, PaymentCardModel } from './PaymentCard';
 import { ISeed } from 'src/types';
@@ -54,10 +54,10 @@ export class Entity extends BaseModel {
     @prop({ type: () => [Account], ref: Account, required: true, default: [] })
     accountsAdministrated!: Ref<Account>[]
 
-    static async createPerson(this: ReturnModelType<typeof Entity>, data: IPerson) {
+    static async createPerson(this: ReturnModelType<typeof Entity>, data: DocPerson) {
         await this.create(data)
     }
-    static async createCompany(this: ReturnModelType<typeof Entity>, data: ICompany) {
+    static async createCompany(this: ReturnModelType<typeof Entity>, data: DocCompany) {
         await this.create(data)
     }
 

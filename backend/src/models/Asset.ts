@@ -1,7 +1,6 @@
 import { DocumentType, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 import { myModelOptions } from '../config';
 import { BaseModel } from './BaseModel';
-import { IOperationItemDetail, OperationItemDetailFields } from './OperationItemDetail';
 
 export type DocAsset = DocumentType<Asset>;
 

@@ -21,27 +21,27 @@ export class Account extends BaseModel {
     type: AccountTypes
 
     @prop({ type: () => Entity, ref: Entity })
-    adminEntity: Entity
+    adminEntity: Ref<Entity>
 
     @prop({ type: () => Entity, ref: Entity })
-    ownerEntity: Entity
+    ownerEntity: Ref<Entity>
 
-    @prop({ type: () => [Wallet], ref: Wallet })
-    wallets: Ref<Wallet>[]
+    @prop({ type: () => [Wallet] })
+    wallets: Wallet[]
 
     @prop({ type: () => [PaymentCard], ref: PaymentCard })
     paymentCards: Ref<PaymentCard>[]
 
     // Buscar por dueño de la cuenta
-    static async findOneByOwner(entityData: DocPartial<Entity>): Promise<Entity> {
-        const ownerEntity = (entityData instanceof EntityModel)
-            ? entityData : await AccountModel.findOne({ ownerEntity: entityData })
+    static async findOneByOwner(entityData: DocPartial<Entity>): Promise<DocAccount | null> {
+        const ownerEntity = await EntityModel.getOne(entityData)
 
         if (!ownerEntity) {
             throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
         }
-
-        return ownerEntity.populate('account').account
+//await AccountModel.findOne({ ownerEntity: entityData })
+        //return ownerEntity.populate('account').account
+        return await AccountModel.findOne({ ownerEntity })
     }
     /*
         public async findUserByPostTitle(title: string): Promise<DocumentType<User> | null> {

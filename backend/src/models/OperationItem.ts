@@ -1,9 +1,8 @@
 import { DocumentType, modelOptions, prop, Ref } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
-import { defaultSchemaOptions } from "../database";
 import { BaseModel } from "./BaseModel";
 import { Currency } from "./Currency";
-import { IOperationItemDetailRef, OperationItemDetail, OperationItemDetailRef } from "./OperationItemDetail";
+import { OperationItemDetail } from "./OperationItemDetail";
 import { OperationItemStatus } from "common/types/operationItem";
 
 export type DocOperationItem = DocumentType<OperationItem>;

@@ -25,7 +25,7 @@ export class Empresa extends BaseModel {
 
     //nuevoEmpleado(this: ReturnModelType<typeof Empresa>, e: Empleado) {
     public async nuevoEmpleado(this: DocEmpresa, empData: DocPartial<Empleado>): Promise<DocEmpresa> {
-        let empleado: DocEmpleado = await EmpleadoModel.findOrCreate(empData)
+        let empleado: DocEmpleado = await EmpleadoModel.getOrCreate(empData)
         empleado.empresa = this
         await empleado.save()
         console.log(`Empleado: ${empleado}`)
@@ -72,11 +72,13 @@ export const EmpleadoModel = getModelForClass(Empleado);
     }
     console.log(`Conectado a la base de datos '${DB_CONNECTION_STRING}'.`)
 
-    const empresa: DocEmpresa = await EmpresaModel.findOrCreate({ nombre: 'Foncap', taxNumber: '123123' })
+    const empresa: DocEmpresa = await EmpresaModel.getOrCreate({ nombre: 'Foncap', taxNumber: '123123' })
     //await empresa.nuevoEmpleado({ nombre: 'Rumbex', taxNumber: '345345' })
     const empleado = await EmpleadoModel.findOne({ nombre: 'Rumbex', taxNumber: '345345' })
     if (empleado)
         await empresa.nuevoEmpleado(empleado)
     console.log(`Empresa: ${empresa}`)
+    empresa.nombre = 'asdasdasd'
+    console.log(await EmpleadoModel.getOneOrFail({empresa}))
     process.exit(0)
 })()

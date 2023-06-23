@@ -8,3 +8,7 @@ export enum PaymentCardTypes {
     CREDIT = 'credit',
     PREPAID = 'prepaid',
 }
+export enum PeriodType {
+    DAY = 'DAY',
+    MONTH = 'MONTH',
+}

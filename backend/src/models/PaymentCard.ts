@@ -2,9 +2,9 @@ import { DocumentType, getModelForClass, ModelOptions, prop, Ref, ReturnModelTyp
 import { Schema, Model, Document, model } from 'mongoose'
 import { myModelOptions } from '../config';
 import { defaultSchemaOptions } from '../database';
-import { Account, AccountModel } from './Account';
-import { BaseModel } from './BaseModel';
-import { Entity, EntityModel } from './Entity';
+import { Account, AccountModel, DocAccount } from './Account';
+import { BaseModel, DocPartial } from './BaseModel';
+import { DocEntity, Entity, EntityModel } from './Entity';
 import { seeds as PaymentCardCreditSeeds, PaymentCardCreditSchema } from './PaymentCardCredit';
 import { seeds as PaymentCardDebitSeeds, PaymentCardDebitSchema } from './PaymentCardDebit';
 import { seeds as PaymentCardPrepaidSeeds, PaymentCardPrepaidSchema } from './PaymentCardPrepaid';
@@ -33,12 +33,15 @@ export class PaymentCard extends BaseModel {
     @prop({ type: String, required: true })
     expDate: string
 
+    /* Opc: Cuenta a la que está vinculada la tarjeta (puede no tener) */
     @prop({ type: () => Account, ref: Account })
-    ownerAccount: Ref<Account> | null
+    ownerAccount?: Ref<Account> | null
 
+    /* Opc: Entidad que administra la tarjeta (puede no tener) */
     @prop({ type: () => Entity, ref: Entity })
-    userEntity: Ref<Entity> | null
+    adminEntity?: Ref<Entity> | null
 
+    /* Opc: Entidad que da el servicio de la tarjeta (puede no tener) */
     @prop({ type: () => Entity, ref: Entity })
     serviceEntity?: Ref<Entity> | null
 
@@ -55,7 +58,7 @@ export class PaymentCard extends BaseModel {
     /**
      *
      */
-    async setOwnerAccount(this: DocPaymentCard, accountData: IAccount) {
+    async setOwnerAccount(this: DocPaymentCard, accountData: DocAccount) {
         let ownerAccount
         if (accountData instanceof AccountModel)
             ownerAccount = accountData
@@ -83,8 +86,8 @@ export class PaymentCard extends BaseModel {
     /**
      *
      */
-    async unsetUserEntity(this: DocPaymentCard) {
-        return this.setUserEntity(null)
+    async unsetAdminEntity(this: DocPaymentCard) {
+        return this.setAdminEntity(null)
     }
 
     /**
@@ -97,7 +100,14 @@ export class PaymentCard extends BaseModel {
     /**
      *
      */
-    async setServiceEntity(this: DocPaymentCard, entityData: Entity | null = null) {
+    async getOwnerEntity(this: DocPaymentCard, entityData: DocPartial<Entity>) {
+        return await EntityModel.getOneOrFail(entityData)
+    }
+
+    /**
+     *
+     */
+    async setServiceEntity(this: DocPaymentCard, entityData: DocEntity | null = null) {
         if (!entityData)
             this.serviceEntity = undefined
         else {
@@ -114,26 +124,14 @@ export class PaymentCard extends BaseModel {
      *
      */
     async setAdminEntity(this: DocPaymentCard, entityData: Entity | null = null) {
-        const adminEntity = await EntityModel.getOne(entityData)
-        if (!adminEntity) {
-            throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
-        }
-        this.adminEntity = adminEntity
-        return this
-    }
-
-    /**
-     *
-     */
-    async setUserEntity(this: DocPaymentCard, entityData: Entity | null = null) {
         if (!entityData)
-            this.userEntity = undefined
+            this.adminEntity = undefined
         else {
-            const userEntity = await EntityModel.getOne(entityData)
-            if (!userEntity) {
+            const adminEntity = await EntityModel.getOne(entityData)
+            if (!adminEntity) {
                 throw new Error(`Entity doesn't exist (${JSON.stringify(entityData)}).`)
             }
-            this.userEntity = userEntity
+            this.adminEntity = adminEntity
         }
         return this
     }
@@ -141,8 +139,8 @@ export class PaymentCard extends BaseModel {
     /**
      *
      */
-    static async seed(this: ReturnModelType<typeof PaymentCard>, seeds: IPaymentCard[]) {
-        const paymentCards: IPaymentCardDocument[] = await this.insertMany(seeds)
+    static async seed(this: ReturnModelType<typeof PaymentCard>, seeds: Partial<IPaymentCardSeed>[]) {
+        const paymentCards: DocPaymentCard[] = await this.insertMany<PaymentCard>([])
         for (const i in seeds) {
             const seed = seeds[i]
             const paymentcard = paymentCards[i]
@@ -154,7 +152,7 @@ export class PaymentCard extends BaseModel {
 
             await Promise.all([
                 paymentcard.setOwnerAccount(seed.ownerAccount),
-                paymentcard.setUserEntity(seed.userEntity),
+                paymentcard.setAdminEntity(seed.adminEntity),
                 paymentcard.setServiceEntity(seed.serviceEntity),
             ])
 
@@ -162,6 +160,13 @@ export class PaymentCard extends BaseModel {
         }
     }
 
+}
+
+interface IPaymentCardSeed {
+    name, number, expDate, balance,
+    ownerAccount,
+    adminEntity,
+    serviceEntity
 }
 
 // Genera el modelo a partir de la clase utilizando Typegoose

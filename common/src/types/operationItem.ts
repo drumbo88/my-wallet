@@ -3,3 +3,8 @@ export enum OperationItemStatus {
     SENT = 'SENT',
     DELIVERED = 'DELIVERED',
 }
+export enum OperationItemType {
+    ASSET = 'ASSET',
+    CONCEPT = 'CONCEPT',
+    OPERATION = 'OPERATION',
+}

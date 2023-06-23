@@ -1,41 +1,37 @@
-import mongoose, { Schema } from 'mongoose'
-import { defaultSchemaOptions } from '../database';
-import { IPaymentCard } from './PaymentCard';
+import { getDiscriminatorModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { PaymentCardTypes, PeriodType } from 'common/src/types/paymentCard';
+import { myModelOptions, myModelOptionsNoId } from '../config';
+import { BaseModel } from './BaseModel';
+import { PaymentCard, PaymentCardModel } from './PaymentCard';
 
-enum PeriodType {
-    DAY = 'DAY',
-    MONTH = 'MONTH',
+@modelOptions(myModelOptionsNoId)
+export class PaymentCardPeriod extends BaseModel {
+    @prop({ enum: PeriodType, required: true })
+    type: string
+
+    @prop({ type: Number, required: true })
+    quantity: number
 }
 
-export interface IPaymentCardCreditData {
-  period: {
-    type: {
-        quantity: { type: Number, required: true },
-        type: { type: String, enum: PeriodType, required: true },
-    }
-  },
+@modelOptions(myModelOptions)
+export class PaymentCardCredit extends PaymentCard {
+    @prop({ type: PaymentCardPeriod, required: true })
+    period: PaymentCardPeriod
 }
-export interface IPaymentCardCredit extends IPaymentCard {
-  credit: IPaymentCardCreditData
-}
-export const PaymentCardCreditSchema = new Schema({
-  period: new mongoose.Schema({
-      quantity: { type: Number, required: true },
-      type: { type: String, enum: PeriodType, required: true },
-  }),
-}, defaultSchemaOptions)
+
 export const seeds = [
-  {
-    name: 'DARIO A RUMBO',
-    number: '43383100XXXX3840',
-    expDate: '0628',
+    {
+        name: 'DARIO A RUMBO',
+        number: '43383100XXXX3840',
+        expDate: '0628',
 
-    ownerAccount: { ownerEntity: { taxId: '20337466711' }, adminEntity: { taxId: '30500003193' } }, //
-    //serviceEntity: { type: Schema.Types.ObjectId, ref: 'Entity' }, // (opt.) Visa / Mastercard
-    //adminEntity: { taxId: '' }, // DC=Company | CC=Company/null | PPC=Sube/Previaje=>MinTransporte / GiftVoucher=>Company
+        ownerAccount: { ownerEntity: { taxId: '20337466711' }, adminEntity: { taxId: '30500003193' } }, //
+        //serviceEntity: { type: Schema.Types.ObjectId, ref: 'Entity' }, // (opt.) Visa / Mastercard
+        //adminEntity: { taxId: '' }, // DC=Company | CC=Company/null | PPC=Sube/Previaje=>MinTransporte / GiftVoucher=>Company
 
-    balance: 0,
-  }
+        balance: 0,
+    }
 ]
 
 //export const model = mongoose.model('PaymentCardCredit', PaymentCardCreditSchema)
+export const PaymentCardCreditModel = getDiscriminatorModelForClass(PaymentCardModel, PaymentCardCredit, PaymentCardTypes.CREDIT)
