@@ -1,9 +1,9 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
-import { Operation, OperationModel } from "./Operation";
+import { Document } from "mongoose";
+import { Operation } from "./Operation";
 import { Entity as Entity, EntityModel } from "./Entity";
 import { Account as Account, AccountModel } from "./Account";
 import { PaymentCard } from "./PaymentCard";
-import { DocumentType, getModelForClass, isDocument, modelOptions, post, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { DocumentType, getModelForClass, modelOptions, post, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
 import { BaseModel, DocPartial } from "./BaseModel";
 import { Currency } from "./Currency";

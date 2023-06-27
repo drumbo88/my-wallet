@@ -1,8 +1,8 @@
 // Import Models
-import { Country } from '../models/Country.js'
+import { CountryModel } from '../models/Country.js'
 
 export const list = async (req, res) => {
-    Country.find({}).then((countries) => {
+    CountryModel.find({}).then((countries) => {
         return res.json({countries, message: 'Countries listed'})
     })
     .catch(error => {
@@ -16,7 +16,7 @@ export const create = (req, res) => {
         concept, source, destiny,
         detail
     } = req.body
-    Country.create({
+    CountryModel.create({
         date, country, amount,
         concept, source, destiny,
         detail
@@ -25,7 +25,7 @@ export const create = (req, res) => {
     .catch(error => res.status(409).json({ message: error }))
 }
 export const read = (req, res) => {
-    Country.findById(req.params.id)
+    CountryModel.findById(req.params.id)
     .then(doc => res.json({obj: doc}))
     .catch(error => res.status(409).json({ message: error }))
 }
@@ -35,7 +35,7 @@ export const update = (req, res) => {
         concept, source, destiny,
         detail
     } = req.body
-    Country.findByIdAndUpdate(req.params.id, {
+    CountryModel.findByIdAndUpdate(req.params.id, {
         date, country, amount,
         concept, source, destiny,
         detail
@@ -47,7 +47,7 @@ export const update = (req, res) => {
     .catch(error => res.status(409).json({ message: error }))
 }
 export const remove = (req, res) => {
-    Country.findByIdAndDelete(req.params.id).then(doc => {
+    CountryModel.findByIdAndDelete(req.params.id).then(doc => {
         if (doc)
             return res.json({message: `Country deleted #${doc._id}`})
     })

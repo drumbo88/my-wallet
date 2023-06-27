@@ -1,4 +1,4 @@
-import { CompanyTypes } from 'common/src/types/company'
+import { CompanyTypes } from 'common/types/company'
 import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
 import { BaseModel } from './BaseModel';
 import { myModelOptions } from '../config';

@@ -25,9 +25,16 @@ export default function DenseTable({rows, columns}) {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               { columns.map((col, colIndex) => (
-                <TableCell key={colIndex} align={col.align ?? 'inherit'} component={colIndex ? undefined : 'th'} scope={colIndex ? '' : 'row'}>
-                  {row[col.prop]}
-                </TableCell>
+                <React.Fragment key={colIndex}>
+                    {colIndex ? (
+                        <td align={col.align ?? 'inherit'}>{col.text ?? col}</td>
+                    ) : (
+                        <th scope="row" align={col.align ?? 'inherit'}>{col.text ?? col}</th>
+                    )}
+                </React.Fragment>
+            // <TableCell key={colIndex} align={col.align ?? 'inherit'} component={colIndex ? undefined : 'th'} scope={colIndex ? '' : 'row'}>
+            //       {row[col.prop]}
+            //     </TableCell>
               ))}
             </TableRow>
           ))}

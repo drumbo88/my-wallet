@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Entity = exports.EntityTypes = exports.EntityStatus = void 0;
+exports.EntityTypes = exports.EntityStatus = void 0;
 var EntityStatus;
 (function (EntityStatus) {
     EntityStatus["ACTIVE"] = "ACTIVE";
@@ -11,6 +11,3 @@ var EntityTypes;
     EntityTypes["PERSON"] = "person";
     EntityTypes["COMPANY"] = "company";
 })(EntityTypes = exports.EntityTypes || (exports.EntityTypes = {}));
-class Entity {
-}
-exports.Entity = Entity;

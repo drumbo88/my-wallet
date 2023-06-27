@@ -1,11 +1,15 @@
-import { Schema, model, Model, Document, ObjectId } from 'mongoose'
+import { Document } from 'mongoose'
 import { User } from './User';
 import { AccountModel, Account } from './Account';
-import { seeds as PersonSeeds, Person, DocPerson } from './Person';
+import { seeds as PersonSeeds, Person } from './Person';
 import { seeds as CompanySeeds, Company, DocCompany } from './Company';
-import { defaultSchemaOptions } from '../database';
-import { PaymentCard, PaymentCardModel } from './PaymentCard';
-import { ISeed } from 'src/types';
+import { PaymentCardModel } from './PaymentCard';
+import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { EntityStatus, EntityTypes } from "common/types/entity";
+import { myModelOptions } from '../config';
+import { Currency } from './Currency';
+import { BaseModel, DocPartial } from './BaseModel';
+import { PaymentCardCredit } from './PaymentCardCredit';
 
 export const seeds = {
     [EntityTypes.COMPANY]: CompanySeeds,
@@ -13,14 +17,6 @@ export const seeds = {
 }
 
 export type DocEntity = DocumentType<Entity>;
-
-import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
-import { EntityStatus, EntityTypes } from "common/types/entity";
-import { myModelOptions } from '../config';
-import { IUser } from 'common/src/types/user';
-import { IAccount } from 'common/src/types/account';
-import { Currency } from './Currency';
-import { BaseModel, DocPartial } from './BaseModel';
 
 /*************************************************************************************
  * Clase abstracta "Entity" (Employee | Client)
@@ -54,11 +50,11 @@ export class Entity extends BaseModel {
     @prop({ type: () => [Account], ref: Account, required: true, default: [] })
     accountsAdministrated!: Ref<Account>[]
 
-    static async createPerson(this: ReturnModelType<typeof Entity>, data: DocPerson) {
-        await this.create(data)
+    static async createPerson(this: ReturnModelType<typeof Entity>, data: Partial<Person>): Promise<DocEntity> {
+        return await this.create(data)
     }
-    static async createCompany(this: ReturnModelType<typeof Entity>, data: DocCompany) {
-        await this.create(data)
+    static async createCompany(this: ReturnModelType<typeof Entity>, data: DocCompany): Promise<DocEntity> {
+        return await this.create(data)
     }
 
     static async getPeople(this: ReturnModelType<typeof Entity>, data: any) {
@@ -93,7 +89,6 @@ export class Entity extends BaseModel {
         accountData.adminEntity = adminEntity
         await AccountModel.create(accountData)
         //console.log({accountData})
-        //const document: Document<EntityBackend> = this.toObject();
         return this.toObject()
     }
 
@@ -118,9 +113,9 @@ export class Entity extends BaseModel {
      */
     async addCreditCard(
         this: DocEntity,
-        creditCardData: DocPartial<Account>,
+        creditCardData: DocPartial<PaymentCardCredit>,
         accountData?: DocPartial<Account>
-    ): Promise<Document<Entity>> {
+    ): Promise<DocEntity> {
         if (!accountData) {
             switch (this.accountsOwned.length) {
                 case 0:
@@ -136,14 +131,20 @@ export class Entity extends BaseModel {
         if (!account) {
             throw new Error(`Account doesn't exist (${JSON.stringify(accountData)}).`)
         }
-        if (account.ownerEntity != this.id) {
+        await account.populate('ownerEntity')
+        if (account.ownerEntity.id != this.id) {
             throw new Error(`The Account to add the card should be owned by the same Entity (${JSON.stringify({ this: this.id, accOwnerId: account.ownerEntity })}).`)
         }
-        if (account.ownerEntity != creditCardData.ownerEntity) {
+
+        const creditCard = await PaymentCardModel.getOrCreate(creditCardData)
+        await creditCard.populate('ownerAccount')
+
+        if (account.ownerEntity.id != creditCardData.ownerAccount?.id) {
             throw new Error(`The Account to add the card should be owned by the same Entity (${JSON.stringify({ this: this.id, accOwnerId: account.ownerEntity })}).`)
         }
-        await PaymentCardModel.create(creditCardData)
-        console.log('Account created')
+
+        console.log('Credit card added')
+
         return this.toObject()
     }
 

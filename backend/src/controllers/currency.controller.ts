@@ -1,8 +1,8 @@
 // Import Models
-import { Currency } from '../models/Currency.js'
+import { CurrencyModel } from '../models/Currency.js'
 
 export const list = (req, res) => {
-    Currency.find({}).then((currencies) => {
+    CurrencyModel.find({}).then((currencies) => {
         return res.json({currencies, message: 'Currencies listed'})
     })
     .catch(error => res.status(409).json({ message: error }))
@@ -13,7 +13,7 @@ export const create = (req, res) => {
         concept, source, destiny,
         detail
     } = req.body
-    Currency.create({
+    CurrencyModel.create({
         date, currency, amount,
         concept, source, destiny,
         detail
@@ -22,7 +22,7 @@ export const create = (req, res) => {
     .catch(error => res.status(409).json({ message: error }))
 }
 export const read = (req, res) => {
-    Currency.findById(req.params.id)
+    CurrencyModel.findById(req.params.id)
     .then(doc => res.json({obj: doc}))
     .catch(error => res.status(409).json({ message: error }))
 }
@@ -32,7 +32,7 @@ export const update = (req, res) => {
         concept, source, destiny,
         detail
     } = req.body
-    Currency.findByIdAndUpdate(req.params.id, {
+    CurrencyModel.findByIdAndUpdate(req.params.id, {
         date, currency, amount,
         concept, source, destiny,
         detail
@@ -44,7 +44,7 @@ export const update = (req, res) => {
     .catch(error => res.status(409).json({ message: error }))
 }
 export const remove = (req, res) => {
-    Currency.findByIdAndDelete(req.params.id).then((doc) => {
+    CurrencyModel.findByIdAndDelete(req.params.id).then((doc) => {
         if  (doc)
             return res.json({message: `Currency deleted #${doc._id}`})
     })

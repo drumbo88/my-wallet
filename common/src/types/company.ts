@@ -1,5 +1,3 @@
-import { IEntity } from "./entity";
-
 export enum CompanyTypes {
     COMPANY = 'COMPANY',
     E_WALLET = 'E_WALLET',
@@ -12,6 +10,6 @@ export interface ICompanyData {
     fantasyName?: String,
     type: CompanyTypes,
 }
-export interface ICompany extends IEntity {
+/*export interface ICompany extends IEntity {
     company: ICompanyData
-}
+}*/

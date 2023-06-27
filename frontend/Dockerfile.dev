@@ -1,5 +1,5 @@
 # Pull the Node image from Docker Hub
-FROM node:14-slim
+FROM node:16-alpine
 
 # Setting Working Directory
 #WORKDIR "C:\\www\\my-wallets\\frontend"
@@ -8,12 +8,12 @@ WORKDIR "/usr/app"
 # Copying only package.json
 COPY package*.json ./
 
-# Install Dependencies
-RUN npm install
-
 # Copy rest of the code to container
 COPY . .
-COPY common ../common
+COPY ../common ../common
+
+# Install Dependencies
+RUN npm install
 
 EXPOSE 3000
 

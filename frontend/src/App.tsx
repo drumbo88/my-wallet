@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import Container from "@mui/material/Container";
 
-import React from "react";
 import RoutesRoot from "./routes/RoutesRoot";
 import Error404 from "./pages/Error404";
 import HomePage from "./pages/HomePage";

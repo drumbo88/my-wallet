@@ -9,7 +9,7 @@ services:
   #    - 3081:3081
   #  container_name: mern-common
   #  networks:
-  #    - mern-stack-net
+  #    - my-wallets-net
   #  volumes:
   #   - ./common/src:/usr/app/src
   #  depends_on:
@@ -17,16 +17,18 @@ services:
 
   frontend:
    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+      context: ./
+      dockerfile: ./frontend/Dockerfile.dev
+   image: wallets-frontend:lastest
    ports:
     -  3080:3080
-   container_name: mern-frontend
+   container_name: my-wallets-frontend
    networks:
-    -  mern-stack-net
+    -  my-wallets-net
    volumes:
-    -  ./frontend/src:/usr/app/src
-    -  ./frontend/public:/usr/app/public
+    -  ./frontend:/usr/app
+    #-  ./frontend/public:/usr/app/public
+    -  ./common:/usr/common
    depends_on:
     - backend
    stdin_open: true
@@ -34,15 +36,17 @@ services:
 
   backend:
    build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
+      context: ./
+      dockerfile: ./backend/Dockerfile.dev
+   image: wallets-backend:lastest
    ports:
      - 3001:3001
-   container_name: mern-backend
+   container_name: my-wallets-backend
    networks:
-     - mern-stack-net
+     - my-wallets-net
    volumes:
-    - ./backend/src:/usr/app/src
+    - ./backend:/usr/app
+    - ./common:/usr/common
    depends_on:
     - db
 
@@ -52,12 +56,12 @@ services:
       - 3017:27017
     container_name: mongo-db
     networks:
-      - mern-stack-net
+      - my-wallets-net
     volumes:
       - mongo-data:/data/db
 
 networks:
-  mern-stack-net:
+  my-wallets-net:
     driver: bridge
 
 volumes:

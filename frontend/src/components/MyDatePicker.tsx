@@ -1,6 +1,6 @@
 import React from 'react'
 import TextField from '@mui/material/TextField';
-import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 export default function MyDatePicker() {
     const [value, setValue] = React.useState(new Date());
@@ -8,14 +8,19 @@ export default function MyDatePicker() {
     const handleChange = (newValue) => {
         setValue(newValue);
     };
-    
+
     return (
-        <MobileDatePicker
+        <DatePicker
             label="Fecha"
-            inputFormat="DD/MM/yyyy"
+            format="DD/MM/yyyy"
             value={value}
             onChange={handleChange}
-            renderInput={(params) => <TextField {...params} />}
+            slotProps={{
+                textField: params => ({
+                    ...params
+                })
+            }}
+            //render={(params) => <TextField {...params} />}
         />
     )
 }

@@ -14,23 +14,15 @@ export interface IOperation {
     datetime: String,
     type?: String,
     detail: String,
-    items?: IOperationItem[],
-    transactions?: ITransactionAllocation[],
+    items?: any[],//IOperationItem[],
+    transactions?: any[],//ITransactionAllocation[],
     status?: OperationStatus,
 
-    fromEntity?: IEntity,
-    toEntity?: IEntity,
+    fromEntity?: any,
+    toEntity?: any,
 
     totalAmount: number,
     paidAmount?: number,
     unpaidAmount?: number,
 }
-
-export interface IOperationBackend extends IOperation {
-    fromEntityId?: Schema.Types.ObjectId,
-    toEntityId?: Schema.Types.ObjectId,
-    /* Virtuals */
-    setFromEntity(entityData: IEntity): Promise<IOperationDocument>
-    setToEntity(entityData: IEntity): Promise<IOperationDocument>
-}
-
+export interface IOperationSeeds extends IOperation {}

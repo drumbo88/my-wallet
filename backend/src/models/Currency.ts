@@ -1,6 +1,6 @@
 import { DocumentType, getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
-import { ICurrency, CurrencyType } from "common/types/currency";
+import { CurrencyType } from "common/types/currency";
 import { BaseModel } from "./BaseModel";
 
 export type DocCurrency = DocumentType<Currency>;

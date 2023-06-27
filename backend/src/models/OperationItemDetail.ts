@@ -1,10 +1,5 @@
-import mongoose, { Schema } from "mongoose";
-import { Asset } from './Asset'
 import { OperationItemConcept } from "./OperationItemConcept";
-
-
-
-import { DocumentType, getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
+import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
 import { myModelOptions } from '../config';
 import { BaseModel } from './BaseModel';
 
@@ -21,7 +16,6 @@ export class OperationItemDetail extends BaseModel
 
     @prop({ type: String })
     code: string
-
 
     @prop({ type: Boolean, required: true })
     countable: boolean // Mueble=true, Comida/Consumible=false

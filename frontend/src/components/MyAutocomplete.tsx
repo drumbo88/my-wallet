@@ -47,7 +47,12 @@ export default function MyAutocomplete(props) {
         handleHomeEndKeys
         renderOption={(props, option) => [props, option] as React.ReactNode} //<li {...props}>{typeof option != 'object' ? option?.toString() : option?.title}</li>}
         freeSolo
-        renderInput={(params) => <TextField {...params} label={props.label} />}
+        //renderInput={(params) => <TextField {...params} label={props.label} />}
+        slotProps={{
+            textField: params => ({
+                label: props.label, ...params
+            })
+        }}
         variant="outlined"
         onChange={(event, newValue: any) => {
             if (typeof newValue === 'string') {

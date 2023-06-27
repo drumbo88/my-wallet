@@ -1,11 +1,11 @@
 // Import Models
-import { Entity } from '../models/Entity'
+import { EntityModel } from '../models/Entity'
 
 export const list = async (req, res) => {
     try {
         const message = `Persons`
         console.log(message)
-        const people = await Entity.getPeople({})
+        const people = await EntityModel.getPeople({})
         return res.json({ people, message })
     }
     catch (error: any) {

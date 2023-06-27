@@ -2,9 +2,7 @@ import { DocumentType, getModelForClass, modelOptions, prop, Ref } from '@typego
 import { WalletStatus, WalletType } from 'common/types/wallet'
 import { myModelOptions } from '../config';
 import { BaseModel } from './BaseModel';
-import { Asset } from './Asset';
 import { WalletAsset } from './WalletAsset';
-
 
 export type DocWallet = DocumentType<Wallet>;
 

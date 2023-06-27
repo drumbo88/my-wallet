@@ -121,8 +121,8 @@ const CurrenciesPage = () => {
           getRowId={row=>row._id}
           rows={data}
           columns={columns}
-          pageSize={8}
-          rowsPerPageOptions={[8]}
+          initialState={{pagination: { paginationModel: { pageSize: 8 }}}}
+          pageSizeOptions={[5, 10, 25]}
           density="compact"
           autoHeight
         />

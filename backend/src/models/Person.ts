@@ -2,6 +2,7 @@ import { PersonGenders } from 'common/types/person';
 import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
 import { BaseModel } from './BaseModel';
 import { myModelOptions } from '../config';
+import bcrypt from 'bcryptjs'
 
 export type DocPerson = DocumentType<Person>;
 

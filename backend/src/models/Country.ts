@@ -1,10 +1,7 @@
 import { DocumentType, getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose';
-import mongoose from 'mongoose'
 import { myModelOptions } from '../config';
-import { defaultSchemaOptions } from '../database';
 import { BaseModel } from './BaseModel';
 import { Currency } from './Currency'
-const { Schema } = mongoose;
 
 export type DocCountry = DocumentType<Country>;
 

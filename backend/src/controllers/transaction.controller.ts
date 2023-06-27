@@ -1,7 +1,7 @@
 // Import Models
-import { Transaction } from '../models/Transaction'
-import { Account } from '../models/Account'
-import { Entity } from '../models/Entity'
+import { TransactionModel } from '../models/Transaction'
+import { AccountModel } from '../models/Account'
+import { isDocument } from '@typegoose/typegoose'
 
 export const list = async (req, res) => {
     const query: any = req.params.from ? { from: { account: req.params.from } } : {}
@@ -12,7 +12,7 @@ export const list = async (req, res) => {
             message = `Transactions of Entity #${req.body.idEntity}`
             console.log(message)
             query.ownerEntityId = req.body.idEntity
-            const accounts = await Account.find(query, '_id')
+            const accounts = await AccountModel.find(query, '_id')
             const accountIds = accounts.map((account:any) => account._id)
             txQuery = { $or: [
                 { 'from.accountId': { $in: accountIds } },
@@ -24,7 +24,7 @@ export const list = async (req, res) => {
             console.log(message)
             txQuery = query
         }
-        const transactions = await Transaction.find(txQuery)
+        const transactions = await TransactionModel.find(txQuery)
         .populate('from.account')
         .populate('to.account')
         .populate('allocations.operation')
@@ -32,14 +32,14 @@ export const list = async (req, res) => {
         const transaction = transactions?.[0]
         for (const transaction of transactions) {
             let account: any = transaction.from?.account
-            if (account) {
+            if (isDocument(account)) {
                 await account.populate('ownerEntity')
                 await account.populate('adminEntity')
                 if (transaction.from)
                     transaction.from.account = account
             }
             account = transaction.to?.account
-            if (account) {
+            if (isDocument(account)) {
                 await account.populate('ownerEntity')
                 await account.populate('adminEntity')
                 if (transaction.to)
@@ -48,7 +48,7 @@ export const list = async (req, res) => {
         }
         const from = transaction?.from
         const fromAccount = from?.account
-        const fromAccountOwner = fromAccount?.ownerEntity || from?.accountOwner
+        //const fromAccountOwner = fromAccount?.ownerEntity || from?.accountOwner
         const allocation = transaction?.allocations?.[0]
         const operation = allocation?.operation
         //console.log({transaction, from, fromAccount, fromAccountOwner})
@@ -65,7 +65,7 @@ export const create = (req, res) => {
         concept, source, destiny,
         detail
     } = req.body
-    Transaction.create({
+    TransactionModel.create({
         date, currency, amount,
         concept, source, destiny,
         detail
@@ -74,7 +74,7 @@ export const create = (req, res) => {
     .catch(error => res.status(409).json({ message: error }))
 }
 export const read = (req, res) => {
-    Transaction.findById(req.params.id)
+    TransactionModel.findById(req.params.id)
     .then(doc => res.json({obj: doc}))
     .catch(error => res.status(409).json({ message: error }))
 }
@@ -84,7 +84,7 @@ export const update = (req, res) => {
         concept, source, destiny,
         detail
     } = req.body
-    Transaction.findByIdAndUpdate(req.params.id, {
+    TransactionModel.findByIdAndUpdate(req.params.id, {
         date, currency, amount,
         concept, source, destiny,
         detail
@@ -93,7 +93,7 @@ export const update = (req, res) => {
     .catch(error => res.status(409).json({ message: error }))
 }
 export const remove = (req, res) => {
-    Transaction.findByIdAndDelete(req.params.id).then((doc) => {
+    TransactionModel.findByIdAndDelete(req.params.id).then((doc) => {
         return res.json({message: `Transaction deleted #${doc?._id}`})
     })
 }

@@ -1,10 +1,8 @@
-import { Document, Model, Schema } from "mongoose";
-import { Entity, DocEntity, EntityModel } from "./Entity";
-import { OperationItemConcept, OperationItemConceptModel } from "./OperationItemConcept";
+import { Entity, EntityModel } from "./Entity";
+import { OperationItemConceptModel } from "./OperationItemConcept";
 import { OperationItemType } from "common/types/operationItem";
-import { DocTransaction, Transaction, TransactionAllocation, TransactionModel } from "./Transaction";
-import { IOperation, OperationStatus, OperationTypes } from "common/types/operation";
-import { DocumentType, getModelForClass, isDocument, ModelOptions, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { IOperation as IOperationSeed, OperationStatus, OperationTypes } from "common/types/operation";
+import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
 import { BaseModel, DocPartial } from "./BaseModel";
 import { OperationItem } from "./OperationItem";
@@ -123,7 +121,7 @@ export class Operation extends BaseModel {
         return this
     }*/
 
-    static async seed(this: ReturnModelType<typeof Operation>, seeds: IOperation[]) {
+    static async seed(this: ReturnModelType<typeof Operation>, seeds: IOperationSeed[]) {
 
         //const operations: IOperationDocument[] = await this.insertMany(seeds)
         for (const i in seeds) {

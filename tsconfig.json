@@ -6,7 +6,8 @@
       "target": "es6",
       "baseUrl": "./",
       "paths": {
-        "common/*": ["./common/*"]
+        //"common/*": ["./common/*"]
+        "common/*": ["../common/build/*", "../common/*"]
       }
     },
     "include": ["./frontend/**/*", "./backend/**/*", "./common/**/*"],

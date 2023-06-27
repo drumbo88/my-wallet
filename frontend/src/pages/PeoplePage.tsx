@@ -20,7 +20,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { getNumber, getDateTime, getMoney } from "../utils/formatting";
 
-import OperationTypes from 'common/types/operation'
+import { OperationTypes } from 'common/types/operation'
 
 const personForm = [
   {
@@ -219,8 +219,8 @@ const PeoplePage = () => {
           getRowId={(row: GridRowModel) => row._id}
           rows={data}
           columns={columns}
-          pageSize={8}
-          rowsPerPageOptions={[8]}
+          initialState={{pagination: { paginationModel: { pageSize: 8 }}}}
+          pageSizeOptions={[5, 10, 25]}
           density="compact"
           autoHeight
         />

@@ -1,13 +1,11 @@
-import { DocumentType, getModelForClass, ModelOptions, prop, Ref, ReturnModelType } from '@typegoose/typegoose';
-import { Schema, Model, Document, model } from 'mongoose'
+import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from '@typegoose/typegoose';
 import { myModelOptions } from '../config';
-import { defaultSchemaOptions } from '../database';
 import { Account, AccountModel, DocAccount } from './Account';
 import { BaseModel, DocPartial } from './BaseModel';
 import { DocEntity, Entity, EntityModel } from './Entity';
-import { seeds as PaymentCardCreditSeeds, PaymentCardCreditSchema } from './PaymentCardCredit';
-import { seeds as PaymentCardDebitSeeds, PaymentCardDebitSchema } from './PaymentCardDebit';
-import { seeds as PaymentCardPrepaidSeeds, PaymentCardPrepaidSchema } from './PaymentCardPrepaid';
+import { seeds as PaymentCardCreditSeeds } from './PaymentCardCredit';
+import { seeds as PaymentCardDebitSeeds } from './PaymentCardDebit';
+import { seeds as PaymentCardPrepaidSeeds } from './PaymentCardPrepaid';
 import { PaymentCardTypes, PaymentCardStatus } from "common/types/paymentCard";
 
 
@@ -22,7 +20,7 @@ export type DocPaymentCard = DocumentType<PaymentCard>;
 /*************************************************************************************
  * Clase "PaymentCard"
  */
-@ModelOptions(myModelOptions)
+@modelOptions(myModelOptions)
 export class PaymentCard extends BaseModel {
     @prop({ type: String, required: true })
     name: string
@@ -52,8 +50,11 @@ export class PaymentCard extends BaseModel {
     })
     balance: number
 
-    @prop({ type: PaymentCardStatus, required: true, default: PaymentCardStatus.INACTIVE })
+    @prop({ enum: PaymentCardStatus, required: true, default: PaymentCardStatus.INACTIVE })
     status: string
+
+    @prop({ enum: PaymentCardTypes, required: true })
+    type: string
 
     /**
      *

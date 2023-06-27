@@ -1,5 +1,3 @@
-import { IEntity } from "./entity"
-
 export enum PersonGenders {
     MALE = 'MALE',
     FEMALE = 'FEMALE',
@@ -12,7 +10,7 @@ export interface IPersonData {
     birthdate: Date,
     gender: PersonGenders,
 }
-export interface IPerson extends IEntity {
+export interface IPerson {
     person: IPersonData
 }
 export const PersonFields = {

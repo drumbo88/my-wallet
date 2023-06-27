@@ -1,7 +1,5 @@
 import { DocumentType, modelOptions, prop, Ref } from '@typegoose/typegoose';
-import mongoose, { Schema } from 'mongoose'
 import { myModelOptions } from '../config';
-import { defaultSchemaOptions } from '../database'
 import { BaseModel } from './BaseModel';
 import { Currency } from './Currency';
 

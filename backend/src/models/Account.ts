@@ -14,10 +14,10 @@ export type DocAccount = DocumentType<Account>;
  */
 @modelOptions(myModelOptions)
 export class Account extends BaseModel {
-    @prop({ type: AccountStatus, required: true })
+    @prop({ enum: AccountStatus, required: true })
     status: AccountStatus
 
-    @prop({ type: AccountTypes, required: true })
+    @prop({ enum: AccountTypes, required: true })
     type: AccountTypes
 
     @prop({ type: () => Entity, ref: Entity })
@@ -52,10 +52,30 @@ export class Account extends BaseModel {
     }
     */
 
-    // Método abstracto para obtener el tipo de persona
-    getTipo(): string {
-        throw new Error('El método getTipo() debe ser implementado por las clases hijas');
+    typeStr() {
+        switch (this.type) {
+            case AccountTypes.FUNDS:
+                return 'Fondos'
+            case AccountTypes.SPOT:
+                return 'Spot'
+            case AccountTypes.EARN:
+                return 'Earn'
+            case AccountTypes.FIXED_TERM:
+                return 'Plazo fijo'
+            case AccountTypes.CREDIT:
+                return 'Crédito'
+        }
     }
+
+    statusStr() {
+        switch (this.status) {
+            case AccountStatus.ACTIVE:
+                return 'Activo'
+            case AccountStatus.INACTIVE:
+                return 'Inactivo'
+        }
+    }
+
 }
 
 // Genera el modelo a partir de la clase utilizando Typegoose

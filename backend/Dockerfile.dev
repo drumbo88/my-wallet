@@ -1,5 +1,5 @@
 # Pull the Node image from Docker Hub
-FROM node:14-slim
+FROM node:16-alpine
 
 # Setting Working Directory
 #WORKDIR "C:\\www\\my-wallets\\backend"
@@ -12,11 +12,11 @@ COPY package*.json ./
 RUN npm install
 
 # Seed database
-RUN npm run seed
+#RUN npm run seed
 
 # Copy rest of the code to container
 COPY . .
-COPY common ../common
+COPY ../common ../common
 
 EXPOSE 3001
 

@@ -1,5 +1,5 @@
 import { getDiscriminatorModelForClass, modelOptions, prop } from '@typegoose/typegoose';
-import { PaymentCardTypes, PeriodType } from 'common/src/types/paymentCard';
+import { PaymentCardTypes, PeriodType } from 'common/types/paymentCard';
 import { myModelOptions, myModelOptionsNoId } from '../config';
 import { BaseModel } from './BaseModel';
 import { PaymentCard, PaymentCardModel } from './PaymentCard';

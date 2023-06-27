@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "cross-env NODE_ENV=production && node build/index.js",
-        "start:dev": "cross-env NODE_ENV=production && npx tsc --watch && npx nodemon build/server.js",
+        "start:dev": "cross-env NODE_ENV=development && npx tsc --watch && npx nodemon build/server.js",
         "dev": "cross-env NODE_ENV=development && nodemon build/index.js",
         "seed": "cross-env NODE_ENV=development && node build/seed.js",
         "seed:reset": "cross-env NODE_ENV=development && cross-env DB_RESET=true && node build/seed.js",
@@ -25,11 +25,11 @@
     },
     "homepage": "https://github.com/drumbo88/my-wallet#readme",
     "dependencies": {
+        "cross-env": "^7.0.3",
         "@typegoose/typegoose": "^11.2.0",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.20.0",
         "cors": "^2.8.5",
-        "cross-env": "^7.0.3",
         "dotenv": "^16.0.1",
         "express": "^4.18.1",
         "jsonwebtoken": "^8.5.1",
@@ -39,6 +39,7 @@
         "reflect-metadata": "^0.1.13"
     },
     "devDependencies": {
+        "@types/bcryptjs": "^2.4.2",
         "@types/express": "^4.17.14",
         "@types/jest": "^29.1.1",
         "@types/node": "^18.8.1",

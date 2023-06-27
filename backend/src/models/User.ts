@@ -1,5 +1,5 @@
 import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
-import { IUser, UserStatus } from 'common/src/types/user';
+import { IUser, UserStatus } from 'common/types/user';
 import { myModelOptions } from '../config';
 import { BaseModel } from './BaseModel';
 
