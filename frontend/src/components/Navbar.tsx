@@ -293,11 +293,11 @@ export default function Navbar() {
     },
   ];
 
-  const MenuItemLink = ({ item, key }) => (
+  const MenuItemLink = ({ item, index }) => (
     <ListItemButton
       component={NavLink}
       to={item.link || ""}
-      key={key}
+      key={index}
       onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
       //style={({ isActive }) => (isActive ? linkActive : linkInactive)}
@@ -306,7 +306,7 @@ export default function Navbar() {
       <ListItemText primary={item.text} />
     </ListItemButton>
   );
-  const MenuItemNested = ({ menu }) => {
+  const MenuItemNested = ({ menu, index }) => {
     const [open, setOpen] = React.useState(false);
 
     const handleClick = () => {
@@ -354,9 +354,9 @@ export default function Navbar() {
         {menuList.map((item, index) =>
           item.text ? (
             item.submenus ? (
-              <MenuItemNested menu={item} />
+              <MenuItemNested menu={item} index={index} key={index} />
             ) : (
-              <MenuItemLink item={item} key={index} />
+              <MenuItemLink item={item} index={index} key={index} />
             )
           ) : (
             <Divider key={index} />

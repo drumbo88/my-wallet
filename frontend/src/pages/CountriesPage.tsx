@@ -92,7 +92,7 @@ const CountriesPage = () => {
           rows={data}
           columns={columns}
           initialState={{pagination: { paginationModel: { pageSize: 8 }}}}
-          pageSizeOptions={[5, 10, 25]}
+          pageSizeOptions={[8, 15, 25]}
           density="compact"
           autoHeight
         />

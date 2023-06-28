@@ -22,7 +22,7 @@ const theme = createTheme({
 
 function App() {
   return (
-    <LocalizationProvider dateAdapter={AdapterMoment}>
+    <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="es">
       <ThemeProvider theme={theme}>
         <Router>
           <Box className="container vh-100">

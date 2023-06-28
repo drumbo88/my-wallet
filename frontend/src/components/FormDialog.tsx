@@ -14,7 +14,7 @@ export default function FormDialog(props) {
   let { id } = useParams();
   return (
     <Dialog open={true} onClose={props.handleClose}>
-      <DialogTitle>{props.title + (id ? ' #'+id : '')}</DialogTitle>
+      <DialogTitle sx={{ fontSize: "1.5em" }}>{props.title + (id ? ' #'+id : '')}</DialogTitle>
       <DialogContent>
         {props.description ? (<DialogContentText>{props.description}</DialogContentText>) : ''}
         {props.children}

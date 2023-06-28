@@ -10,6 +10,7 @@ import MyAutocomplete from "../components/MyAutocomplete";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
+import { inputSize } from "../config";
 
 const incomeForm = [
   {
@@ -23,12 +24,15 @@ const incomeForm = [
     style: { width: "85%" },
     control: (
       <>
-        <InputLabel htmlFor="amount">Monto</InputLabel>
+        <InputLabel htmlFor="amount" size={inputSize}>
+          Monto
+        </InputLabel>
         <OutlinedInput
           //startAdornment={<InputAdornment position="start">$</InputAdornment>}
           fullWidth
           id="amount"
           label="Monto"
+          size={inputSize}
         />
       </>
     ),
@@ -68,8 +72,17 @@ const incomeForm = [
   {
     control: (
       <>
-        <InputLabel htmlFor="detail">Detalle</InputLabel>
-        <OutlinedInput fullWidth id="detail" label="Detalle" />
+        <InputLabel htmlFor="detail" size={inputSize}>
+          Detalle
+        </InputLabel>
+        <OutlinedInput
+          multiline={true}
+          minRows={2.5} maxRows={2.5}
+          fullWidth
+          id="detail"
+          label="Detalle"
+          size={inputSize}
+        />
       </>
     ),
   },
@@ -189,8 +202,8 @@ const IncomesPage = () => {
           getRowId={(row) => row._id}
           rows={data}
           columns={columns}
-          initialState={{pagination: { paginationModel: { pageSize: 8 }}}}
-          pageSizeOptions={[5, 10, 25]}
+          initialState={{ pagination: { paginationModel: { pageSize: 8 } } }}
+          pageSizeOptions={[8, 15, 25]}
           density="compact"
           autoHeight
         />

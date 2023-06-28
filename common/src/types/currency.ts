@@ -9,12 +9,12 @@ export enum CurrencyType {
 
 // Common props
 export class ICurrencyProps {
-    code: String
-    symbol: String
-    name: String
-    value: number
-    api?: String
-    type: CurrencyType
+    // code: String
+    // symbol: String
+    // name: String
+    // value: number
+    // api?: String
+    // type: CurrencyType
 }
 // Common methods
 export interface ICurrencyMethods {

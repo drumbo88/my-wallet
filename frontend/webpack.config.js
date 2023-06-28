@@ -1,7 +1,7 @@
 import path from 'path'
 
 export default env => ({
-    entry: path.resolve(__dirname, 'src', 'app', 'index.js'),
+    entry: path.resolve(__dirname, 'src', 'index.js'),
     output: {
         path: path.resolve(__dirname, 'src', 'public'),
         filename: 'bundle.js',
@@ -10,7 +10,7 @@ export default env => ({
         rules: [
             {
                 test: /\.(jsx|js)$/,
-                include: path.resolve(__dirname, 'src', 'app'),
+                include: path.resolve(__dirname, 'src'),
                 exclude: /node_modules/,
                 use: [{
                     loader: 'babel-loader',

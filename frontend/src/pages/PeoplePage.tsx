@@ -21,6 +21,7 @@ import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { getNumber, getDateTime, getMoney } from "../utils/formatting";
 
 import { OperationTypes } from 'common/types/operation'
+import { inputSize } from "../config";
 
 const personForm = [
   {
@@ -34,12 +35,13 @@ const personForm = [
     style: { width: "85%" },
     control: (
       <>
-        <InputLabel htmlFor="amount">Monto</InputLabel>
+        <InputLabel size={inputSize} htmlFor="amount">Monto</InputLabel>
         <OutlinedInput
           //startAdornment={<InputAdornment position="start">$</InputAdornment>}
           fullWidth
           id="amount"
           label="Monto"
+          size={inputSize}
         />
       </>
     ),
@@ -79,8 +81,8 @@ const personForm = [
   {
     control: (
       <>
-        <InputLabel htmlFor="detail">Detalle</InputLabel>
-        <OutlinedInput fullWidth id="detail" label="Detalle" />
+        <InputLabel size={inputSize} htmlFor="detail">Detalle</InputLabel>
+        <OutlinedInput fullWidth size={inputSize} id="detail" label="Detalle" />
       </>
     ),
   },
@@ -88,7 +90,6 @@ const personForm = [
 
 const PeoplePage = () => {
 
-    console.log(OperationTypes)
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -220,7 +221,7 @@ const PeoplePage = () => {
           rows={data}
           columns={columns}
           initialState={{pagination: { paginationModel: { pageSize: 8 }}}}
-          pageSizeOptions={[5, 10, 25]}
+          pageSizeOptions={[8, 15, 25]}
           density="compact"
           autoHeight
         />

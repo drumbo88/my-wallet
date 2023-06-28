@@ -36,4 +36,4 @@ const dateFormatter = new Intl.DateTimeFormat(language, {
 export const getNumber = (v:any) => numeral(v).format('0.00')
 export const getMoney = (v:any) => numeral(v).format('currency')
 
-export const getDateTime = (v:any) => dateFormatter.format(new Date(v))
+export const getDateTime = (v:any) => dateFormatter.format(123123123)

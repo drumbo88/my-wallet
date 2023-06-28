@@ -7,6 +7,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import { inputSize } from '../config';
 
 const filter = createFilterOptions();
 
@@ -45,14 +46,16 @@ export default function MyAutocomplete(props) {
         selectOnFocus
         clearOnBlur
         handleHomeEndKeys
-        renderOption={(props, option) => [props, option] as React.ReactNode} //<li {...props}>{typeof option != 'object' ? option?.toString() : option?.title}</li>}
+        size={inputSize}
+        //renderOption={(props, option) => [props, option] as React.ReactNode} //<li {...props}>{typeof option != 'object' ? option?.toString() : option?.title}</li>}
         freeSolo
-        //renderInput={(params) => <TextField {...params} label={props.label} />}
-        slotProps={{
+        renderInput={(params) => <TextField label={props.label} {...params} />}
+        /*slotProps={{
             textField: params => ({
                 label: props.label, ...params
             })
-        }}
+        }}*/
+        //renderGroup={(params) => params as unknown as React.ReactNode}
         variant="outlined"
         onChange={(event, newValue: any) => {
             if (typeof newValue === 'string') {
@@ -72,7 +75,6 @@ export default function MyAutocomplete(props) {
                 year: '',
               });
             } else {
-                console.log(newValue)
               setValue(newValue);
             }
           }}
