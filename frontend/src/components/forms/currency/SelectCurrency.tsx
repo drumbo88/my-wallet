@@ -1,7 +1,7 @@
 import * as React from "react";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
-import { inputSize } from "../config";
+import { inputSize } from "../../../config";
 
 const currencies = [
   {
@@ -22,7 +22,7 @@ const currencies = [
   },
 ];
 
-export default function MyCurrencySelect() {
+export default function SelectCurrency(props) {
   const [currency, setCurrency] = React.useState("USD");
 
   const handleChange = (event) => {
@@ -44,6 +44,7 @@ export default function MyCurrencySelect() {
         //   },
         },
       }}
+      {...props}
     >
       {currencies.map((option) => (
         <MenuItem key={option.value} value={option.value} sx={{ justifyContent: "center" }}>

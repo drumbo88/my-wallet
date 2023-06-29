@@ -20,6 +20,7 @@ module.exports = {
   webpack: {
     alias: {
       common: path.resolve(__dirname, '../common/build'),
+      components: path.resolve(__dirname, 'build/components'),
     },
     configure: webpackConfig => {
         const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(

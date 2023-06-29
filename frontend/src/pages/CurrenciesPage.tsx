@@ -4,51 +4,37 @@ import React, { useEffect, useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import FormDialog from '../components/FormDialog';
-import MyAutocomplete from '../components/MyAutocomplete';
+import MyAutocomplete from '../components/forms/MyAutocomplete';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import InputText from 'components/forms/InputText';
+import InputTextArea from 'components/forms/InputTextArea';
 
 const currencyForm = [
   {
     style: { width: '19%', marginRight: '1%' },
-    control: <>
-      <InputLabel htmlFor="symbol">Símbolo</InputLabel>
-      <OutlinedInput
-        fullWidth id="symbol" label="Símbolo" />
-    </>,
+    control: <InputText required label="Símbolo" id="symbol" />,
   },
   {
     style: { width: '80%' },
-    control: <>
-      <InputLabel htmlFor="nombre">Nombre</InputLabel>
-      <OutlinedInput
-        fullWidth id="nombre" label="Nombre" />
-    </>
+    control: <InputText required label="Nombre" id="name" />,
   },
   {
     style: { width: '49%', marginRight: '1%' },
-    control: <MyAutocomplete variant="outlined"
+    control: <MyAutocomplete required
         id="from" label="Tipo" options={['FIAT','CRYPTO']} />
   },
   {
     style: { width: '50%' },
-    control: <MyAutocomplete variant="outlined"
+    control: <MyAutocomplete required
         id="to" label="País" options={['ARS Argentina', 'USA United States']} />
   },
   {
-    control: <>
-      <InputLabel htmlFor="api">API</InputLabel>
-      <OutlinedInput
-        fullWidth id="api" label="API" />
-    </>,
+    control: <InputText required label="API" id="api" />,
   },
   {
-    control: <>
-      <InputLabel htmlFor="detail">Detalle</InputLabel>
-      <OutlinedInput
-        fullWidth id="detail" label="Detalle" />
-    </>,
+    control: <InputTextArea id="detail" label="Detalle" />,
   }
 ]
 

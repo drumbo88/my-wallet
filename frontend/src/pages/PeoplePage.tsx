@@ -1,95 +1,53 @@
 import axios from "axios";
-import {
-  Button,
-  Badge,
-  InputLabel,
-  OutlinedInput,
-  Typography,
-  Box,
-} from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useParams } from "react-router-dom";
 import { DataGrid, GridActionsCellItem, GridRowModel } from "@mui/x-data-grid";
-import Chip from "../components/MyChip";
-import FormDialog from "../components/FormDialog";
-import MyDatePicker from "../components/MyDatePicker";
-import MyCurrencySelect from "../components/MyCurrencySelect";
-import MyAutocomplete from "../components/MyAutocomplete";
+import Chip from "components/MyChip";
+import FormDialog from "components/FormDialog";
+import MyAutocomplete from "components/forms/MyAutocomplete";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
-import { getNumber, getDateTime, getMoney } from "../utils/formatting";
-
-import { OperationTypes } from 'common/types/operation'
-import { inputSize } from "../config";
+import InputText from "components/forms/InputText";
+import InputTextArea from "components/forms/InputTextArea";
+import MyDatePicker from "components/forms/MyDatePicker";
+import SelectGender from "components/forms/gender/SelectGender";
 
 const personForm = [
   {
-    control: <MyDatePicker />,
+    style: { width: "32.66%", marginRight: "1%" },
+    control: <InputText required label="Nombre/s" id="nombres" />,
   },
   {
-    style: { width: "14%", marginRight: "1%" },
-    control: <MyCurrencySelect />,
+    style: { width: "32.66%", marginRight: "1%" },
+    control: <InputText required label="Apellido/s" id="apellidos" />,
   },
   {
-    style: { width: "85%" },
-    control: (
-      <>
-        <InputLabel size={inputSize} htmlFor="amount">Monto</InputLabel>
-        <OutlinedInput
-          //startAdornment={<InputAdornment position="start">$</InputAdornment>}
-          fullWidth
-          id="amount"
-          label="Monto"
-          size={inputSize}
-        />
-      </>
-    ),
+    style: { width: "32.66%" },
+    control: <InputText label="Apodo" id="apodo" />,
   },
   {
-    control: (
-      <MyAutocomplete
-        variant="outlined"
-        id="transaction"
-        label="Concepto"
-        options={["Sueldo", "Préstamo", "Bonificación"]}
-      />
-    ),
+    style: { width: "32.66%", marginRight: "1%" },
+    control: <InputText label="CUIL" id="cuil" />,
   },
   {
-    style: { width: "49%", marginRight: "1%" },
-    control: (
-      <MyAutocomplete
-        variant="outlined"
-        id="from"
-        label="Origen"
-        options={["Foncap", "Otro"]}
-      />
-    ),
+    style: { width: "32.66%", marginRight: "1%" },
+    control: <SelectGender required label="Género" id="genero" />,
   },
   {
-    style: { width: "50%" },
-    control: (
-      <MyAutocomplete
-        variant="outlined"
-        id="to"
-        label="Destino"
-        options={["BBVA C/A"]}
-      />
-    ),
+    style: { width: "32.66%" },
+    control: <MyDatePicker required label="Fecha de nacimiento" />,
   },
   {
-    control: (
-      <>
-        <InputLabel size={inputSize} htmlFor="detail">Detalle</InputLabel>
-        <OutlinedInput fullWidth size={inputSize} id="detail" label="Detalle" />
-      </>
-    ),
+    control: <InputText label="Domicilio" id="address" />,
+  },
+  {
+    control: <InputTextArea id="detail" label="Detalle" />,
   },
 ];
 
 const PeoplePage = () => {
-
   const [data, setData] = useState([]);
 
   const navigate = useNavigate();
@@ -109,6 +67,9 @@ const PeoplePage = () => {
         console.log(res.data.people);
         res.data.people.forEach((row) => {});
         setData(res.data.people);
+      })
+      .catch(e => {
+        console.error(e)
       });
       //axios.get(apiSmvm).then(res => setSmvm(res.data.data));
     };
@@ -131,15 +92,15 @@ const PeoplePage = () => {
       flex: 1,
     },
     {
-        field: "user",
-        headerName: "Usuario",
-        valueGetter: (params) => {
-          const { user } = params.row;
-          return user.name || user.email;
-        },
-        flex: 1,
+      field: "user",
+      headerName: "Usuario",
+      valueGetter: (params) => {
+        const { user } = params.row;
+        return user.name || user.email;
       },
-      {
+      flex: 1,
+    },
+    {
       field: "currency",
       headerName: "Moneda",
       flex: 1,
@@ -197,7 +158,7 @@ const PeoplePage = () => {
             path=":id"
             element={
               <FormDialog
-                title="Modificar transacción"
+                title="Modificar persona"
                 controls={personForm}
                 handleClose={closePersonForm}
               />
@@ -207,7 +168,7 @@ const PeoplePage = () => {
             path=""
             element={
               <FormDialog
-                title="Cargar transacción"
+                title="Cargar persona"
                 controls={personForm}
                 handleClose={closePersonForm}
               />
@@ -220,7 +181,7 @@ const PeoplePage = () => {
           getRowId={(row: GridRowModel) => row._id}
           rows={data}
           columns={columns}
-          initialState={{pagination: { paginationModel: { pageSize: 8 }}}}
+          initialState={{ pagination: { paginationModel: { pageSize: 8 } } }}
           pageSizeOptions={[8, 15, 25]}
           density="compact"
           autoHeight

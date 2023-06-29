@@ -2,7 +2,8 @@
     "compilerOptions": {
       "baseUrl": ".",
       "paths": {
-        "common/*": ["../common/build/*", "../common/*"]
+        "common/*": ["../common/build/*", "../common/*"],
+        "components/*": ["./src/components/*", "./build/components/*"]
       }
     }
   }

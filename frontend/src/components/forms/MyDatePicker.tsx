@@ -4,9 +4,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import moment from 'moment';
-import { inputSize } from '../config';
+import { inputSize } from '../../config';
 
-export default function MyDatePicker() {
+export default function MyDatePicker(props) {
     const [value, setValue] = React.useState(moment('2022-04-17'));
 
     const handleChange = (newValue) => {
@@ -26,6 +26,7 @@ export default function MyDatePicker() {
                     size: inputSize
                 })
             }}
+            {...props}
             //render={(params) => <TextField {...params} />}
         />
         </LocalizationProvider>

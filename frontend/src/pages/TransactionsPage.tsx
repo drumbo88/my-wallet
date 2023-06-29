@@ -1,53 +1,42 @@
 import axios from "axios";
 import {
   Button,
-  Badge,
   InputLabel,
   OutlinedInput,
   Typography,
   Box,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useParams } from "react-router-dom";
 import { DataGrid, GridActionsCellItem, GridRowModel } from "@mui/x-data-grid";
-import Chip from "../components/MyChip";
-import FormDialog from "../components/FormDialog";
-import MyDatePicker from "../components/MyDatePicker";
-import MyCurrencySelect from "../components/MyCurrencySelect";
-import MyAutocomplete from "../components/MyAutocomplete";
+import Chip from "components/MyChip";
+import FormDialog from "components/FormDialog";
+import MyDatePicker from "components/forms/MyDatePicker";
+import SelectCurrency from "components/forms/currency/SelectCurrency";
+import MyAutocomplete from "components/forms/MyAutocomplete";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import { getNumber, getDateTime, getMoney } from "../utils/formatting";
-import { inputSize } from "../config";
+import InputAmount from "components/forms/InputAmount";
+import InputTextArea from "components/forms/InputTextArea";
 
 const transactionForm = [
   {
-    control: <MyDatePicker />,
+    control: <MyDatePicker required />,
   },
   {
     style: { width: "14%", marginRight: "1%" },
-    control: <MyCurrencySelect />,
+    control: <SelectCurrency required />,
   },
   {
     style: { width: "85%" },
-    control: (
-      <>
-        <InputLabel size={inputSize} htmlFor="amount">Monto</InputLabel>
-        <OutlinedInput
-          //startAdornment={<InputAdornment position="start">$</InputAdornment>}
-          fullWidth
-          id="amount"
-          label="Monto"
-          size={inputSize}
-        />
-      </>
-    ),
+    control: <InputAmount required id="amount" label="Monto" />,
   },
   {
     control: (
       <MyAutocomplete
-        variant="outlined"
+        required
         id="transaction"
         label="Concepto"
         options={["Sueldo", "Préstamo", "Bonificación"]}
@@ -58,7 +47,7 @@ const transactionForm = [
     style: { width: "49%", marginRight: "1%" },
     control: (
       <MyAutocomplete
-        variant="outlined"
+        required
         id="from"
         label="Origen"
         options={["Foncap", "Otro"]}
@@ -69,7 +58,7 @@ const transactionForm = [
     style: { width: "50%" },
     control: (
       <MyAutocomplete
-        variant="outlined"
+        required
         id="to"
         label="Destino"
         options={["BBVA C/A"]}
@@ -77,12 +66,7 @@ const transactionForm = [
     ),
   },
   {
-    control: (
-      <>
-        <InputLabel htmlFor="detail">Detalle</InputLabel>
-        <OutlinedInput fullWidth id="detail" label="Detalle" />
-      </>
-    ),
+    control: <InputTextArea required id="detail" label="Detalle" />,
   },
 ];
 
@@ -128,7 +112,10 @@ const TransactionsPage = () => {
           }
         });
         setData(res.data.transactions);
+      }).catch(e => {
+        console.error(e)
       });
+;
       //axios.get(apiSmvm).then(res => setSmvm(res.data.data));
     };
     fetchData().catch((err) => console.error(err));

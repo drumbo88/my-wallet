@@ -7,27 +7,20 @@ import FormDialog from '../components/FormDialog';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import MyCurrencySelect from '../components/MyCurrencySelect';
+import SelectCurrency from 'components/forms/currency/SelectCurrency';
+import InputText from 'components/forms/InputText';
 
 const formControls = [
   {
     style: { width: '19%', marginRight: '1%' },
-    control: <>
-      <InputLabel htmlFor="code">Código</InputLabel>
-      <OutlinedInput
-        fullWidth id="code" label="Código" />
-    </>,
+    control: <InputText required label="Código" id="code" />,
   },
   {
     style: { width: '80%' },
-    control: <>
-      <InputLabel htmlFor="nombre">Nombre</InputLabel>
-      <OutlinedInput
-        fullWidth id="nombre" label="Nombre" />
-    </>
+    control: <InputText required label="Nombre" id="nombre" />,
   },
   {
-    control: <MyCurrencySelect />
+    control: <SelectCurrency required />
   },
 ]
 

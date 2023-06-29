@@ -1,46 +1,34 @@
 import axios from "axios";
-import { Button, InputLabel, OutlinedInput, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Button, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import FormDialog from "../components/FormDialog";
-import MyDatePicker from "../components/MyDatePicker";
-import MyCurrencySelect from "../components/MyCurrencySelect";
-import MyAutocomplete from "../components/MyAutocomplete";
+import FormDialog from "components/FormDialog";
+import MyDatePicker from "components/forms/MyDatePicker";
+import SelectCurrency from "components/forms/currency/SelectCurrency";
+import MyAutocomplete from "components/forms/MyAutocomplete";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
-import { inputSize } from "../config";
+import InputAmount from "components/forms/InputAmount";
+import InputTextArea from "components/forms/InputTextArea";
 
 const incomeForm = [
   {
-    control: <MyDatePicker />,
+    control: <MyDatePicker required />,
   },
   {
     style: { width: "14%", marginRight: "1%" },
-    control: <MyCurrencySelect />,
+    control: <SelectCurrency required />,
   },
   {
     style: { width: "85%" },
-    control: (
-      <>
-        <InputLabel htmlFor="amount" size={inputSize}>
-          Monto
-        </InputLabel>
-        <OutlinedInput
-          //startAdornment={<InputAdornment position="start">$</InputAdornment>}
-          fullWidth
-          id="amount"
-          label="Monto"
-          size={inputSize}
-        />
-      </>
-    ),
+    control: <InputAmount id="amount" label="Monto" />,
   },
   {
     control: (
       <MyAutocomplete
-        variant="outlined"
+        required
         id="income"
         label="Concepto"
         options={["Sueldo", "Préstamo", "Bonificación"]}
@@ -50,41 +38,15 @@ const incomeForm = [
   {
     style: { width: "49%", marginRight: "1%" },
     control: (
-      <MyAutocomplete
-        variant="outlined"
-        id="from"
-        label="Origen"
-        options={["Foncap", "Otro"]}
-      />
+      <MyAutocomplete id="from" label="Origen" options={["Foncap", "Otro"]} />
     ),
   },
   {
     style: { width: "50%" },
-    control: (
-      <MyAutocomplete
-        variant="outlined"
-        id="to"
-        label="Destino"
-        options={["BBVA C/A"]}
-      />
-    ),
+    control: <MyAutocomplete id="to" label="Destino" options={["BBVA C/A"]} />,
   },
   {
-    control: (
-      <>
-        <InputLabel htmlFor="detail" size={inputSize}>
-          Detalle
-        </InputLabel>
-        <OutlinedInput
-          multiline={true}
-          minRows={2.5} maxRows={2.5}
-          fullWidth
-          id="detail"
-          label="Detalle"
-          size={inputSize}
-        />
-      </>
-    ),
+    control: <InputTextArea id="detail" label="Detalle" />,
   },
 ];
 

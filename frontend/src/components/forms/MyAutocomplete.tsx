@@ -1,13 +1,7 @@
 import * as React from 'react';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import { Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
-import { inputSize } from '../config';
+import { inputSize } from '../../config';
 
 const filter = createFilterOptions();
 
@@ -49,7 +43,7 @@ export default function MyAutocomplete(props) {
         size={inputSize}
         //renderOption={(props, option) => [props, option] as React.ReactNode} //<li {...props}>{typeof option != 'object' ? option?.toString() : option?.title}</li>}
         freeSolo
-        renderInput={(params) => <TextField label={props.label} {...params} />}
+        renderInput={(params) => <TextField required={props.required} label={props.label} {...params} />}
         /*slotProps={{
             textField: params => ({
                 label: props.label, ...params
