@@ -5,6 +5,7 @@ import {
   OutlinedInput,
   Typography,
   Box,
+  TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useParams } from "react-router-dom";
@@ -61,12 +62,29 @@ const transactionForm = [
         required
         id="to"
         label="Destino"
-        options={["BBVA C/A"]}
+        options={[{
+            persona: "Pablo Pérez",
+            cuenta: "BBVA C/A"
+        },{
+            persona: "Pablo Pérez",
+            cuenta: "Galicia C/A"
+        },{
+            persona: "Rochi Fariña",
+            cuenta: "Personal Pay"
+        },]}
+        groupBy={(option) => option.persona}
+        getOptionLabel={(option) => option.cuenta}
+        renderInput={(params) => {
+            console.log(params)
+            return (<>
+            <TextField {...params} />
+            <TextField label={"Destino"} {...params} />
+        </>)}}
       />
     ),
   },
   {
-    control: <InputTextArea required id="detail" label="Detalle" />,
+    control: <InputTextArea id="detail" label="Detalle" />,
   },
 ];
 

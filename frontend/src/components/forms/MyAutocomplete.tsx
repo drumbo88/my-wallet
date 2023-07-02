@@ -56,11 +56,6 @@ export default function MyAutocomplete(props) {
                 setValue(newValue);
                 // timeout to avoid instant validation of the dialog's form.
               setTimeout(() => {
-                /*toggleOpen(true);
-                setDialogValue({
-                  title: newValue,
-                  year: '',
-                });*/
               });
             } else if (newValue && newValue.inputValue) {
               toggleOpen(true);
@@ -98,7 +93,7 @@ export default function MyAutocomplete(props) {
       />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>Add a new film</DialogTitle>
+          <DialogTitle>Nueva opción</DialogTitle>
           <DialogContent>
             <DialogContentText>
               Añadir opción nueva

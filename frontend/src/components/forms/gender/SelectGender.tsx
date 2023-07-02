@@ -25,7 +25,7 @@ export default function SelectGender(props) {
       {...props}
     >
       {genders.map((option) => (
-        <MenuItem key={option.value} value={option.value} sx={{ justifyContent: "center" }}>
+        <MenuItem key={option.value} value={option.value}>
           {option.label}
         </MenuItem>
       ))}
