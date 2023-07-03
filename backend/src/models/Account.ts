@@ -14,22 +14,22 @@ export type DocAccount = DocumentType<Account>;
  */
 @modelOptions(myModelOptions)
 export class Account extends BaseModel {
-    @prop({ enum: AccountStatus, required: true })
+    @prop({ type: String, enum: AccountStatus, required: true })
     status: AccountStatus
 
-    @prop({ enum: AccountTypes, required: true })
+    @prop({ type: String, enum: AccountTypes, required: true })
     type: AccountTypes
 
-    @prop({ type: () => Entity, ref: Entity })
+    @prop({ type: () => Entity, ref: () => Entity })
     adminEntity: Ref<Entity>
 
-    @prop({ type: () => Entity, ref: Entity })
+    @prop({ type: () => Entity, ref: () => Entity })
     ownerEntity: Ref<Entity>
 
     @prop({ type: () => [Wallet] })
     wallets: Wallet[]
 
-    @prop({ type: () => [PaymentCard], ref: PaymentCard })
+    @prop({ type: () => [PaymentCard], ref: () => PaymentCard })
     paymentCards: Ref<PaymentCard>[]
 
     // Buscar por dueño de la cuenta

@@ -35,7 +35,7 @@ export class Entity extends BaseModel {
     @prop({ type: () => User, unique: true, required: true })
     user: User
 
-    @prop({ ref: Currency, foreignField: 'code', alias: "currencyCode" })
+    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode" })
     currency: Ref<Currency>
 
     @prop({ type: () => Person })
@@ -44,10 +44,10 @@ export class Entity extends BaseModel {
     @prop({ type: () => Company })
     company?: Company
 
-    @prop({ type: () => [Account], ref: Account, required: true, default: [] })
+    @prop({ type: () => [Account], ref: () => Account, required: true, default: [] })
     accountsOwned!: Ref<Account>[]
 
-    @prop({ type: () => [Account], ref: Account, required: true, default: [] })
+    @prop({ type: () => [Account], ref: () => Account, required: true, default: [] })
     accountsAdministrated!: Ref<Account>[]
 
     static async createPerson(this: ReturnModelType<typeof Entity>, data: Partial<Person>): Promise<DocEntity> {
@@ -137,22 +137,22 @@ export class Entity extends BaseModel {
         }
 
         const creditCard = await PaymentCardModel.getOrCreate(creditCardData)
-        await creditCard.populate('ownerAccount')
+        await creditCard.populate({ path: 'ownerAccount', model: AccountModel })
 
-        if (account.ownerEntity.id != creditCardData.ownerAccount?.id) {
-            throw new Error(`The Account to add the card should be owned by the same Entity (${JSON.stringify({ this: this.id, accOwnerId: account.ownerEntity })}).`)
-        }
+        // if (account.id != creditCard.ownerAccount?.id) {
+        //     throw new Error(`The Account to add the card should be owned by the same Entity (${JSON.stringify({ this: this.id, accOwnerId: account.ownerEntity })}).`)
+        // }
 
         console.log('Credit card added')
 
         return this.toObject()
     }
 
-    static async seed(seeds: IEntitySeed[] | IEntitySeed): Promise<DocEntity | DocEntity[]> {
+    static async seed(seeds: any[]): Promise<DocEntity | DocEntity[]> {
         const retOne = !Array.isArray(seeds)
         if (retOne)
-            seeds = [seeds as IEntitySeed]
-        const entities: DocEntity[] = await EntityModel.insertMany<Entity>([])
+            seeds = [seeds]
+        const entities: DocEntity[] = await EntityModel.insertMany<Entity>(seeds)
         for (const i in seeds) {
             const seed = seeds[i]
             const entity = entities[i]

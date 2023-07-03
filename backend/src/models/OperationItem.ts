@@ -13,7 +13,7 @@ export type DocOperationItem = DocumentType<OperationItem>;
 @modelOptions(myModelOptions)
 export class OperationItem extends BaseModel
 {
-    @prop({ ref: Currency, foreignField: 'code', alias: "currencyCode" })
+    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode" })
     currency: Ref<Currency>
 
     @prop({ type: Number, default: 0, required: true })
@@ -25,7 +25,7 @@ export class OperationItem extends BaseModel
     @prop({ type: Number, default: 0, required: true })
     total: number
 
-    @prop({ type: () => OperationItemDetail, ref: OperationItemDetail })
+    @prop({ type: () => OperationItemDetail, ref: () => OperationItemDetail })
     concept: Ref<OperationItemDetail>
 
     @prop({ type: String })
@@ -38,15 +38,15 @@ export class OperationItem extends BaseModel
 
 /*
 export const schema = new Schema({
-  currencyCode: { type: String, ref: 'Currency' },
+  currencyCode: { type: String, ref: () => 'Currency' },
   quantity: { type: Number, default: 0 },
   amount: { type: Number, default: 0, required: true },
   total: { type: Number, default: 0 },
 
   conceptId: new Schema(OperationItemDetailRef, defaultSchemaOptions),
   // excluyent types of item
-  //asset: { type: Schema.Types.ObjectId, ref: 'Asset' }, // Opcional (objetos tangibles o intangibles)
-  //concept: { type: Schema.Types.ObjectId, ref: 'OperationConcept' }, // Opcional (impuesto, interés, conceptos abstractos)
+  //asset: { type: Schema.Types.ObjectId, ref: () => 'Asset' }, // Opcional (objetos tangibles o intangibles)
+  //concept: { type: Schema.Types.ObjectId, ref: () => 'OperationConcept' }, // Opcional (impuesto, interés, conceptos abstractos)
 
   detail: { type: String },
 }, defaultSchemaOptions)

@@ -16,7 +16,7 @@ export class Country extends BaseModel {
     @prop({ type: String, required: true })
     name: string
 
-    @prop({ type: () => [Currency], ref: Currency })
+    @prop({ type: () => [Currency], ref: () => Currency })
     currencyCodes: Ref<Currency>[]
 }
 

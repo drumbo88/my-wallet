@@ -3,16 +3,16 @@ import { myModelOptions } from '../config';
 import { Account, AccountModel, DocAccount } from './Account';
 import { BaseModel, DocPartial } from './BaseModel';
 import { DocEntity, Entity, EntityModel } from './Entity';
-import { seeds as PaymentCardCreditSeeds } from './PaymentCardCredit';
-import { seeds as PaymentCardDebitSeeds } from './PaymentCardDebit';
-import { seeds as PaymentCardPrepaidSeeds } from './PaymentCardPrepaid';
+// import { seeds as PaymentCardCreditSeeds } from './PaymentCardCredit';
+// import { seeds as PaymentCardDebitSeeds } from './PaymentCardDebit';
+// import { seeds as PaymentCardPrepaidSeeds } from './PaymentCardPrepaid';
 import { PaymentCardTypes, PaymentCardStatus } from "common/types/paymentCard";
 
 
 export const seeds = {
-    [PaymentCardTypes.DEBIT]: PaymentCardDebitSeeds,
-    [PaymentCardTypes.CREDIT]: PaymentCardCreditSeeds,
-    [PaymentCardTypes.PREPAID]: PaymentCardPrepaidSeeds,
+    // [PaymentCardTypes.DEBIT]: PaymentCardDebitSeeds,
+    // [PaymentCardTypes.CREDIT]: PaymentCardCreditSeeds,
+    // [PaymentCardTypes.PREPAID]: PaymentCardPrepaidSeeds,
 }
 
 export type DocPaymentCard = DocumentType<PaymentCard>;
@@ -28,20 +28,20 @@ export class PaymentCard extends BaseModel {
     @prop({ type: String, required: true })
     number: string
 
-    @prop({ type: String, required: true })
-    expDate: string
+    @prop({ type: Date, required: true })
+    expDate: Date
 
     /* Opc: Cuenta a la que está vinculada la tarjeta (puede no tener) */
-    @prop({ type: () => Account, ref: Account })
-    ownerAccount?: Ref<Account> | null
+    // @prop({ type: () => Account, ref: () => Account })
+    // ownerAccount?: Ref<Account>
 
     /* Opc: Entidad que administra la tarjeta (puede no tener) */
-    @prop({ type: () => Entity, ref: Entity })
-    adminEntity?: Ref<Entity> | null
+    @prop({ type: () => Entity, ref: () => Entity })
+    adminEntity?: Ref<Entity>
 
     /* Opc: Entidad que da el servicio de la tarjeta (puede no tener) */
-    @prop({ type: () => Entity, ref: Entity })
-    serviceEntity?: Ref<Entity> | null
+    @prop({ type: () => Entity, ref: () => Entity })
+    serviceEntity?: Ref<Entity>
 
     @prop({
         type: String, required: true,
@@ -50,18 +50,18 @@ export class PaymentCard extends BaseModel {
     })
     balance: number
 
-    @prop({ enum: PaymentCardStatus, required: true, default: PaymentCardStatus.INACTIVE })
+    @prop({ type: String, enum: PaymentCardStatus, required: true, default: PaymentCardStatus.INACTIVE })
     status: string
 
-    @prop({ enum: PaymentCardTypes, required: true })
+    @prop({ type: String, enum: PaymentCardTypes, required: true })
     type: string
 
     /**
      *
      */
-    async setOwnerAccount(this: DocPaymentCard, accountData: DocAccount) {
-        let ownerAccount
-        if (accountData instanceof AccountModel)
+    async setOwnerAccount(this: DocPaymentCard, accountData: DocPartial<Account>) {
+        let ownerAccount: Account
+        if (accountData instanceof Account)
             ownerAccount = accountData
         else {
             const pipelines: any[] = []
@@ -80,7 +80,7 @@ export class PaymentCard extends BaseModel {
         if (!ownerAccount) {
             throw new Error(`Account doesn't exist (${JSON.stringify(accountData)}).`)
         }
-        this.ownerAccount = ownerAccount._id
+        ownerAccount.paymentCards.push(this.id)
         return this
     }
 

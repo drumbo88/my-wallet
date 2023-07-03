@@ -25,8 +25,8 @@ export class Currency extends BaseModel {
     @prop({ type: String })
     api?: string
 
-    @prop({ type: CurrencyType, default: CurrencyType.FIAT })
-    type: CurrencyType
+    @prop({ type: String, enum: CurrencyType, default: CurrencyType.FIAT })
+    type: string
 
     // Método abstracto para obtener el tipo de currency
     getTipo(): string {

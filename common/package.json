@@ -6,6 +6,6 @@
     ],
     "exports": {
         "./package.json": "./package.json",
-        "./build/types/": "./build/types/"
+        "./types/*": "./build/types/*.js"
     }
 }

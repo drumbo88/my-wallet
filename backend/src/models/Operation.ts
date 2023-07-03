@@ -20,10 +20,10 @@ export class Operation extends BaseModel {
     @prop({ type: String, enum: OperationTypes, default: OperationTypes.TRADE, required: true })
     type: string
 
-    @prop({ type: () => Entity, ref: Entity, alias: "from" })
+    @prop({ type: () => Entity, ref: () => Entity, alias: "from" })
     fromEntity?: Ref<Entity>
 
-    @prop({ type: () => Entity, ref: Entity, alias: "to" })
+    @prop({ type: () => Entity, ref: () => Entity, alias: "to" })
     toEntity?: Ref<Entity>
 
     @prop({ type: String })
@@ -32,7 +32,7 @@ export class Operation extends BaseModel {
     @prop({ type: () => [OperationItem] })
     items: OperationItem[]
     // transactions: [new Schema({
-    //     transactionId: { type: Schema.Types.ObjectId, ref: 'Transaction' },
+    //     transactionId: { type: Schema.Types.ObjectId, ref: () => 'Transaction' },
     //     amount: { type: Number, min: 0 }, // <= transaction.amount
     // })],
     @prop({ type: String, enum: OperationStatus, default: OperationStatus.CREATED, required: true })

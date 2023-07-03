@@ -16,19 +16,19 @@ import { TransactionTypes } from "common/types/transaction";
  */
 @modelOptions(myModelOptions)
 export class TransactionSide extends BaseModel {
-    @prop({ type: () => Entity, ref: Entity, required: true })
+    @prop({ type: () => Entity, ref: () => Entity, required: true })
     entity: Ref<Entity>
 
     // For transfer
-    @prop({ type: () => Account, ref: Account })
+    @prop({ type: () => Account, ref: () => Account })
     account: Ref<Account>
 
     // For Card (+ digital wallet)
-    @prop({ type: () => PaymentCard, ref: PaymentCard })
+    @prop({ type: () => PaymentCard, ref: () => PaymentCard })
     card: Ref<PaymentCard>
 
     // Digital wallets
-    @prop({ type: () => Entity, ref: Entity })
+    @prop({ type: () => Entity, ref: () => Entity })
     usingEntity: Ref<Entity>
 }
 
@@ -38,7 +38,7 @@ export class TransactionSide extends BaseModel {
  */
 @modelOptions(myModelOptions)
 export class TransactionAllocation extends BaseModel {
-    @prop({ type: () => Operation, ref: Operation })
+    @prop({ type: () => Operation, ref: () => Operation })
     operation!: Ref<Operation>
 
     @prop({ type: Number, default: 0, required: true })
@@ -67,10 +67,10 @@ export class Transaction extends BaseModel {
     @prop({ type: Date, default: Date.now, required: true })
     datetime: Date
 
-    @prop({ ref: Currency, foreignField: 'code', alias: "currencyCode", required: true })
+    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode", required: true })
     currency: Ref<Currency>
 
-    @prop({ ref: Currency, foreignField: 'code', alias: "toCurrencyCode", required: true })
+    @prop({ ref: () => Currency, foreignField: 'code', alias: "toCurrencyCode", required: true })
     toCurrency: Ref<Currency>
 
     @prop({ type: Number, default: 0, required: true })
@@ -88,7 +88,7 @@ export class Transaction extends BaseModel {
     @prop({ type: Number, default: 0, required: true })
     exchangeRate?: number
 
-    @prop({ enum: TransactionTypes, required: true })
+    @prop({ type: String, enum: TransactionTypes, required: true })
     type: TransactionTypes
 
     @prop({ type: () => TransactionSide })

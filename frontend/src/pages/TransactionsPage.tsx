@@ -5,7 +5,6 @@ import {
   OutlinedInput,
   Typography,
   Box,
-  TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useParams } from "react-router-dom";
@@ -74,12 +73,6 @@ const transactionForm = [
         },]}
         groupBy={(option) => option.persona}
         getOptionLabel={(option) => option.cuenta}
-        renderInput={(params) => {
-            console.log(params)
-            return (<>
-            <TextField {...params} />
-            <TextField label={"Destino"} {...params} />
-        </>)}}
       />
     ),
   },

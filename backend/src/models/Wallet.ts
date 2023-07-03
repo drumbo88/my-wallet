@@ -23,7 +23,7 @@ export class Wallet extends BaseModel {
     @prop({ type: WalletType })
     type: string
 
-    @prop({ type: Wallet, ref: Wallet })
+    @prop({ type: Wallet, ref: () => Wallet })
     wallet?: Ref<Wallet>
 
     @prop({ type: Number, default: 0 })
@@ -56,9 +56,9 @@ export const WalletModel = getModelForClass(Wallet);
     balance: { type: Number, default: 0 },
     assets: [ WalletAsset ],
 
-    // debitCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
-    // prepaidCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
-    // creditCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: 'PaymentCard' }],
+    // debitCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: () => 'PaymentCard' }],
+    // prepaidCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: () => 'PaymentCard' }],
+    // creditCards: [ PaymentCardRef ], // [{ type: Schema.Types.ObjectId, ref: () => 'PaymentCard' }],
 
     detail: { type: String },
 }, defaultSchemaOptions)
