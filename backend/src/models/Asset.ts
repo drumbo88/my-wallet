@@ -8,7 +8,8 @@ export type DocAsset = DocumentType<Asset>;
  * Clase "Asset" para monedas FIAT y CRIPTO
  */
 @modelOptions(myModelOptions)
-export class Asset extends BaseModel {
+export class Asset extends BaseModel
+{
     @prop({ type: String, unique: true, required: true })
     code: string
 

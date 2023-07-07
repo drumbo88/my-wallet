@@ -1,3 +1,4 @@
+import { Severity } from '@typegoose/typegoose'
 import mongoose, { Document } from 'mongoose'
 import { NODE_ENV, DB_RESET, DB_CONNECTION_TIMEOUT, DB_CONNECTION_STRING, DB_PORT } from './config.js'
 import { MyModel } from './types.js'
@@ -10,11 +11,12 @@ export const defaultSchemaOptions = {
     versionKey: false,
     timestamps: true,
 }
+export const mixedType = { type: mongoose.Schema.Types.Mixed, allowMixed: Severity.ALLOW }
 
 export const dbSeed = async function <T extends Document>(model: MyModel<T>, modelSeeds: Object|Object[]) {
     //const seeds = [] //model.seeds()
     const count = await model.estimatedDocumentCount()
-    const abstractSchema = !(modelSeeds instanceof Array)
+    const abstractSchema = !(modelSeeds instanceof Array || Object.keys(modelSeeds).length === 0)
     let seedsByType = abstractSchema ? modelSeeds : { modelSeeds }
 
     for (let i in seedsByType) {
@@ -24,7 +26,7 @@ export const dbSeed = async function <T extends Document>(model: MyModel<T>, mod
             let seeder
             if (abstractSchema) {
                 seeds.forEach(x => { if (!x.hasOwnProperty(i)) x[i] = {} })
-                //console.log(seeds)
+                //console.log({model,seeds})
             }
                 //console.log({myModel: model instanceof MyModel, model, seed:model.seed})
             if (!model.seed) {
@@ -38,8 +40,8 @@ export const dbSeed = async function <T extends Document>(model: MyModel<T>, mod
             try {
                 await seeder(seeds)
             }
-            catch (error) {
-                console.log(`    ❌ ${error}`)
+            catch (error: any) {
+                console.log(`    ❌ ${error.stack}`)
             }
         }
         else if (!seeds || !seeds.length) {

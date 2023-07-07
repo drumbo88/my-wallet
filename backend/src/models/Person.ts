@@ -1,7 +1,7 @@
 import { PersonGenders } from 'common/types/person';
 import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
 import { BaseModel } from './BaseModel';
-import { myModelOptions } from '../config';
+import { myModelOptions, myModelOptionsNoId } from '../config';
 import bcrypt from 'bcryptjs'
 
 export type DocPerson = DocumentType<Person>;
@@ -9,19 +9,20 @@ export type DocPerson = DocumentType<Person>;
 /*************************************************************************************
  * Clase "Person"
  */
-@modelOptions(myModelOptions)
-export class Person extends BaseModel {
+@modelOptions(myModelOptionsNoId)
+export class Person extends BaseModel
+{
     @prop({ type: String, required: true })
-    firstname: string
+    firstnames: string
 
     @prop({ type: String, required: true })
-    lastname: string
+    lastnames: string
 
     @prop({ type: Date })
     birthdate: Date
 
-    @prop({ type: PersonGenders })
-    gender: PersonGenders
+    @prop({ type: String, enum: PersonGenders })
+    gender: string
 }
 
 export interface IPersonSeed {
@@ -30,8 +31,8 @@ export interface IPersonSeed {
 export const seeds: IPersonSeed[] = [
     {
         person: {
-            firstname: "Darío",
-            lastname: "Rumbo",
+            firstnames: "Darío",
+            lastnames: "Rumbo",
             birthdate: new Date("1988-06-19"),
             gender: PersonGenders.MALE,
         },
@@ -117,8 +118,8 @@ export const seeds: IPersonSeed[] = [
     },
     {
         person: {
-            firstname: "Rocío",
-            lastname: "Fariña",
+            firstnames: "Rocío",
+            lastnames: "Fariña",
             birthdate: new Date("1993-03-26"),
             gender: PersonGenders.FEMALE,
         },
@@ -130,8 +131,8 @@ export const seeds: IPersonSeed[] = [
     },
     {
         person: {
-            firstname: "José",
-            lastname: "Dorce",
+            firstnames: "José",
+            lastnames: "Dorce",
             birthdate: new Date("1987-03-15"),
             gender: PersonGenders.MALE,
         },
@@ -144,8 +145,8 @@ export const seeds: IPersonSeed[] = [
     },
     {
         person: {
-            firstname: "Pablo",
-            lastname: "Fernández",
+            firstnames: "Pablo",
+            lastnames: "Fernández",
             birthdate: new Date("1989-05-19"),
             gender: PersonGenders.MALE,
         },

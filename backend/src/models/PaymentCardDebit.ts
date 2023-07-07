@@ -5,7 +5,8 @@ import { BaseModel } from './BaseModel';
 import { PaymentCard, PaymentCardModel } from './PaymentCard';
 
 @modelOptions(myModelOptionsNoId)
-export class PaymentCardPeriod extends BaseModel {
+export class PaymentCardPeriod extends BaseModel
+{
     @prop({ type: String, enum: PeriodType, required: true })
     type: string
 

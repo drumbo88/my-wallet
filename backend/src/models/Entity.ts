@@ -4,12 +4,13 @@ import { AccountModel, Account } from './Account';
 import { seeds as PersonSeeds, Person } from './Person';
 import { seeds as CompanySeeds, Company, DocCompany } from './Company';
 import { PaymentCardModel } from './PaymentCard';
-import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { DocumentType, getModelForClass, isDocument, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { EntityStatus, EntityTypes } from "common/types/entity";
 import { myModelOptions } from '../config';
 import { Currency } from './Currency';
 import { BaseModel, DocPartial } from './BaseModel';
 import { PaymentCardCredit } from './PaymentCardCredit';
+import { Wallet, DocWallet, WalletModel } from './Wallet';
 
 export const seeds = {
     [EntityTypes.COMPANY]: CompanySeeds,
@@ -19,23 +20,24 @@ export const seeds = {
 export type DocEntity = DocumentType<Entity>;
 
 /*************************************************************************************
- * Clase abstracta "Entity" (Employee | Client)
+ * Clase abstracta "Entity" (Person | Company)
  */
 @modelOptions(myModelOptions)
-export class Entity extends BaseModel {
-    @prop({ type: String, unique: true, required: true })
-    name: string
+export class Entity extends BaseModel
+{
+    // @prop({ type: String, unique: true })
+    // name: string
 
-    @prop({ type: EntityStatus, required: true })
-    status: EntityStatus
+    @prop({ type: String, enum: EntityStatus, required: true, default: EntityStatus.ACTIVE })
+    status: string
 
-    @prop({ type: String, unique: true, required: true })
+    @prop({ type: String, unique: true, sparse: true })
     taxId: string
 
-    @prop({ type: () => User, unique: true, required: true })
+    @prop({ type: () => User })
     user: User
 
-    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode" })
+    @prop({ ref: () => Currency, localField: 'currency', foreignField: 'code', alias: "currencyCode" })
     currency: Ref<Currency>
 
     @prop({ type: () => Person })
@@ -44,10 +46,10 @@ export class Entity extends BaseModel {
     @prop({ type: () => Company })
     company?: Company
 
-    @prop({ type: () => [Account], ref: () => Account, required: true, default: [] })
+    @prop({ type: () => [Account], ref: () => Account })
     accountsOwned!: Ref<Account>[]
 
-    @prop({ type: () => [Account], ref: () => Account, required: true, default: [] })
+    @prop({ type: () => [Account], ref: () => Account })
     accountsAdministrated!: Ref<Account>[]
 
     static async createPerson(this: ReturnModelType<typeof Entity>, data: Partial<Person>): Promise<DocEntity> {
@@ -88,7 +90,6 @@ export class Entity extends BaseModel {
         }
         accountData.adminEntity = adminEntity
         await AccountModel.create(accountData)
-        //console.log({accountData})
         return this.toObject()
     }
 
@@ -152,17 +153,18 @@ export class Entity extends BaseModel {
         const retOne = !Array.isArray(seeds)
         if (retOne)
             seeds = [seeds]
-        const entities: DocEntity[] = await EntityModel.insertMany<Entity>(seeds)
+        const entities: DocEntity[] = [] // await EntityModel.insertMany<Entity>(seeds)
         for (const i in seeds) {
             const seed = seeds[i]
-            const entity = entities[i]
-            if (seed.accountsOwned?.length) {
+            const { accountsOwned, accountsAdministrated, ...entityData } = seed
+            const entity = await EntityModel.create(entityData) //entities[i]
+            if (accountsOwned?.length) {
                 //console.log({seed})
-                for (const accData of seed.accountsOwned)
+                for (const accData of accountsOwned)
                     await entity.addOwnedAccount(accData)
             }
-            if (seed.accountsAdministrated?.length) {
-                for (const accData of seed.accountsAdministrated)
+            if (accountsAdministrated?.length) {
+                for (const accData of accountsAdministrated)
                     await entity.addAdministratedAccount(accData)
             }
             await entity.save()

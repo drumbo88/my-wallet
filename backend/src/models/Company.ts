@@ -1,23 +1,24 @@
 import { CompanyTypes } from 'common/types/company'
 import { DocumentType, modelOptions, prop } from '@typegoose/typegoose';
 import { BaseModel } from './BaseModel';
-import { myModelOptions } from '../config';
+import { myModelOptions, myModelOptionsNoId } from '../config';
 
 export type DocCompany = DocumentType<Company>;
 
 /*************************************************************************************
  * Clase "Company"
  */
-@modelOptions(myModelOptions)
-export class Company extends BaseModel {
-    @prop({ type: String, required: true })
-    firstname: string
+@modelOptions(myModelOptionsNoId)
+export class Company extends BaseModel
+{
+    @prop({ type: String })
+    legalName: string
 
-    @prop({ type: String, required: true })
-    lastname: string
+    @prop({ type: String })
+    fantasyName: string
 
-    @prop({ type: Date })
-    birthdate: Date
+    @prop({ type: String })
+    shortName: string
 
     @prop({ type: String, enum: CompanyTypes, default: CompanyTypes.COMPANY })
     type: String
@@ -25,43 +26,51 @@ export class Company extends BaseModel {
 
 export const seeds = [
     {
-        name: 'VISA',
+        company: {
+            shortName: 'VISA',
+        },
         //taxId: '',
     },
     {
-        name: 'MasterCard',
+        company: {
+            shortName: 'MasterCard',
+        },
         //taxId: '',
     },
     {
-        name: 'BBVA Francés',
         taxId: '30500003193',
         company: {
+            shortName: 'BBVA Francés',
             type: CompanyTypes.BANK,
         }
     },
     {
-        name: 'Mercado Pago',
         taxId: '30703088534',
         company: {
+            shortName: 'Mercado Pago',
             type: CompanyTypes.E_WALLET,
         }
     },
     {
-        name: 'Foncap SA',
         taxId: '30692317714',
+        company: {
+            shortName: 'Foncap SA',
+        },
         accountsOwned: [{
           adminEntity: { taxId: '30500003193' },
         }]
     },
     {
-        name: 'Roti El Sol',
         taxId: '30333333339',
+        company: {
+            shortName: 'Roti El Sol',
+        },
         accountsOwned: [{
           adminEntity: { taxId: '30703088534' },
         }]
     },
     {
-        name: 'Binance',
+        legalName: 'Binance',
         company: {
             type: CompanyTypes.CRYPTO_EXCHANGE,
         }

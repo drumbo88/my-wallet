@@ -21,7 +21,8 @@ export type DocPaymentCard = DocumentType<PaymentCard>;
  * Clase "PaymentCard"
  */
 @modelOptions(myModelOptions)
-export class PaymentCard extends BaseModel {
+export class PaymentCard extends BaseModel
+{
     @prop({ type: String, required: true })
     name: string
 
@@ -32,15 +33,15 @@ export class PaymentCard extends BaseModel {
     expDate: Date
 
     /* Opc: Cuenta a la que está vinculada la tarjeta (puede no tener) */
-    // @prop({ type: () => Account, ref: () => Account })
-    // ownerAccount?: Ref<Account>
+    @prop({ type: () => Account, ref: () => 'Account' })
+    ownerAccount?: Ref<Account>
 
     /* Opc: Entidad que administra la tarjeta (puede no tener) */
-    @prop({ type: () => Entity, ref: () => Entity })
+    @prop({ type: () => Entity, ref: () => 'Entity' })
     adminEntity?: Ref<Entity>
 
     /* Opc: Entidad que da el servicio de la tarjeta (puede no tener) */
-    @prop({ type: () => Entity, ref: () => Entity })
+    @prop({ type: () => Entity, ref: () => 'Entity' })
     serviceEntity?: Ref<Entity>
 
     @prop({

@@ -4,18 +4,17 @@ import { DB_RESET } from './config.js'
 import models from './models'
 
 const seedModels = [
-    // 'Currency', 'Country',
+    'Currency', 'Country',
     'Entity',
     //'Company', 'Person',
     //'Asset', 'OperationConcept',
-    // 'PaymentCard',
-    // 'Operation',
-    // 'Transaction',
+    'PaymentCard',
+    'Operation',
+    'Transaction',
 ]
 
 dbInit()
 .then(async () => {
-    //const db = mongoose.connection.db
     if (DB_RESET) {
         await dbReset()
     }

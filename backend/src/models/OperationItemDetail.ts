@@ -10,8 +10,7 @@ export type DocOperationItemConcept = DocumentType<OperationItemConcept>;
  */
 @modelOptions(myModelOptions)
 export class OperationItemDetail extends BaseModel
-{
-    @prop({ type: String, required: true })
+{    @prop({ type: String, required: true })
     name: string
 
     @prop({ type: String })

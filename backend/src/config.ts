@@ -120,10 +120,10 @@ const myModelOptions = {
         toJSON: { virtuals: true, getters: true },
         versionKey: false,
         timestamps: true,
-    }
+    },
 }
 const myModelOptionsNoId = { ...myModelOptions }
-myModelOptionsNoId.schemaOptions._id = false
+//myModelOptionsNoId.schemaOptions._id = false
 
 export {
     NODE_ENV,

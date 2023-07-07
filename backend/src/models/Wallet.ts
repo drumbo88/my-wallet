@@ -10,21 +10,22 @@ export type DocWallet = DocumentType<Wallet>;
  * Clase "Wallet" para monedas FIAT y CRIPTO
  */
 @modelOptions(myModelOptions)
-export class Wallet extends BaseModel {
+export class Wallet extends BaseModel
+{
     @prop({ type: String, unique: true, required: true })
     address: string
 
-    @prop({ type: String, unique: true, required: true })
+    @prop({ type: String, unique: true, sparse: true })
     alias: string
 
-    @prop({ type: WalletStatus, required: true })
+    @prop({ type: String, enum: WalletStatus, default: WalletStatus.ACTIVE, required: true })
     status: string
 
-    @prop({ type: WalletType })
+    @prop({ type: String, enum: WalletType, default: WalletType.FUNDS })
     type: string
 
-    @prop({ type: Wallet, ref: () => Wallet })
-    wallet?: Ref<Wallet>
+    // @prop({ type: Wallet, ref: () => Wallet })
+    // wallet?: Ref<Wallet>
 
     @prop({ type: Number, default: 0 })
     balance: number

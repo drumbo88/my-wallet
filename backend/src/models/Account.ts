@@ -1,11 +1,11 @@
 import { EntityModel, Entity } from './Entity'
 import { PaymentCard } from './PaymentCard'
 import { Wallet } from './Wallet'
-import { AccountStatus, AccountTypes, IAccount } from 'common/Types/Account'
-import { DocumentType, getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose'
+import { AccountStatus, AccountTypes } from 'common/types/account'
+import { DocumentType, getModelForClass, modelOptions, prop, PropType, Ref } from '@typegoose/typegoose'
 import { myModelOptions } from '../config'
 import { BaseModel, DocPartial } from './BaseModel'
-// import { EntityRefSchema } from './Entity'
+import { mixedType } from "../database";
 
 export type DocAccount = DocumentType<Account>;
 
@@ -13,20 +13,21 @@ export type DocAccount = DocumentType<Account>;
  * Clase "Account"
  */
 @modelOptions(myModelOptions)
-export class Account extends BaseModel {
-    @prop({ type: String, enum: AccountStatus, required: true })
-    status: AccountStatus
+export class Account extends BaseModel
+{
+    @prop({ type: String, enum: AccountStatus, required: true, default: AccountStatus.ACTIVE })
+    status: string
 
-    @prop({ type: String, enum: AccountTypes, required: true })
-    type: AccountTypes
+    @prop({ type: String, enum: AccountTypes, required: true, default: AccountTypes.FUNDS })
+    type: string
 
-    @prop({ type: () => Entity, ref: () => Entity })
+    @prop({ type: () => Entity, ref: () => 'Entity' })
     adminEntity: Ref<Entity>
 
-    @prop({ type: () => Entity, ref: () => Entity })
+    @prop({ type: () => Entity, ref: () => 'Entity' })
     ownerEntity: Ref<Entity>
 
-    @prop({ type: () => [Wallet] })
+    @prop({ type: () => Wallet }, PropType.ARRAY)
     wallets: Wallet[]
 
     @prop({ type: () => [PaymentCard], ref: () => PaymentCard })

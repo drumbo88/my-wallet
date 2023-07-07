@@ -6,6 +6,7 @@ import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelTyp
 import { myModelOptions } from "../config";
 import { BaseModel, DocPartial } from "./BaseModel";
 import { OperationItem } from "./OperationItem";
+import { mixedType } from "../database";
 
 export type DocOperation = DocumentType<Operation>;
 
@@ -13,7 +14,8 @@ export type DocOperation = DocumentType<Operation>;
  * Clase "Operation" para operaciones de compra/venta
  */
 @modelOptions(myModelOptions)
-export class Operation extends BaseModel {
+export class Operation extends BaseModel
+{
     @prop({ type: Date, default: Date.now, required: true })
     datetime: Date
 
@@ -29,7 +31,7 @@ export class Operation extends BaseModel {
     @prop({ type: String })
     detail: string
 
-    @prop({ type: () => [OperationItem] })
+    @prop({ ...mixedType, default: [] })
     items: OperationItem[]
     // transactions: [new Schema({
     //     transactionId: { type: Schema.Types.ObjectId, ref: () => 'Transaction' },
@@ -80,7 +82,7 @@ export class Operation extends BaseModel {
                 concept = OperationItemConceptModel.getOrCreate(itemData.conceptId.entity)
                 break
         }
-        itemData.conceptId.entity = concept._id
+        itemData.conceptId.entity = concept
         itemData.total = (itemData.quantity || 0) * (itemData.amount || 0)
         this.items.push(itemData)
         this.totalAmount += itemData.total
@@ -121,7 +123,7 @@ export class Operation extends BaseModel {
         return this
     }*/
 
-    static async seed(this: ReturnModelType<typeof Operation>, seeds: IOperationSeed[]) {
+    static async seed(this: ReturnModelType<typeof Operation>, seeds: /*IOperationSeed*/ any[]) {
 
         //const operations: IOperationDocument[] = await this.insertMany(seeds)
         for (const i in seeds) {
@@ -133,23 +135,32 @@ export class Operation extends BaseModel {
             if (transactions)
                 delete seed.transactions
 
-            const operation: DocOperation = await this.create(seed)
+            const { fromEntity: fromEntityData, toEntity: toEntityData, ...operationData } = seed
 
-            // if (!seed.fromEntity)
-            //     throw new Error(`Operation's fromEntity is required.`)
+            // Create Operation
+            const operation: DocOperation = await this.create(operationData)
 
-            if (seed.fromEntity)
-                await operation.setFromEntity(seed.fromEntity)
-            if (seed.toEntity)
-                await operation.setToEntity(seed.toEntity)
+            // Set fromEntity
+            if (!fromEntityData)
+                throw new Error(`Operation's fromEntity is required.`)
+            await operation.setFromEntity(fromEntityData)
+
+            // Set toEntity
+            if (toEntityData)
+                await operation.setToEntity(toEntityData)
+
             // await Promise.all([
             //     operation.setFromEntity(seed.fromEntity),
             //     operation.setToEntity(seed.toEntity),
             // ])
-            operation.paidAmount = seed.paidAmount || 0
+
+            // operation.paidAmount = seed.paidAmount || 0
             // await operation.populate('fromEntity')
             // let fromEntity: DocEntity | undefined = isDocument(operation.fromEntity) ? operation.fromEntity : undefined //.toJSON()
+
             const fromEntity = await operation.populateAndGet<Entity>('fromEntity')
+
+            // Add items
             for (const itemData of items) {
                 if (!itemData.currency)
                     itemData.currency = fromEntity?.currency
@@ -160,7 +171,6 @@ export class Operation extends BaseModel {
             // TO FIX:
             // for (const allocationData of transactions)
             //     await operation.addTransactionAllocation(allocationData)
-
             await operation.save()
         }
     }

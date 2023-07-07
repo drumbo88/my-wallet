@@ -10,8 +10,7 @@ export type DocWalletAsset = DocumentType<WalletAsset>;
  */
 @modelOptions(myModelOptions)
 export class WalletAsset extends BaseModel
-{
-    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode", required: true })
+{    @prop({ ref: () => Currency, foreignField: 'code', localField: 'currency', alias: "currencyCode", required: true })
     currency: Ref<Currency>
 
     @prop({ type: Number, default: 0, required: true })

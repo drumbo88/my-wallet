@@ -9,11 +9,12 @@ export type DocCurrency = DocumentType<Currency>;
  * Clase "Currency" para monedas FIAT y CRIPTO
  */
 @modelOptions(myModelOptions)
-export class Currency extends BaseModel {
+export class Currency extends BaseModel
+{
     @prop({ type: String, unique: true, required: true })
     code: string
 
-    @prop({ type: String, unique: true, required: true })
+    @prop({ type: String, default: '$', required: true })
     symbol: string
 
     @prop({ type: String, required: true })

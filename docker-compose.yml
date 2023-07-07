@@ -21,7 +21,7 @@ services:
       dockerfile: ./frontend/Dockerfile.dev
    image: wallets-frontend:lastest
    ports:
-    -  3080:3080
+    -  3001:3001
    container_name: my-wallets-frontend
    networks:
     -  my-wallets-net

@@ -98,8 +98,8 @@ const TransactionsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       const apiUrl = qParams.id
-        ? `http://localhost:3080/api/person/${myPersonId}/transactions`
-        : `http://localhost:3080/api/transaction`;
+        ? `http://localhost:3001/api/person/${myPersonId}/transactions`
+        : `http://localhost:3001/api/transaction`;
       const apiSmvm =
         "https://apis.datos.gob.ar/series/api/series/?metadata=full&ids=57.1_SMVMM_0_M_34&limit=5000&start=0";
       axios.get(apiUrl).then((res) => {

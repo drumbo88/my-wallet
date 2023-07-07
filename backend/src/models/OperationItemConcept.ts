@@ -9,14 +9,13 @@ export type DocOperationItemConcept = DocumentType<OperationItemConcept>;
  */
 @modelOptions(myModelOptions)
 export class OperationItemConcept extends BaseModel
-{
-    @prop({ type: String, required: true })
+{    @prop({ type: String, required: true })
     name: string
 
     @prop({ type: String })
     code: string
 
-    @prop({ type: Boolean, required: true })
+    @prop({ type: Boolean, required: true, default: true })
     countable: boolean // Mueble=true, Comida/Consumible=false
 }
 

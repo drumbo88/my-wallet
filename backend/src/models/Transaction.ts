@@ -1,13 +1,14 @@
-import { Document } from "mongoose";
-import { Operation } from "./Operation";
+import mongoose, { Document } from "mongoose";
+import { DocOperation, Operation, OperationModel } from "./Operation";
 import { Entity as Entity, EntityModel } from "./Entity";
 import { Account as Account, AccountModel } from "./Account";
 import { PaymentCard } from "./PaymentCard";
-import { DocumentType, getModelForClass, modelOptions, post, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { ArraySubDocumentType, DocumentType, getModelForClass, modelOptions, post, prop, PropType, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
 import { BaseModel, DocPartial } from "./BaseModel";
 import { Currency } from "./Currency";
 import { TransactionTypes } from "common/types/transaction";
+import { mixedType } from "../database";
 
 
 
@@ -15,7 +16,8 @@ import { TransactionTypes } from "common/types/transaction";
  * Clase "TransactionSide" para especificar origen o destino de una transacción
  */
 @modelOptions(myModelOptions)
-export class TransactionSide extends BaseModel {
+export class TransactionSide extends BaseModel
+{
     @prop({ type: () => Entity, ref: () => Entity, required: true })
     entity: Ref<Entity>
 
@@ -37,7 +39,8 @@ export class TransactionSide extends BaseModel {
  * Clase "TransactionAllocation" para imputación de monto de transacción a una operación
  */
 @modelOptions(myModelOptions)
-export class TransactionAllocation extends BaseModel {
+export class TransactionAllocation extends BaseModel
+{
     @prop({ type: () => Operation, ref: () => Operation })
     operation!: Ref<Operation>
 
@@ -46,7 +49,6 @@ export class TransactionAllocation extends BaseModel {
 }
 // Genera el modelo a partir de la clase utilizando Typegoose
 export const TransactionAllocationModel = getModelForClass(TransactionAllocation);
-
 
 export type DocTransaction = DocumentType<Transaction>;
 
@@ -59,25 +61,26 @@ export type DocTransaction = DocumentType<Transaction>;
         doc.postSave = []
     }
 })
-@post<Transaction>('save', async function () {
-    await Promise.all(this.postSave.map(async () => await this.save()))
+@post<Transaction>('save', async function (this: DocTransaction) {
+    await Promise.all(this.postSave.map(async doc => await doc.save()))
     this.postSave = []
 })
-export class Transaction extends BaseModel {
+export class Transaction extends BaseModel
+{
     @prop({ type: Date, default: Date.now, required: true })
     datetime: Date
 
-    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode", required: true })
+    @prop({ ref: () => Currency, foreignField: 'code', localField: 'currency', alias: "currencyCode", required: true })
     currency: Ref<Currency>
 
-    @prop({ ref: () => Currency, foreignField: 'code', alias: "toCurrencyCode", required: true })
+    @prop({ ref: () => Currency, foreignField: 'code', localField: 'toCurrency', alias: "toCurrencyCode", required: true })
     toCurrency: Ref<Currency>
 
     @prop({ type: Number, default: 0, required: true })
     amount!: number
 
-    @prop({ type: () => [TransactionAllocation], default: [], required: true })
-    allocations!: TransactionAllocation[]
+    @prop({ type: () => TransactionAllocation, default: [], required: true }, PropType.ARRAY)
+    allocations!: mongoose.Types.DocumentArray<DocumentType<TransactionAllocation>>
 
     @prop({ type: Number, default: 0, required: true })
     allocatedAmount!: number
@@ -88,8 +91,8 @@ export class Transaction extends BaseModel {
     @prop({ type: Number, default: 0, required: true })
     exchangeRate?: number
 
-    @prop({ type: String, enum: TransactionTypes, required: true })
-    type: TransactionTypes
+    @prop({ type: String, enum: TransactionTypes, required: true, default: TransactionTypes.CASH })
+    type: string
 
     @prop({ type: () => TransactionSide })
     from?: TransactionSide
@@ -100,7 +103,7 @@ export class Transaction extends BaseModel {
     @prop({ type: String })
     detail?: string
 
-    postSave: Operation[]
+    postSave: DocOperation[]
 
     /**
      *  @allocationData
@@ -108,13 +111,14 @@ export class Transaction extends BaseModel {
     async allocateOperation(this: DocTransaction, allocationData: DocPartial<TransactionAllocation>): Promise<typeof this> {
 
         // Get allocation document or generate it
+        const op = allocationData.operation as any
         const allocation = (allocationData instanceof Document)
-            ? allocationData : new TransactionAllocationModel(allocationData)
-
+            ? allocationData : new TransactionAllocationModel({...allocationData, operation: await OperationModel.findOne(op)})
+console.log({allocation})
         // Needs Operation data
         const operation = await allocation.populateAndGet<Operation>('operation')
         if (!allocation.operation || !operation) {
-            throw new Error(`Operation to allocate Transaction not found (${JSON.stringify({ transaction: this.id, operation: allocation.operation })}).`)
+            throw new Error(`Transaction allocation: Operation not found (${JSON.stringify({ transaction: this.id, operation: allocation.operation })}).`)
         }
 
         // First allocation to that Operation
@@ -154,25 +158,30 @@ export class Transaction extends BaseModel {
                 const accountData = seed.from.account
                 if (accountData.ownerEntity) {
                     const ownerEntity = await EntityModel.findOne(accountData.ownerEntity)
-                    if (ownerEntity)
-                        accountData.ownerEntityId = ownerEntity.id
-                    delete accountData.ownerEntity
+                    if (ownerEntity) {
+                        accountData.ownerEntity = ownerEntity
+                    }
+                    //delete accountData.ownerEntity
                 }
                 const fromAccount = await AccountModel.findOne(accountData)
-                if (fromAccount)
-                    seed.from.accountId = fromAccount.id
+                if (fromAccount) {
+                    seed.from.account = fromAccount
+                    seed.from.entity = fromAccount.ownerEntity
+                }
             }
             if (seed.to?.account) {
                 const accountData = seed.to.account
                 if (accountData.ownerEntity) {
                     const ownerEntity = await EntityModel.findOne(accountData.ownerEntity)
                     if (ownerEntity)
-                        accountData.ownerEntityId = ownerEntity.id
-                    delete accountData.ownerEntity
+                        accountData.ownerEntity = ownerEntity
+                    //delete accountData.ownerEntity
                 }
                 const toAccount = await AccountModel.findOne(accountData)
-                if (toAccount)
-                    seed.to.accountId = toAccount.id
+                if (toAccount) {
+                    seed.to.account = toAccount
+                    seed.to.entity = toAccount.ownerEntity
+                }
             }
 
             const transaction/*: DocTransaction*/ = await this.create(seed)
@@ -189,6 +198,8 @@ export class Transaction extends BaseModel {
                 await transaction.allocateOperation(allocationData)
             }
             await transaction.save() // save Operations as well
+            console.log(transaction.allocations)
+            console.log((await TransactionModel.findById(transaction.id))?.allocations)
         }
     }
 }

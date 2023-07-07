@@ -4,8 +4,8 @@ import { AnyObject, Model, ObjectId, PopulateOptions } from "mongoose";
 
 export type DocPartial<T> = DocumentType<T> | Partial<T> | T;
 
-export class BaseModel {
-    static async getOrCreate<T extends BaseModel>(
+export class BaseModel
+{    static async getOrCreate<T extends BaseModel>(
         this: ReturnModelType<AnyParamConstructor<T>, {}>,
         query: Partial<DocumentType<T>> | DocumentType<T>
     ): Promise<DocumentType<T>> {

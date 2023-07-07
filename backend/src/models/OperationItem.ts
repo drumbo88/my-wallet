@@ -12,8 +12,7 @@ export type DocOperationItem = DocumentType<OperationItem>;
  */
 @modelOptions(myModelOptions)
 export class OperationItem extends BaseModel
-{
-    @prop({ ref: () => Currency, foreignField: 'code', alias: "currencyCode" })
+{    @prop({ ref: () => Currency, foreignField: 'code', localField: 'currency', alias: "currencyCode", required: true })
     currency: Ref<Currency>
 
     @prop({ type: Number, default: 0, required: true })
