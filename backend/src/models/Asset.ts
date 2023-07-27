@@ -10,11 +10,11 @@ export type DocAsset = DocumentType<Asset>;
 @modelOptions(myModelOptions)
 export class Asset extends BaseModel
 {
-    @prop({ type: String, unique: true, required: true })
-    code: string
+    @prop({ type: String, required: true, trim: true })
+    name: string
 
-    @prop({ type: String, unique: true, required: true })
-    symbol: string
+    @prop({ type: String, unique: true, sparse: true, trim: true })
+    code: string
 
     @prop({ type: Number, required: true, default: 0 })
     balance: number

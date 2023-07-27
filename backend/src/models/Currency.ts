@@ -11,19 +11,19 @@ export type DocCurrency = DocumentType<Currency>;
 @modelOptions(myModelOptions)
 export class Currency extends BaseModel
 {
-    @prop({ type: String, unique: true, required: true })
+    @prop({ type: String, unique: true, required: true, trim: true })
     code: string
 
-    @prop({ type: String, default: '$', required: true })
+    @prop({ type: String, default: '$', required: true, trim: true })
     symbol: string
 
-    @prop({ type: String, required: true })
+    @prop({ type: String, required: true, trim: true })
     name: string
 
     @prop({ type: Number })
     value: number
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     api?: string
 
     @prop({ type: String, enum: CurrencyType, default: CurrencyType.FIAT })

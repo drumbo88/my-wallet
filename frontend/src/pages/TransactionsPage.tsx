@@ -106,7 +106,7 @@ const TransactionsPage = () => {
         res.data.transactions.forEach((row) => {
           const from = row.from?.account,
             to = row.to?.account;
-          //console.log(myEntityId, from?.ownerEntity?._id, to?.ownerEntity?._id)
+          console.log(myEntityId, from?.ownerEntity?._id, to?.ownerEntity?._id)
           if (from?.ownerEntity?._id == to?.ownerEntity?._id) {
             row.color = "info";
             row.transferDirection = "Self-transfer";
@@ -153,7 +153,9 @@ const TransactionsPage = () => {
       valueGetter: (params) =>
         params.row.amount / (params.row.exchangeRate || 1),
       renderCell: (params) => {
-        const { currency, color, amount, exchangeRate } = params.row;
+        const transaction = params.row;
+        const { currency, color, amount, exchangeRate } = transaction;
+        console.log(params.row)
         return (
           <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
             {/*<Box sx={{ mr: 0.5, display: 'inline' }}><small>{params.row.currency}</small></Box>*/}
@@ -192,7 +194,11 @@ const TransactionsPage = () => {
       field: "conceptName",
       headerName: "Concepto",
       valueGetter: (params) =>
-        params.row.allocations[0]?.operation.detail || "Sin definir",
+        params.row.detail
+        || params.row.allocations[0]?.operation.detail
+        || params.row.allocations[0]?.operation.items[0]?.detail
+        || params.row.allocations[0]?.operation.items[0]?.concept?.name
+        || "Sin definir",
       flex: 1,
       // },{
       //   field: 'detail',
@@ -207,10 +213,10 @@ const TransactionsPage = () => {
         const account = from?.account;
         return fromOwner
           ? account?.alias ??
-              account?.adminEntity?.person?.lastname ??
+              account?.adminEntity?.person?.lastnames ??
               account?.adminEntity?.name
           : account?.alias ??
-              account?.ownerEntity?.person?.lastname ??
+              account?.ownerEntity?.person?.lastnames ??
               account?.ownerEntity?.name;
       },
       flex: 1,
@@ -223,10 +229,10 @@ const TransactionsPage = () => {
         const account = to?.account;
         return toOwner
           ? account?.alias ??
-              account?.adminEntity?.person?.lastname ??
+              account?.adminEntity?.person?.lastnames ??
               account?.adminEntity?.name
           : account?.alias ??
-              account?.ownerEntity?.person?.lastname ??
+              account?.ownerEntity?.person?.lastnames ??
               account?.ownerEntity?.name;
       },
       flex: 1,

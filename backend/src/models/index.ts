@@ -16,7 +16,7 @@ export class ModelClass {
         for (const prop in data) {
             this[prop] = data[prop]
         }
-        console.log({this:this})
+        //console.log({this:this})
     }
 }
 

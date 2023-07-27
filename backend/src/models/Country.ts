@@ -11,10 +11,10 @@ export type DocCountry = DocumentType<Country>;
 @modelOptions(myModelOptions)
 export class Country extends BaseModel
 {
-    @prop({ type: String, unique: true, required: true })
+    @prop({ type: String, unique: true, required: true, trim: true })
     code: string
 
-    @prop({ type: String, required: true })
+    @prop({ type: String, required: true, trim: true })
     name: string
 
     @prop({ type: () => [Currency], foreignField: 'code', localField: 'currencies', alias: 'currencyCodes', ref: () => Currency })

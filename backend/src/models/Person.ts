@@ -12,10 +12,10 @@ export type DocPerson = DocumentType<Person>;
 @modelOptions(myModelOptionsNoId)
 export class Person extends BaseModel
 {
-    @prop({ type: String, required: true })
+    @prop({ type: String, required: true, trim: true })
     firstnames: string
 
-    @prop({ type: String, required: true })
+    @prop({ type: String, required: true, trim: true })
     lastnames: string
 
     @prop({ type: Date })
@@ -37,7 +37,7 @@ export const seeds: IPersonSeed[] = [
             gender: PersonGenders.MALE,
         },
         taxId: "20337466711",
-        currency: "ARS",
+        currencyCode: "ARS",
 
         user: {
             name: "drumbo88",
@@ -50,71 +50,79 @@ export const seeds: IPersonSeed[] = [
                 wallets: [{
                     address: "9287394128571952934521",
                     alias: "drumbo88bf",
-                    currency: "ARS",
+                    currencyCode: "ARS",
                     detail: "Mi caja de ahorro",
                 }]
             }, {
-                adminEntity: { taxId: "30703088534" }, // findOne
+                adminEntity: { taxId: "30500010912" },
+                wallets: [{
+                    address: "0110599530000070256801",
+                    alias: "drumbo88bn",
+                    currencyCode: "ARS",
+                    detail: "Mi Banco Nación",
+                }]
+            }, {
+                adminEntity: { taxId: "30703088534" },
                 wallets: [{
                     address: "1023948120394812304980",
                     alias: "drumbo88mp",
-                    currency: "ARS",
+                    currencyCode: "ARS",
                     detail: "Mi Mercado Pago",
                 }]
             }, {
                 adminEntity: {
-                    name: 'Binance',
+                    "company.shortName": 'Binance',
                 },
                 wallets: [{
                     address: "0xA6A4D7B8F180B16C27B017FF93B5AB6264532981",
                     alias: "drumbo88bnc",
-                    currency: "BTC",
+                    currencyCode: "BTC",
                     detail: "Mi cuenta Binance",
                 }]
             },
         ],
-        /*      debitCards: [
-                {
-                    number: "4517650650307796",
-                    expDate: '03/26',
-                    adminEntity: { taxId: "30500003193" }, // findOne
-                    currency: "ARS",
-                    detail: "Mi caja de ahorro BBVA",
-                },{
-                    number: "5537710640956004",
-                    expDate: '09/27',
-                    adminEntity: { taxId: "3XXXXXXXX3" }, // findOne
-                    currency: "ARS",
-                    detail: "Mi caja de ahorro BNA",
-                },
-              ],
-              prepaidCards: [
-                {
-                  number: "6061268415812862",
-                  adminEntity: { website: "https://www.argentina.gob.ar/transporte" }, // findOne
-                  detail: "Mi SUBE",
-                },{
-                  number: "4865680000207907",
-                  expDate: '10/26',
-                  adminEntity: { website: 'https://www.bna.com.ar' }, // findOne
-                  detail: "Mi PreViaje",
-                },
-              ],
-              creditCards: [
-                {
-                  address: "102394812304980",
-                  adminEntity: { taxId: "30999999993" }, // findOne
-                  detail: "Mi VisaBBVA",
-                },{
-                  address: "102394812304980",
-                  adminEntity: { taxId: "30999999993" }, // findOne
-                  detail: "Mi MCBBVA",
-                },{
-                  address: "102394812304980",
-                  adminEntity: { taxId: "30999999993" }, // findOne
-                  detail: "Mi MCCarrefour",
-                },
-              ],*/
+        debitCards: [
+            {
+                number: "4517650650307796",
+                expDate: '03/26',
+                adminEntity: { taxId: "30500003193" }, // findOne
+                currencyCode: "ARS",
+                detail: "Mi caja de ahorro BBVA",
+            },{
+                number: "5537710640956004",
+                expDate: '09/27',
+                adminEntity: { taxId: "30500010912" }, // findOne
+                currencyCode: "ARS",
+                detail: "Mi caja de ahorro BNA",
+            },
+        ],
+        prepaidCards: [
+            {
+                number: "6061268415812862",
+                adminEntity: { website: "https://www.argentina.gob.ar/transporte" }, // findOne
+                detail: "Mi SUBE",
+            },{
+                number: "4865680000207907",
+                expDate: '10/26',
+                adminEntity: { website: 'https://www.bna.com.ar' }, // findOne
+                detail: "Mi PreViaje",
+            },
+            ],
+        creditCards: [
+        {
+                address: "102394812304980",
+                adminEntity: { taxId: "30500003193" }, // findOne
+                detail: "Mi VisaBBVA",
+            },{
+                address: "102394812304980",
+                adminEntity: { taxId: "30500003193" }, // findOne
+                detail: "Mi MCBBVA",
+            },{
+                address: "102394812304980",
+                adminEntity: { taxId: "30697265895" }, // findOne
+                detail: "Mi MCCarrefour",
+            },
+        ],
     },
     {
         person: {
@@ -124,7 +132,7 @@ export const seeds: IPersonSeed[] = [
             gender: PersonGenders.FEMALE,
         },
         taxId: "27373543212",
-        currency: 'USD',
+        currencyCode: 'USD',
         user: {
             name: "f.rocio",
         },
@@ -137,7 +145,7 @@ export const seeds: IPersonSeed[] = [
             gender: PersonGenders.MALE,
         },
         taxId: "27326775652",
-        currency: 'ARS',
+        currencyCode: 'ARS',
         user: {
             email: "dorcejose@yahoo.com.ar",
             name: "jdorce",

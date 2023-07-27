@@ -11,13 +11,13 @@ export type DocCompany = DocumentType<Company>;
 @modelOptions(myModelOptionsNoId)
 export class Company extends BaseModel
 {
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     legalName: string
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     fantasyName: string
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     shortName: string
 
     @prop({ type: String, enum: CompanyTypes, default: CompanyTypes.COMPANY })
@@ -45,11 +45,34 @@ export const seeds = [
         }
     },
     {
+        taxId: '30500010912',
+        company: {
+            shortName: 'Banco Nación',
+            type: CompanyTypes.BANK,
+        },
+        website: "https://www.bna.com.ar"
+    },
+    {
+        taxId: '30697265895',
+        company: {
+            shortName: 'Banco de Servicios Financieros',
+            type: CompanyTypes.BANK,
+        }
+    },
+    {
         taxId: '30703088534',
         company: {
             shortName: 'Mercado Pago',
             type: CompanyTypes.E_WALLET,
         }
+    },
+    {
+        taxId: '20110083301',
+        company: {
+            shortName: 'Min. Transporte',
+            type: CompanyTypes.COMPANY,
+        },
+        website: "https://www.argentina.gob.ar/transporte"
     },
     {
         taxId: '30692317714',
@@ -72,6 +95,7 @@ export const seeds = [
     {
         legalName: 'Binance',
         company: {
+            shortName: 'Binance',
             type: CompanyTypes.CRYPTO_EXCHANGE,
         }
     },

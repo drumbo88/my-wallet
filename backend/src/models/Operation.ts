@@ -1,12 +1,12 @@
 import { Entity, EntityModel } from "./Entity";
-import { OperationItemConceptModel } from "./OperationItemConcept";
-import { OperationItemType } from "common/types/operationItem";
+import { OperationItemTypes } from "common/types/operationItem";
 import { IOperation as IOperationSeed, OperationStatus, OperationTypes } from "common/types/operation";
-import { DocumentType, getModelForClass, modelOptions, prop, Ref, ReturnModelType } from "@typegoose/typegoose";
+import { DocumentType, getModelForClass, modelOptions, prop, PropType, Ref, ReturnModelType } from "@typegoose/typegoose";
 import { myModelOptions } from "../config";
 import { BaseModel, DocPartial } from "./BaseModel";
 import { OperationItem } from "./OperationItem";
-import { mixedType } from "../database";
+import { AssetModel } from "./Asset";
+import { OperationItemConceptModel } from "./OperationItemConcept";
 
 export type DocOperation = DocumentType<Operation>;
 
@@ -14,8 +14,7 @@ export type DocOperation = DocumentType<Operation>;
  * Clase "Operation" para operaciones de compra/venta
  */
 @modelOptions(myModelOptions)
-export class Operation extends BaseModel
-{
+export class Operation extends BaseModel {
     @prop({ type: Date, default: Date.now, required: true })
     datetime: Date
 
@@ -28,10 +27,10 @@ export class Operation extends BaseModel
     @prop({ type: () => Entity, ref: () => Entity, alias: "to" })
     toEntity?: Ref<Entity>
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     detail: string
 
-    @prop({ ...mixedType, default: [] })
+    @prop({ type: () => OperationItem, default: [] }, PropType.ARRAY)
     items: OperationItem[]
     // transactions: [new Schema({
     //     transactionId: { type: Schema.Types.ObjectId, ref: () => 'Transaction' },
@@ -70,19 +69,21 @@ export class Operation extends BaseModel
      */
     async addItem(this: DocOperation, itemData: any/* IOperationItem */) {
 
-        if (!itemData.conceptId?.type) {
-            throw new Error(`Need to define type of OperationItem to add to the Operation (${JSON.stringify({ this: this.id, item: itemData.conceptId })}).`)
+        if (!itemData.conceptType) {
+            throw new Error(`Need to define type of OperationItem to add to the Operation (${JSON.stringify({ this: this.id, item: itemData.concept })}).`)
         }
         let concept //: OperationItemDetail | null
-        switch (itemData.conceptId.type) {
-            case OperationItemType.ASSET:
-                concept = OperationModel.getOrCreate(itemData.conceptId.entity)
+        switch (itemData.conceptType) {
+            case OperationItemTypes.ASSET:
+                concept = await AssetModel.getOrCreate(itemData.concept)
                 break
-            case OperationItemType.CONCEPT:
-                concept = OperationItemConceptModel.getOrCreate(itemData.conceptId.entity)
+            case OperationItemTypes.CONCEPT: //case OperationItemTypes.OPERATION:
+                concept = await OperationItemConceptModel.getOrCreate(itemData.concept)
                 break
+            default:
+                throw new Error(`Invalid type of OperationItem to add to the Operation (${JSON.stringify({ this: this.id, item: itemData.concept, type: itemData.conceptType })}).`)
         }
-        itemData.conceptId.entity = concept
+        itemData.concept = concept
         itemData.total = (itemData.quantity || 0) * (itemData.amount || 0)
         this.items.push(itemData)
         this.totalAmount += itemData.total
@@ -211,7 +212,12 @@ export const seeds = [
         fromEntity: { taxId: '20337466711' },
         toEntity: { taxId: '20337466711' },
         items: [
-            { /*detail: 'Carga SUBE', */quantity: 1, amount: 1000, conceptId: { type: OperationItemType.CONCEPT, entity: { name: 'Carga SUBE' } } }
+            {
+                detail: 'Carga SUBE',
+                amount: 1000,
+                conceptType: OperationItemTypes.CONCEPT,
+                concept: { name: 'Carga SUBE' }
+            }
         ],
         //transactions: [] // Seed Transaction, con array de datos de Operations (que cada una debe encontrar UNA)
         //transactions: [{ transaction: { from: { /*entity*/ }, to: {} }}]
@@ -223,8 +229,17 @@ export const seeds = [
         //toEntity: { taxId: '20337466711' },
         detail: 'Compra en el Super',
         items: [
-            { /*detail: 'Carga SUBE', */quantity: 10, amount: 250, conceptId: { type: OperationItemType.OPERATION, entity: { name: 'Atún' } } },
-            { detail: 'Promo 10%', quantity: 1, amount: -100, conceptId: { type: OperationItemType.CONCEPT, entity: { name: 'Descuento' } } },
+            {
+                quantity: 10, amount: 250,
+                conceptType: OperationItemTypes.ASSET,
+                concept: { name: 'Atún' }
+            },
+            {
+                detail: 'Promo 10%',
+                amount: -100,
+                conceptType: OperationItemTypes.CONCEPT,
+                concept: { name: 'Descuento' }
+            },
         ],
         //transactions: [] // Seed Transaction, con array de datos de Operations (que cada una debe encontrar UNA)
         //transactions: [{ transaction: { from: { /*entity*/ }, to: {} }, amount: 100 }],
@@ -236,7 +251,12 @@ export const seeds = [
         toEntity: { taxId: '20337466711' },
         detail: 'Salario mensual',
         items: [
-            { detail: 'Sueldo neto', quantity: 1, amount: 200000, conceptId: { type: OperationItemType.CONCEPT, entity: { name: 'Sueldo Neto' } } },
+            {
+                detail: 'Sueldo neto',
+                amount: 200000,
+                conceptType: OperationItemTypes.CONCEPT,
+                concept: { name: 'Sueldo Neto' }
+            },
         ],
     },
     {
@@ -246,7 +266,12 @@ export const seeds = [
         toEntity: { taxId: '20335035128', name: 'Roti El Sol', company: {} },
         detail: 'Pizza',
         items: [
-            { detail: 'Pizza 4 sabores', quantity: 1, amount: 2000, conceptId: { type: OperationItemType.OPERATION, entity: { name: 'Pizza' } } },
+            {
+                detail: 'Pizza 4 sabores',
+                amount: 2000,
+                conceptType: OperationItemTypes.ASSET,
+                concept: { name: 'Pizza' }
+            },
         ],
     },
 ]

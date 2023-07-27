@@ -1,13 +1,26 @@
 import { DocumentType, isDocument, ReturnModelType } from "@typegoose/typegoose";
-import { AnyParamConstructor, Ref } from "@typegoose/typegoose/lib/types";
-import { AnyObject, Model, ObjectId, PopulateOptions } from "mongoose";
+import { AnyParamConstructor, Ref, RefType } from "@typegoose/typegoose/lib/types";
+import { AnyObject, Model, Types, PopulateOptions } from "mongoose";
 
-export type DocPartial<T> = DocumentType<T> | Partial<T> | T;
+export type DocPart<T> = DocumentType<T> | Partial<T>;
+export type DocTypePart<T> = Partial<DocumentType<T>> | DocPart<T>;
+export type DocPartOrObj<T> = DocPart<T> | T;
 
+type RefOrDocument<T,V extends RefType> = T | V | Ref<T,V> | Types.ObjectId;
+
+export type DocPartial<T> = {
+  [P in keyof T]: T[P] extends object
+    ? (T[P] extends RefOrDocument<infer U, infer V>
+        ? T[P]
+        : DocPartial<T[P]> | DocPartOrObj<T[P]>
+      )
+    : T[P];
+};
 export class BaseModel
-{    static async getOrCreate<T extends BaseModel>(
+{
+    static async getOrCreate<T extends BaseModel>(
         this: ReturnModelType<AnyParamConstructor<T>, {}>,
-        query: Partial<DocumentType<T>> | DocumentType<T>
+        query: DocPartial<T>
     ): Promise<DocumentType<T>> {
         if (query instanceof this)
             return query as DocumentType<T>;
@@ -17,7 +30,7 @@ export class BaseModel
 
     static async getOne<T extends BaseModel>(
         this: ReturnModelType<AnyParamConstructor<T>, {}>,
-        query: Partial<DocumentType<T>> | DocumentType<T> | Ref<ObjectId>
+        query: DocPartial<T> | Ref<T, Types.ObjectId>
     ): Promise<DocumentType<T> | undefined> {
         if (query instanceof this)
             return query as DocumentType<T>;
@@ -27,7 +40,7 @@ export class BaseModel
 
     static async getOneOrFail<T extends BaseModel>(
         this: ReturnModelType<AnyParamConstructor<T>, {}>,
-        query: Partial<DocumentType<T>> | DocumentType<T>
+        query: DocPartial<T> | Ref<T, Types.ObjectId>
     ): Promise<DocumentType<T>> {
         if (query instanceof this)
             return query as DocumentType<T>;
@@ -53,7 +66,7 @@ export class BaseModel
     async populateAndGet<U extends BaseModel, T = this, Paths = {}>(
         this: DocumentType<T, {}>,
         path: string | PopulateOptions | (string | PopulateOptions)[]
-    ): Promise<DocumentType<U>>;
+    ): Promise<DocumentType<U> | undefined>;
     async populateAndGet<U extends BaseModel, T = this, Paths = {}>(
         this: DocumentType<T, {}>,
         path: string, select?: string | AnyObject, model?: Model<any>, match?: AnyObject, options?: PopulateOptions

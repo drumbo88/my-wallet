@@ -9,6 +9,7 @@ import { BaseModel, DocPartial } from "./BaseModel";
 import { Currency } from "./Currency";
 import { TransactionTypes } from "common/types/transaction";
 import { mixedType } from "../database";
+import { CompanyTypes } from "common/types/company";
 
 
 
@@ -70,17 +71,22 @@ export class Transaction extends BaseModel
     @prop({ type: Date, default: Date.now, required: true })
     datetime: Date
 
-    @prop({ ref: () => Currency, foreignField: 'code', localField: 'currency', alias: "currencyCode", required: true })
-    currency: Ref<Currency>
+    @prop({ type: () => String, required: true })
+    currencyCode!: Ref<Currency, string>
+    @prop({ type: () => String, ref: () => Currency, foreignField: 'code', localField: 'currencyCode', justOne: true, required: true })
+    currency!: Ref<Currency, string>
 
-    @prop({ ref: () => Currency, foreignField: 'code', localField: 'toCurrency', alias: "toCurrencyCode", required: true })
-    toCurrency: Ref<Currency>
+    @prop({ type: () => String, required: true })
+    toCurrencyCode!: Ref<Currency, string>
+    @prop({ type: () => String, ref: () => Currency, foreignField: 'code', localField: 'toCurrencyCode', justOne: true, required: true })
+    toCurrency!: Ref<Currency, string>
 
     @prop({ type: Number, default: 0, required: true })
     amount!: number
 
     @prop({ type: () => TransactionAllocation, default: [], required: true }, PropType.ARRAY)
-    allocations!: mongoose.Types.DocumentArray<DocumentType<TransactionAllocation>>
+    allocations!: TransactionAllocation[]
+    //allocations!: mongoose.Types.DocumentArray<DocumentType<TransactionAllocation>>
 
     @prop({ type: Number, default: 0, required: true })
     allocatedAmount!: number
@@ -100,7 +106,7 @@ export class Transaction extends BaseModel
     @prop({ type: () => TransactionSide })
     to?: TransactionSide
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     detail?: string
 
     postSave: DocOperation[]
@@ -112,9 +118,11 @@ export class Transaction extends BaseModel
 
         // Get allocation document or generate it
         const op = allocationData.operation as any
-        const allocation = (allocationData instanceof Document)
-            ? allocationData : new TransactionAllocationModel({...allocationData, operation: await OperationModel.findOne(op)})
-console.log({allocation})
+        const allocation = ((allocationData instanceof Document)
+            ? allocationData
+            : new TransactionAllocationModel({...allocationData, operation: await OperationModel.findOne(op)})
+        ) as DocumentType<TransactionAllocation>
+
         // Needs Operation data
         const operation = await allocation.populateAndGet<Operation>('operation')
         if (!allocation.operation || !operation) {
@@ -154,6 +162,8 @@ console.log({allocation})
             const allocations = seed.allocations || []
             if (allocations)
                 delete seed.allocations
+
+            // Get account-from (seed.from?.account | seed.from.account?.ownerEntity)
             if (seed.from?.account) {
                 const accountData = seed.from.account
                 if (accountData.ownerEntity) {
@@ -161,7 +171,7 @@ console.log({allocation})
                     if (ownerEntity) {
                         accountData.ownerEntity = ownerEntity
                     }
-                    //delete accountData.ownerEntity
+                    else delete accountData.ownerEntity
                 }
                 const fromAccount = await AccountModel.findOne(accountData)
                 if (fromAccount) {
@@ -169,13 +179,17 @@ console.log({allocation})
                     seed.from.entity = fromAccount.ownerEntity
                 }
             }
+
+            // Get account-to (seed.to?.account | seed.to.account?.ownerEntity)
             if (seed.to?.account) {
                 const accountData = seed.to.account
                 if (accountData.ownerEntity) {
                     const ownerEntity = await EntityModel.findOne(accountData.ownerEntity)
-                    if (ownerEntity)
+                    //console.log({ownerEntity,accOwnerEntity:accountData.ownerEntity})
+                    if (ownerEntity) {
                         accountData.ownerEntity = ownerEntity
-                    //delete accountData.ownerEntity
+                    }
+                    else delete accountData.ownerEntity
                 }
                 const toAccount = await AccountModel.findOne(accountData)
                 if (toAccount) {
@@ -184,9 +198,17 @@ console.log({allocation})
                 }
             }
 
+            if (!seed.toCurrencyCode)
+                seed.toCurrencyCode = seed.currencyCode
+
             const transaction/*: DocTransaction*/ = await this.create(seed)
-            // if (!seed.fromEntity)
-            //     throw new Error(`Operation's fromEntity is required.`)
+            if (!seed.from) {
+                /*if (allocations.length == 1 && allocations[0].operation) {
+                    const op = OperationModel.findOne(allocations[0].operation)
+                    seed.from.account.ownerEntity =
+                }*/
+                throw new Error(`Operation's fromEntity is required.`)
+            }
 
             // await Promise.all([
             //     operation.setFromEntity(seed.fromEntity),
@@ -198,8 +220,7 @@ console.log({allocation})
                 await transaction.allocateOperation(allocationData)
             }
             await transaction.save() // save Operations as well
-            console.log(transaction.allocations)
-            console.log((await TransactionModel.findById(transaction.id))?.allocations)
+            //console.log({seed,transaction})
         }
     }
 }
@@ -208,6 +229,13 @@ console.log({allocation})
 export const TransactionModel = getModelForClass(Transaction);
 
 export const seeds = [
+    {
+        datetime: '2022-12-12 12:12:13',
+        currencyCode: "ARS",
+        amount: 1000,
+        from: { account: { ownerEntity: { taxId: '20337466711' } } },
+        allocations: [{ operation: { datetime: '2022-12-12 12:12:13' } }],
+    },
     {
         datetime: '2022-12-12 12:12:12',
         currencyCode: 'ARS',
@@ -224,7 +252,20 @@ export const seeds = [
         from: { account: { ownerEntity: { taxId: '30692317714' } } },
         to: { account: { ownerEntity: { taxId: '20337466711' } } },
         allocations: [{ operation: { datetime: '2022-12-01 12:12:12' }, amount: 200000 }],
-    }
+    },
+    {
+        currencyCode: "ARS",
+        amount: 150000,
+        toCurrencyCode: "BUSD",
+        exchangeRate: 280,
+        concept: { name: "Conversión" },
+        from: { account: { ownerEntity: { taxId: "20337466711" } } },
+        to: { account: { ownerEntity: { company: {
+            shortName: 'Binance',
+            type: CompanyTypes.CRYPTO_EXCHANGE,
+        } } } },
+        detail: "ARS a BUSD",
+    },
 ]
 
 interface ITransactionSeed {
@@ -275,64 +316,6 @@ interface ITransactionSeed {
     concept: { name: "Sube" },
   },
 ];*/
-
-/*schema.statics.seeder = async (data) => {
-    const { date, currency, amount, detail } = data;
-    let concept = await TransactionConceptModel.findOne(data.concept);
-
-    const me = await PersonModel.findOne({ taxId: "20337466711" }).populate("entity").populate("entity.accounts");
-    await me.entity.populate("accounts");
-
-    let fromAccount
-    if (data.fromAccount) {
-      const { entity: fromEntity } = await CompanyModel.findOne(data.fromAccount.entity).populate("entity")
-                                  || await PersonModel.findOne(data.fromAccount.entity).populate("entity");
-      fromAccount = fromEntity.accounts[0];
-    }
-    else {
-      fromAccount = me.entity.accounts[0];
-    }
-
-    if (!concept) {
-      await me.populate("entity");
-      await me.entity.populate("user");
-      data.concept.user = await me.entity.user._id;
-      concept = await TransactionConceptModel.create(data.concept);
-    }
-
-    // ToDo: Can be Person/Company
-    const transactionData = {
-      date,
-      currency,
-      amount,
-      detail,
-      concept: concept._id,
-      fromAccount,
-    }
-    if (data.toAccount) {
-      const { entity: toEntity } = await PersonModel.findOne(data.toAccount.entity).populate("entity");
-      const toAccount = toEntity.accounts[0]
-      transactionData.toAccount = toAccount._id
-    }
-    if (data.toCurrency) {
-      transactionData.toCurrency = data.toCurrency
-    }
-    if (data.exchangeRate) {
-      transactionData.exchangeRate = data.exchangeRate
-    }
-
-    const obj = new model(transactionData);
-
-    await obj.save();
-};*/
-
-//schema.statics.seed = mongoose.seed;
-// export interface ITransactionModel extends Model<ITransaction> { }
-// export interface ITransactionDocument extends Document<ITransactionModel>, ITransaction {
-    // methods
-    // addOwnedAccount(accountData: IAccount): Promise<ITransactionDocument>,
-    // addAdministratedAccount(accountData: IAccount): Promise<ITransactionDocument>,
-// }
 
 
 /*

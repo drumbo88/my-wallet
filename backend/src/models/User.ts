@@ -11,13 +11,13 @@ export type DocUser = DocumentType<User>;
 @modelOptions(myModelOptionsNoId)
 export class User extends BaseModel
 {
-    @prop({ type: String, required: true })
+    @prop({ type: String, required: true, trim: true })
     name: string
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     email: string
 
-    @prop({ type: String })
+    @prop({ type: String, trim: true })
     password: string
 
     @prop({ type: String, enum: UserStatus })

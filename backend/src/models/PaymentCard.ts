@@ -23,13 +23,13 @@ export type DocPaymentCard = DocumentType<PaymentCard>;
 @modelOptions(myModelOptions)
 export class PaymentCard extends BaseModel
 {
-    @prop({ type: String, required: true })
+    @prop({ type: String, trim: true })
     name: string
 
-    @prop({ type: String, required: true })
+    @prop({ type: String, trim: true })
     number: string
 
-    @prop({ type: Date, required: true })
+    @prop({ type: Date })
     expDate: Date
 
     /* Opc: Cuenta a la que está vinculada la tarjeta (puede no tener) */
@@ -48,6 +48,7 @@ export class PaymentCard extends BaseModel
         type: String, required: true,
         get: v => (v / 100).toFixed(2),
         set: v => v * 100,
+        default: 0
     })
     balance: number
 

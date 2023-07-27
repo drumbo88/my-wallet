@@ -12,10 +12,10 @@ export type DocWallet = DocumentType<Wallet>;
 @modelOptions(myModelOptions)
 export class Wallet extends BaseModel
 {
-    @prop({ type: String, unique: true, required: true })
+    @prop({ type: String, unique: true, required: true, trim: true })
     address: string
 
-    @prop({ type: String, unique: true, sparse: true })
+    @prop({ type: String, unique: true, sparse: true, trim: true })
     alias: string
 
     @prop({ type: String, enum: WalletStatus, default: WalletStatus.ACTIVE, required: true })
@@ -33,8 +33,8 @@ export class Wallet extends BaseModel
     @prop({ type: () => [WalletAsset] })
     assets: WalletAsset[]
 
-    @prop({ type: String })
-    detail: string
+    @prop({ type: String, trim: true })
+    detail?: string
 }
 
 /*export const seeds = [

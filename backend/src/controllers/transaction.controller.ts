@@ -8,15 +8,16 @@ export const list = async (req, res) => {
     req.body.idEntity = req.params.id
     try {
         let txQuery, message
-        if (req.body.idEntity) {
+        if (req.body.idEntity)
+        {
             message = `Transactions of Entity #${req.body.idEntity}`
             console.log(message)
-            query.ownerEntityId = req.body.idEntity
+            query.ownerEntity = req.body.idEntity
             const accounts = await AccountModel.find(query, '_id')
             const accountIds = accounts.map((account:any) => account._id)
             txQuery = { $or: [
-                { 'from.accountId': { $in: accountIds } },
-                { 'to.accountId': { $in: accountIds } }
+                { 'from.account': { $in: accountIds } },
+                { 'to.account': { $in: accountIds } }
             ]}
         }
         else {
@@ -25,11 +26,15 @@ export const list = async (req, res) => {
             txQuery = query
         }
         const transactions = await TransactionModel.find(txQuery)
-        .populate('from.account')
-        .populate('to.account')
-        .populate('allocations.operation')
-        .populate('currency')
-        const transaction = transactions?.[0]
+            .populate('from.account')
+            .populate('to.account')
+            .populate('allocations.operation')
+            .populate('currency')
+            .exec()
+
+        console.log(transactions[0])
+
+        //const transaction = transactions?.[0]
         for (const transaction of transactions) {
             let account: any = transaction.from?.account
             if (isDocument(account)) {
@@ -46,11 +51,11 @@ export const list = async (req, res) => {
                     transaction.to.account = account
             }
         }
-        const from = transaction?.from
-        const fromAccount = from?.account
+        //const from = transaction?.from
+        //const fromAccount = from?.account
         //const fromAccountOwner = fromAccount?.ownerEntity || from?.accountOwner
-        const allocation = transaction?.allocations?.[0]
-        const operation = allocation?.operation
+        //const allocation = transaction?.allocations?.[0]
+        //const operation = allocation?.operation
         //console.log({transaction, from, fromAccount, fromAccountOwner})
         return res.json({ transactions, message })
     }

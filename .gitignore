@@ -4,3 +4,6 @@ build
 **/build
 .env
 */**/.env
+dist
+dist/**
+dist/**/*

@@ -82,7 +82,7 @@ const PeoplePage = () => {
       headerName: "Nombre completo",
       valueGetter: (params) => {
         const { person } = params.row;
-        return `${person.firstname} ${person.lastname}`;
+        return `${person.firstnames} ${person.lastnames}`;
       },
       flex: 1,
     },
